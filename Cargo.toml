@@ -3,4 +3,5 @@ name = "gameboy-rs"
 version = "0.1.0"
 authors = ["simonwhitehead"]
 
-[dependencies]
+[dependencies.clap]
+version = "2"
