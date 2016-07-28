@@ -5,7 +5,7 @@ pub struct GameBoy {
 }
 
 impl GameBoy {
-    pub fn new() -> GameBoy {
-        GameBoy { cpu: cpu::Cpu::new() }
+    pub fn new(gameboy_color: bool, rom: Vec<u8>) -> GameBoy {
+        GameBoy { cpu: cpu::Cpu::new(gameboy_color, rom) }
     }
 }
