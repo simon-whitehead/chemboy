@@ -1,15 +1,17 @@
 pub struct Registers {
-    A: u8,
-    B: u8,
-    C: u8,
-    D: u8,
-    E: u8,
-    F: u8,
-    H: u8,
-    L: u8,
+    pub a: u8,
+    pub b: u8,
+    pub c: u8,
+    pub d: u8,
+    pub e: u8,
+    pub f: u8,
+    pub h: u8,
+    pub l: u8,
 
-    PC: u16,
-    SP: u16,
+    pub pc: usize,
+    pub sp: usize,
+
+    pub flags: Flags,
 }
 
 impl Registers {
@@ -21,17 +23,29 @@ impl Registers {
         };
 
         Registers {
-            A: a,
-            F: 0xB0,
-            B: 0x00,
-            C: 0x13,
-            D: 0x00,
-            E: 0xD8,
-            H: 0x01,
-            L: 0x4D,
+            a: a,
+            f: 0xB0,
+            b: 0x00,
+            c: 0x13,
+            d: 0x00,
+            e: 0xD8,
+            h: 0x01,
+            l: 0x4D,
 
-            PC: 0x00,
-            SP: 0xFFFE,
+            pc: 0x00,
+            sp: 0xFFFE,
+
+            flags: Flags::new(),
         }
+    }
+}
+
+pub struct Flags {
+    pub zero: bool,
+}
+
+impl Flags {
+    pub fn new() -> Flags {
+        Flags { zero: true }
     }
 }

@@ -1,3 +1,4 @@
+extern crate byteorder;
 extern crate clap;
 
 use clap::{App, Arg, SubCommand};
@@ -23,7 +24,14 @@ fn main() {
 
     let rom = matches.value_of("rom").unwrap();
     let rom_data = load_rom(rom).unwrap();
-    let gameboy = gameboy::GameBoy::new(false, rom_data);
+    let mut gameboy = gameboy::GameBoy::new(false, rom_data);
+
+    'init: loop {
+        match gameboy.run() {
+            false => break 'init,
+            _ => (),
+        }
+    }
 }
 
 fn load_rom(fname: &str) -> std::io::Result<Vec<u8>> {
