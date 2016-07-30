@@ -45,7 +45,8 @@ pub mod tests {
 
     #[test]
     pub fn xor_a_zeros_a_and_sets_zero_flag() {
-        let mut cpu = Cpu::new(true, vec![0xAF]);
+        let xor_a = vec![0xAF];
+        let mut cpu = Cpu::new(true, xor_a);
 
         cpu.step();
 
