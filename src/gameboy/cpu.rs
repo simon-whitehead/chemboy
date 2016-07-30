@@ -50,6 +50,7 @@ pub mod tests {
 
         cpu.step();
 
+        // TODO: Check FLAGS are set properly
         assert_eq!(true, cpu.registers.flags.zero);
         assert_eq!(0, cpu.registers.a);
     }
