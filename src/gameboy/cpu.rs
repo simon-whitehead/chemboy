@@ -3,10 +3,12 @@
 use byteorder::{ByteOrder, LittleEndian};
 
 use gameboy::registers;
+use gameboy::Interconnect;
 
 pub struct Cpu {
     rom: Vec<u8>,
     pub registers: registers::Registers,
+    pub interconnect: Interconnect,
 }
 
 impl Cpu {
@@ -14,6 +16,7 @@ impl Cpu {
         Cpu {
             rom: rom,
             registers: registers::Registers::new(gameboy_color),
+            interconnect: Interconnect::new(),
         }
     }
 
