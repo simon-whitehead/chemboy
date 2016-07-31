@@ -12,3 +12,16 @@ impl Gfx {
         self.ram[addr as usize] = byte;
     }
 }
+
+#[cfg(test)]
+pub mod tests {
+    #[test]
+    pub fn can_write_to_gfx_memory() {
+        let ldhlda = vec![0x32, 0xCB, 0x7C];
+        let mut cpu = ::gameboy::Cpu::new(true, ldhlda);
+
+        cpu.step();
+
+        // Graphics RAM
+    }
+}
