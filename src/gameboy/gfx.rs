@@ -22,6 +22,6 @@ pub mod tests {
 
         cpu.step();
 
-        // Graphics RAM
+        // TODO: Test that graphics memory is supported for the LD (HL-),A opcode (0x32)
     }
 }
