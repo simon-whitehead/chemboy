@@ -33,6 +33,7 @@ impl Cpu {
             0b10101111 => {
                 // XOR A
                 self.registers.a = self.registers.a ^ self.registers.a;
+                self.registers.flags.zero = self.registers.a == 0;
             }
             _ => panic!("Unknown opcode: {:#X}", opcode),
         }
@@ -47,11 +48,11 @@ pub mod tests {
     pub fn xor_a_zeros_a_and_sets_zero_flag() {
         let xor_a = vec![0xAF];
         let mut cpu = Cpu::new(true, xor_a);
-
         cpu.step();
 
-        // TODO: Check FLAGS are set properly
-        assert_eq!(true, cpu.registers.flags.zero);
+        // A register should be zeroed and
+        // Z flag should be set
         assert_eq!(0, cpu.registers.a);
+        assert_eq!(true, cpu.registers.flags.zero);
     }
 }
