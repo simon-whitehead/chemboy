@@ -29,7 +29,6 @@ impl Cpu {
 
                 // Increment program counter
                 self.registers.pc += 0x03;
-                println!("Stack pointer: {:#X}", self.registers.sp);
             }
             0b00100001 => {
                 // LD HL, <u16>
@@ -56,6 +55,16 @@ impl Cpu {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+
+    #[test]
+    pub fn ld_sp_u16_should_set_stack_pointer() {
+        let ldspu16 = vec![0x31, 0xFE, 0xFF];
+        let mut cpu = Cpu::new(true, ldspu16);
+        cpu.step();
+
+        // SP == 0xFFFE
+        assert_eq!(0xFFFE, cpu.registers.sp);
+    }
 
     #[test]
     pub fn xor_a_zeros_a_and_sets_zero_flag() {
