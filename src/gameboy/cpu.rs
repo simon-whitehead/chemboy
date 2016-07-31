@@ -1,5 +1,4 @@
-
-use std::io::Cursor;
+// Simon Whitehead, 2016
 
 use byteorder::{ByteOrder, LittleEndian};
 
@@ -27,13 +26,27 @@ impl Cpu {
                 // LD SP, <u16>
                 let val = LittleEndian::read_u16(&self.rom[self.registers.pc..]);
                 self.registers.sp = val as usize;
+
+                // Increment program counter
                 self.registers.pc += 0x03;
                 println!("Stack pointer: {:#X}", self.registers.sp);
+            }
+            0b00100001 => {
+                // LD HL, <u16>
+                let val = LittleEndian::read_u16(&self.rom[self.registers.pc..]);
+                self.registers.l = (val & 0xFF) as u8;
+                self.registers.h = ((val >> 8) & 0xFF) as u8;
+
+                // Increment program counter
+                self.registers.pc += 0x03;
             }
             0b10101111 => {
                 // XOR A
                 self.registers.a = self.registers.a ^ self.registers.a;
                 self.registers.flags.zero = self.registers.a == 0;
+
+                // Increment program counter
+                self.registers.pc += 0x01;
             }
             _ => panic!("Unknown opcode: {:#X}", opcode),
         }
@@ -50,9 +63,19 @@ pub mod tests {
         let mut cpu = Cpu::new(true, xor_a);
         cpu.step();
 
-        // A register should be zeroed and
-        // Z flag should be set
+        // A == 0, Z == 1
         assert_eq!(0, cpu.registers.a);
         assert_eq!(true, cpu.registers.flags.zero);
+    }
+
+    #[test]
+    pub fn ld_hl_u16_should_split_between_h_and_l_registers() {
+        let ldhlu16 = vec![0x21, 0xFF, 0x9F];
+        let mut cpu = Cpu::new(true, ldhlu16);
+        cpu.step();
+
+        // H == 0x9F, L == 0xFF
+        assert_eq!(0x9F, cpu.registers.h);
+        assert_eq!(0xFF, cpu.registers.l);
     }
 }
