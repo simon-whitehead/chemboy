@@ -5,17 +5,20 @@ pub struct Gfx {
 
 impl Gfx {
     pub fn new() -> Gfx {
-        Gfx { ram: [0u8; 8192] }
+        Gfx { ram: [255u8; 8192] }
     }
 
     pub fn write_byte(&mut self, addr: u16, byte: u8) {
         self.ram[addr as usize] = byte;
     }
 
+    pub fn read_byte(&self, addr: u16) -> u8 {
+        self.ram[addr as usize]
+    }
+
     pub fn read_word(&self, addr: u16) -> u16 {
-        let addr = addr - 1;
-        let h = self.ram[addr as usize];
-        let l = self.ram[(addr + 1) as usize];
+        let h = self.ram[(addr - 1) as usize];
+        let l = self.ram[addr as usize];
 
         let result: u16 = ((h as u16) << 8) | l as u16;
 
@@ -42,7 +45,7 @@ pub mod tests {
         cpu.step();
         cpu.step();
 
-        let val = cpu.interconnect.read_word(cpu.registers.get_hl() + 1);
+        let val = cpu.interconnect.read_byte(cpu.registers.get_hl() + 1);
         assert_eq!(0, val);
     }
 }

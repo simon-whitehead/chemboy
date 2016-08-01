@@ -21,6 +21,13 @@ impl Interconnect {
         }
     }
 
+    pub fn read_byte(&self, addr: u16) -> u8 {
+        match memory_map::map_address(addr) {
+            Address::Gfx(value) => self.gfx.read_byte(value),
+            _ => panic!("Unable to read address: {:#X}", addr),
+        }
+    }
+
     pub fn read_word(&self, addr: u16) -> u16 {
         match memory_map::map_address(addr) {
             Address::Gfx(value) => self.gfx.read_word(value),
