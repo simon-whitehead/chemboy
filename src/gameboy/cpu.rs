@@ -57,10 +57,13 @@ impl Cpu {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use ::gameboy::opcode::*;
 
     #[test]
     pub fn ld_sp_u16_should_set_stack_pointer() {
-        let ldspu16 = vec![0x31, 0xFE, 0xFF];
+        let ldspu16 = gb_asm![
+            LD_SP_u16 0xFE 0xFF
+        ];
         let mut cpu = Cpu::new(true, ldspu16);
         cpu.step();
 
@@ -70,7 +73,7 @@ pub mod tests {
 
     #[test]
     pub fn xor_a_zeros_a_and_sets_zero_flag() {
-        let xor_a = vec![0xAF];
+        let xor_a = gb_asm![XOR_A];
         let mut cpu = Cpu::new(true, xor_a);
         cpu.step();
 
@@ -81,7 +84,9 @@ pub mod tests {
 
     #[test]
     pub fn ld_hl_u16_should_split_between_h_and_l_registers() {
-        let ldhlu16 = vec![0x21, 0xFF, 0x9F];
+        let ldhlu16 = gb_asm![
+            LD_HL_u16 0xFF 0x9F
+        ];
         let mut cpu = Cpu::new(true, ldhlu16);
         cpu.step();
 

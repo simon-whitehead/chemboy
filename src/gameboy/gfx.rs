@@ -25,9 +25,17 @@ impl Gfx {
 
 #[cfg(test)]
 pub mod tests {
+    use super::*;
+    use ::gameboy::opcode::*;
+
     #[test]
     pub fn can_write_to_gfx_memory() {
-        let ldhlda = vec![0xAF, 0x21, 0xFF, 0x9F, 0x32];
+        let ldhlda = gb_asm![
+            XOR_A
+            LD_HL_u16 0xFF 0x9F
+            LD_HLD_A
+        ];
+
         let mut cpu = ::gameboy::Cpu::new(true, ldhlda);
 
         cpu.step();

@@ -1,3 +1,6 @@
+#[macro_use]
+mod macros;
+
 mod cpu;
 mod gameboy;
 mod gfx;
@@ -10,3 +13,5 @@ pub use self::cpu::Cpu;
 pub use self::gameboy::GameBoy;
 pub use self::gfx::Gfx;
 pub use self::interconnect::Interconnect;
+
+pub use self::macros::*;
