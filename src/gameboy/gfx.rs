@@ -13,6 +13,7 @@ impl Gfx {
     }
 
     pub fn read_word(&self, addr: u16) -> u16 {
+        let addr = addr - 1;
         let h = self.ram[addr as usize];
         let l = self.ram[(addr + 1) as usize];
 
@@ -26,18 +27,14 @@ impl Gfx {
 pub mod tests {
     #[test]
     pub fn can_write_to_gfx_memory() {
-        let ldhlda = vec![0x21, 0xFF, 0x9F, 0x32];
+        let ldhlda = vec![0xAF, 0x21, 0xFF, 0x9F, 0x32];
         let mut cpu = ::gameboy::Cpu::new(true, ldhlda);
 
         cpu.step();
+        cpu.step();
+        cpu.step();
 
-        // TODO: Test that graphics memory is supported for the LD (HL-),A opcode (0x32)
-        match ::gameboy::memory_map::map_address(cpu.registers.get_hl() + 1) {
-            ::gameboy::memory_map::Address::Gfx(value) => {
-                let val = cpu.interconnect.read_word(value);
-                assert_eq!(0, val);
-            }
-            _ => panic!("Invalid memory address"),
-        }
+        let val = cpu.interconnect.read_word(cpu.registers.get_hl() + 1);
+        assert_eq!(0, val);
     }
 }

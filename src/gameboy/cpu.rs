@@ -4,6 +4,7 @@ use byteorder::{ByteOrder, LittleEndian};
 
 use gameboy::registers;
 use gameboy::Interconnect;
+use gameboy::memory_map;
 
 pub struct Cpu {
     rom: Vec<u8>,
@@ -31,7 +32,7 @@ impl Cpu {
                 self.registers.sp = val as usize;
 
                 // Increment program counter
-                self.registers.pc += 0x03;
+                self.registers.pc += 0x02;
             }
             0b00100001 => {
                 // LD HL, <u16>
@@ -40,19 +41,19 @@ impl Cpu {
                 self.registers.h = ((val >> 8) & 0xFF) as u8;
 
                 // Increment program counter
-                self.registers.pc += 0x03;
+                self.registers.pc += 0x02;
             }
             0b00110010 => {
                 // LD (HL-),A
 
+                let val = self.registers.get_hl();
+                self.interconnect.write_byte(val, self.registers.a);
+                self.registers.set_hl(val - 1);
             }
             0b10101111 => {
                 // XOR A
                 self.registers.a = self.registers.a ^ self.registers.a;
                 self.registers.flags.zero = self.registers.a == 0;
-
-                // Increment program counter
-                self.registers.pc += 0x01;
             }
             _ => panic!("Unknown opcode: {:#X}", opcode),
         }
