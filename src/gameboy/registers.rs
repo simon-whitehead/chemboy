@@ -38,6 +38,10 @@ impl Registers {
             flags: Flags::new(),
         }
     }
+
+    pub fn get_hl(&self) -> u16 {
+        ((self.h as u16) << 8) | self.l as u16
+    }
 }
 
 pub struct Flags {

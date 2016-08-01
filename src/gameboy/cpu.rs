@@ -42,6 +42,10 @@ impl Cpu {
                 // Increment program counter
                 self.registers.pc += 0x03;
             }
+            0b00110010 => {
+                // LD (HL-),A
+
+            }
             0b10101111 => {
                 // XOR A
                 self.registers.a = self.registers.a ^ self.registers.a;

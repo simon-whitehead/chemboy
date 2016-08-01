@@ -15,9 +15,16 @@ impl Interconnect {
         match memory_map::map_address(addr) {
             Address::Gfx(value) => self.gfx.write_byte(value, byte),
             _ => {
-                panic!("Unable to write byte to: {:#?}, invalid memory region.",
+                panic!("Unable to write byte to: {:#X}, invalid memory region.",
                        addr)
             }
+        }
+    }
+
+    pub fn read_word(&self, addr: u16) -> u16 {
+        match memory_map::map_address(addr) {
+            Address::Gfx(value) => self.gfx.read_word(value),
+            _ => panic!("Unable to read address: {:#X}", addr),
         }
     }
 }
