@@ -3,6 +3,7 @@ mod gameboy;
 mod gfx;
 mod interconnect;
 mod memory_map;
+mod opcode;
 mod registers;
 
 pub use self::cpu::Cpu;
