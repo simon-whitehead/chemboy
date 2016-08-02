@@ -51,10 +51,18 @@ impl Registers {
 
 pub struct Flags {
     pub zero: bool,
+    pub n: bool,
+    pub h: bool,
+    pub cy: bool,
 }
 
 impl Flags {
     pub fn new() -> Flags {
-        Flags { zero: true }
+        Flags {
+            zero: true,
+            n: false,
+            h: false,
+            cy: false,
+        }
     }
 }

@@ -49,6 +49,19 @@ impl Cpu {
                 self.registers.a = self.registers.a ^ self.registers.a;
                 self.registers.flags.zero = self.registers.a == 0;
             }
+            opcode::BIT => {
+                let destination = self.rom[self.registers.pc];
+                match destination {
+                    opcode::BIT_7_H => {
+                        let r = self.registers.h & (1 << 7) == 0;
+                        self.registers.flags.n = false;
+                        self.registers.flags.h = true;
+                        self.registers.flags.zero = r;
+                    }
+                    _ => panic!("Unknown BIT destination"),
+                }
+                self.registers.pc += 1
+            }
             _ => panic!("Unknown opcode: {:#X}", opcode),
         }
     }
@@ -93,5 +106,21 @@ pub mod tests {
         // H == 0x9F, L == 0xFF
         assert_eq!(0x9F, cpu.registers.h);
         assert_eq!(0xFF, cpu.registers.l);
+    }
+
+    #[test]
+    pub fn bit_7_h_sets_flags_correctly() {
+        let bit7 = gb_asm![
+            LD_HL_u16 0x00 0x80
+            BIT BIT_7_H
+        ];
+        let mut cpu = Cpu::new(true, bit7);
+        cpu.step();
+        cpu.step();
+
+        // Z == 0x00, H == 0x01, N == 0x00
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.h);
+        assert_eq!(false, cpu.registers.flags.n);
     }
 }
