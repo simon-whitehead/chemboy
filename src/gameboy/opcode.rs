@@ -7,3 +7,5 @@ pub const XOR_A: u8 = 0xAF;
 
 pub const BIT: u8 = 0xCB;
 pub const BIT_7_H: u8 = 0x7C;
+
+pub const JR_NZ: u8 = 0x20;

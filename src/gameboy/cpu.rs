@@ -60,7 +60,20 @@ impl Cpu {
                     }
                     _ => panic!("Unknown BIT destination"),
                 }
-                self.registers.pc += 1
+                self.registers.pc += 0x01;
+            }
+            opcode::JR_NZ => {
+                // Jump, if not zero
+                if self.registers.flags.zero == false {
+                    let offset = self.rom[self.registers.pc] as i8;
+                    if (offset < 0) {
+                        self.registers.pc -= (-(offset - 0x01) as usize);
+                    } else {
+                        self.registers.pc += (offset as usize);
+                    }
+                } else {
+                    self.registers.pc += 0x01;
+                }
             }
             _ => panic!("Unknown opcode: {:#X}", opcode),
         }
@@ -122,5 +135,35 @@ pub mod tests {
         assert_eq!(false, cpu.registers.flags.zero);
         assert_eq!(true, cpu.registers.flags.h);
         assert_eq!(false, cpu.registers.flags.n);
+    }
+
+    #[test]
+    pub fn jr_nz_does_not_jump_when_zero() {
+        let bit7 = gb_asm![
+            LD_HL_u16 0x00 0x80
+            JR_NZ 0xFD
+        ];
+        let mut cpu = Cpu::new(true, bit7);
+        cpu.registers.flags.zero = true;
+        cpu.step();
+        cpu.step();
+
+        // Program counter should be 0x05
+        assert_eq!(0x05, cpu.registers.pc);
+    }
+
+    #[test]
+    pub fn jr_nz_does_jump_when_not_zero() {
+        let bit7 = gb_asm![
+            LD_HL_u16 0x00 0x80
+            JR_NZ 0xFD
+        ];
+        let mut cpu = Cpu::new(true, bit7);
+        cpu.registers.flags.zero = false;
+        cpu.step();
+        cpu.step();
+
+        // Program counter should be 0x00
+        assert_eq!(0x00, cpu.registers.pc);
     }
 }
