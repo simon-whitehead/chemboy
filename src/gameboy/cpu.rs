@@ -67,7 +67,8 @@ impl Cpu {
                 if self.registers.flags.zero == false {
                     let offset = self.rom[self.registers.pc] as i8;
                     if (offset < 0) {
-                        self.registers.pc -= (-(offset - 0x01) as usize);
+                        // Fix the twos compliment: add 1 then invert it
+                        self.registers.pc -= (-(offset + 0x01) as usize);
                     } else {
                         self.registers.pc += (offset as usize);
                     }
@@ -75,7 +76,11 @@ impl Cpu {
                     self.registers.pc += 0x01;
                 }
             }
-            _ => panic!("Unknown opcode: {:#X}", opcode),
+            _ => {
+                panic!("Unknown opcode: {:#X} at offset: {:#X}",
+                       opcode,
+                       self.registers.pc)
+            }
         }
     }
 }
