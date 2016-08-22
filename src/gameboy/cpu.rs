@@ -161,7 +161,7 @@ pub mod tests {
     pub fn jr_nz_does_jump_when_not_zero() {
         let bit7 = gb_asm![
             LD_HL_u16 0x00 0x80
-            JR_NZ 0xFD
+            JR_NZ 0xFB
         ];
         let mut cpu = Cpu::new(true, bit7);
         cpu.registers.flags.zero = false;
