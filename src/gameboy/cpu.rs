@@ -76,6 +76,11 @@ impl Cpu {
                     self.registers.pc += 0x01;
                 }
             }
+            opcode::LD_C_u8 => {
+                let val = &self.rom[self.registers.pc];
+                self.registers.c = *val;
+                self.registers.pc += 0x01;
+            }
             _ => {
                 panic!("Unknown opcode: {:#X} at offset: {:#X}",
                        opcode,
