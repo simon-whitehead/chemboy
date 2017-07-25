@@ -15,7 +15,7 @@ impl GameBoy {
     }
 
     pub fn run(&mut self) -> bool {
-        self.cpu.step();
+        self.cpu.step(&self.interconnect);
 
         return true;
     }

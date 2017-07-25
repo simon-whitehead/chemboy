@@ -39,6 +39,10 @@ impl Registers {
         }
     }
 
+    pub fn set_pc(&mut self, addr: u16) {
+        self.pc = addr as usize;
+    }
+
     pub fn get_hl(&self) -> u16 {
         ((self.h as u16) << 8) | self.l as u16
     }

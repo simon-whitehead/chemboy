@@ -49,6 +49,7 @@ pub enum Address {
 pub fn map_address(virtual_address: u16) -> Address {
     match virtual_address {
         GFX_RAM_START...GFX_RAM_END => Address::Gfx(virtual_address - GFX_RAM_START),
+        RAM_START...RAM_END => Address::Ram(virtual_address - RAM_START),
         _ => panic!("Address {:#X} outside valid memory.", virtual_address),
     }
 }
@@ -56,6 +57,7 @@ pub fn map_address(virtual_address: u16) -> Address {
 pub fn map_address_unwrap(virtual_address: u16) -> u16 {
     match virtual_address {
         GFX_RAM_START...GFX_RAM_END => virtual_address - GFX_RAM_START,
+        RAM_START...RAM_END => virtual_address - RAM_START,
         _ => panic!("Address {:#X} outside valid memory.", virtual_address),
     }
 }

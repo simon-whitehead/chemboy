@@ -35,10 +35,10 @@ fn main() {
 }
 
 fn load_rom(fname: &str) -> std::io::Result<Vec<u8>> {
-    let mut file = try!(File::open(fname));
+    let mut file = File::open(fname)?;
 
     let mut contents = Vec::new();
-    try!(file.read_to_end(&mut contents));
+    file.read_to_end(&mut contents)?;
 
     Ok(contents)
 }
