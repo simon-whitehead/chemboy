@@ -1,13 +1,54 @@
+use ::gameboy::registers;
 
-pub const LD_SP_u16: u8 = 0x31;
-pub const LD_HL_u16: u8 = 0x21;
-pub const LD_HLD_A: u8 = 0x32;
+pub enum Operand {
+    None,
+    Imm8(u8),
+    Imm16(u16),
+    Register(registers::Registers),
+}
 
-pub const XOR_A: u8 = 0xAF;
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ArgumentType {
+    None,
+    Imm8,
+    Imm16,
+    Register,
+}
 
-pub const BIT: u8 = 0xCB;
-pub const BIT_7_H: u8 = 0x7C;
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct OpCode {
+    pub code: u8,
+    pub mnemonic: &'static str,
+    pub length: u8,
+    pub time: u8,
+    pub argument_type: ArgumentType,
+}
 
-pub const JR_NZ: u8 = 0x20;
-
-pub const LD_C_u8: u8 = 0x0E;
+static OpCodes: [OpCode; 4] = [OpCode {
+                                   code: 0x31,
+                                   mnemonic: "LD SP, {{0}}",
+                                   length: 3,
+                                   time: 3,
+                                   argument_type: ArgumentType::Imm16,
+                               },
+                               OpCode {
+                                   code: 0x21,
+                                   mnemonic: "LD HL, {{0}}",
+                                   length: 3,
+                                   time: 3,
+                                   argument_type: ArgumentType::Imm16,
+                               },
+                               OpCode {
+                                   code: 0x32,
+                                   mnemonic: "LD (HLD), A",
+                                   length: 1,
+                                   time: 2,
+                                   argument_type: ArgumentType::None,
+                               },
+                               OpCode {
+                                   code: 0xAF,
+                                   mnemonic: "XOR A",
+                                   length: 1,
+                                   time: 1,
+                                   argument_type: ArgumentType::None,
+                               }];
