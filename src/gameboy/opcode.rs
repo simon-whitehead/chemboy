@@ -20,7 +20,7 @@ impl Operand {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ArgumentType {
-    None,
+    Implied,
     Imm8,
     Imm16,
     Register,
@@ -70,14 +70,14 @@ static OpCodes: [OpCode; 5] = [OpCode {
                                    mnemonic: "LD (HLD), A",
                                    length: 1,
                                    time: 2,
-                                   argument_type: ArgumentType::None,
+                                   argument_type: ArgumentType::Implied,
                                },
                                OpCode {
                                    code: 0xAF,
                                    mnemonic: "XOR A",
                                    length: 1,
                                    time: 1,
-                                   argument_type: ArgumentType::None,
+                                   argument_type: ArgumentType::Implied,
                                },
                                OpCode {
                                    code: 0xC3,

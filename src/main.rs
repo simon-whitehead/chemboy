@@ -6,7 +6,7 @@ use clap::{App, Arg, SubCommand};
 use std::fs::File;
 use std::io::Read;
 
-mod gameboy;
+pub mod gameboy;
 
 fn main() {
     let matches = App::new("gameboy-rs")

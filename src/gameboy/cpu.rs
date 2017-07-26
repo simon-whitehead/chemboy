@@ -22,6 +22,7 @@ impl Cpu {
 
     fn get_operand_from_opcode(&self, interconnect: &Interconnect, opcode: &OpCode) -> Operand {
         match opcode.argument_type {
+            ArgumentType::Implied => Operand::None,
             ArgumentType::Imm16 => {
                 Operand::Imm16(LittleEndian::read_u16(&self.rom[self.registers.pc..]))
             }
@@ -41,6 +42,7 @@ impl Cpu {
 
             match (opcode.mnemonic, opcode.argument_type) {
                 ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
+                ("XOR A", ArgumentType::Implied) => self.xor_a(),
                 _ => {
                     panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
                            opcode.code,
@@ -53,5 +55,13 @@ impl Cpu {
     fn jp_imm16(&mut self, operand: &Operand) {
         let addr = operand.unwrap_imm16();
         self.registers.set_pc(addr);
+    }
+
+    fn xor_a(&mut self) {
+        self.registers.a ^= self.registers.a;
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.n = false;
+        self.registers.flags.h = false;
+        self.registers.flags.cy = false;
     }
 }
