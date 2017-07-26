@@ -33,7 +33,7 @@ impl Cpu {
         }
     }
 
-    pub fn cycle(&mut self, interconnect: &Interconnect) {
+    pub fn cycle(&mut self, interconnect: &mut Interconnect) {
         let mut cycles = 0;
 
         while cycles < MAX_CYCLES {
@@ -42,7 +42,7 @@ impl Cpu {
         }
     }
 
-    pub fn step(&mut self, interconnect: &Interconnect) -> u8 {
+    pub fn step(&mut self, interconnect: &mut Interconnect) -> u8 {
         let byte = self.rom[self.registers.pc];
         println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
         self.registers.pc += 1;
@@ -56,6 +56,7 @@ impl Cpu {
                 ("LD B, {imm8}", ArgumentType::Imm8) => self.ld_b_imm8(&operand),
                 ("LD C, {imm8}", ArgumentType::Imm8) => self.ld_c_imm8(&operand),
                 ("LD HL, {imm16}", ArgumentType::Imm16) => self.ld_hl_imm16(&operand),
+                ("LD (HLD), A", ArgumentType::Implied) => self.ld_hld_a(interconnect),
                 ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
                 ("XOR A", ArgumentType::Implied) => self.xor_a(),
                 _ => {
@@ -86,6 +87,12 @@ impl Cpu {
     fn ld_hl_imm16(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm16();
         self.registers.set_hl(val);
+    }
+
+    fn ld_hld_a(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_hl();
+        interconnect.write_byte(addr, self.registers.a);
+        self.registers.set_hl(addr - 0x01);
     }
 
     fn jp_imm16(&mut self, operand: &Operand) {

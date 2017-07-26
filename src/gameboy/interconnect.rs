@@ -5,7 +5,6 @@ use super::memory_map::{self, Address};
 pub struct Interconnect {
     pub gfx: Gfx,
     pub ram: Memory,
-    pub ram_shadow: Memory,
 }
 
 impl Interconnect {
@@ -13,13 +12,14 @@ impl Interconnect {
         Interconnect {
             gfx: Gfx::new(),
             ram: Memory::new(),
-            ram_shadow: Memory::new(),
         }
     }
 
     pub fn write_byte(&mut self, addr: u16, byte: u8) {
         match memory_map::map_address(addr) {
-            Address::Gfx(value) => self.gfx.write_byte(value, byte),
+            Address::Ram(a) |
+            Address::RamShadow(a) => self.ram.write_u8(a, byte),
+            Address::Gfx(value) => self.gfx.write_u8(value, byte),
             _ => {
                 panic!("Unable to write byte to: {:#X}, invalid memory region.",
                        addr)
@@ -31,7 +31,7 @@ impl Interconnect {
         match memory_map::map_address(addr) {
             Address::Ram(addr) |
             Address::RamShadow(addr) => self.ram.read_u8(addr),
-            Address::Gfx(value) => self.gfx.read_byte(value),
+            Address::Gfx(value) => self.gfx.read_u8(value),
             _ => panic!("Unable to read address: {:#X}", addr),
         }
     }
@@ -40,7 +40,7 @@ impl Interconnect {
         match memory_map::map_address(addr) {
             Address::Ram(addr) |
             Address::RamShadow(addr) => self.ram.read_u16(addr),
-            Address::Gfx(value) => self.gfx.read_word(value),
+            Address::Gfx(value) => self.gfx.read_u16(value),
             _ => panic!("Unable to read address: {:#X}", addr),
         }
     }
