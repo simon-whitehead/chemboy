@@ -35,6 +35,15 @@ mod tests {
         assert_eq!(0xA4, cpu.registers.c);
     }
 
+    #[test]
+    fn ld_b_imm8() {
+        let (mut cpu, interconnect) = create_cpu(gb_asm![0x06 0xA5]);
+
+        cpu.step(&interconnect);
+
+        assert_eq!(0xA5, cpu.registers.b);
+    }
+
     fn create_cpu(rom: Vec<u8>) -> (Cpu, Interconnect) {
         (Cpu::new(false, rom), Interconnect::new())
     }
