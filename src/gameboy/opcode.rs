@@ -10,6 +10,13 @@ pub enum Operand {
 }
 
 impl Operand {
+    pub fn unwrap_imm8(&self) -> u8 {
+        match *self {
+            Operand::Imm8(val) => val,
+            _ => panic!("Attempted to unwrap imm8 operand when it is not of type Imm8"),
+        }
+    }
+
     pub fn unwrap_imm16(&self) -> u16 {
         match *self {
             Operand::Imm16(addr) => addr,
@@ -51,7 +58,14 @@ impl OpCode {
     }
 }
 
-static OpCodes: [OpCode; 5] = [OpCode {
+static OpCodes: [OpCode; 6] = [OpCode {
+                                   code: 0x0E,
+                                   mnemonic: "LD C, {imm8}",
+                                   length: 2,
+                                   cycles: 8,
+                                   argument_type: ArgumentType::Imm8,
+                               },
+                               OpCode {
                                    code: 0x31,
                                    mnemonic: "LD SP, {imm16}",
                                    length: 3,

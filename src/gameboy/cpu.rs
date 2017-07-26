@@ -25,6 +25,7 @@ impl Cpu {
     fn get_operand_from_opcode(&self, interconnect: &Interconnect, opcode: &OpCode) -> Operand {
         match opcode.argument_type {
             ArgumentType::Implied => Operand::None,
+            ArgumentType::Imm8 => Operand::Imm8(self.rom[self.registers.pc]),
             ArgumentType::Imm16 => {
                 Operand::Imm16(LittleEndian::read_u16(&self.rom[self.registers.pc..]))
             }
@@ -52,6 +53,7 @@ impl Cpu {
             self.registers.pc += opcode.length as usize - 1;
 
             match (opcode.mnemonic, opcode.argument_type) {
+                ("LD C, {imm8}", ArgumentType::Imm8) => self.ld_c_imm8(&operand),
                 ("LD HL, {imm16}", ArgumentType::Imm16) => self.ld_hl_imm16(&operand),
                 ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
                 ("XOR A", ArgumentType::Implied) => self.xor_a(),
@@ -68,6 +70,11 @@ impl Cpu {
         panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
                byte,
                self.registers.pc);
+    }
+
+    fn ld_c_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        self.registers.c = val;
     }
 
     fn ld_hl_imm16(&mut self, operand: &Operand) {
