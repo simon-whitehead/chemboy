@@ -44,11 +44,11 @@ impl Registers {
     }
 
     pub fn get_hl(&self) -> u16 {
-        ((self.h as u16) << 8) | self.l as u16
+        ((self.h as u16) << 0x08) | self.l as u16
     }
 
     pub fn set_hl(&mut self, val: u16) {
-        self.h = ((val >> 8) & 0xFF) as u8;
+        self.h = ((val >> 0x08) & 0xFF) as u8;
         self.l = (val & 0xFF) as u8;
     }
 }

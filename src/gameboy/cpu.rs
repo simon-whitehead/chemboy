@@ -41,6 +41,7 @@ impl Cpu {
             self.registers.pc += opcode.length as usize - 1;
 
             match (opcode.mnemonic, opcode.argument_type) {
+                ("LD HL, {imm16}", ArgumentType::Imm16) => self.ld_hl_imm16(&operand),
                 ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
                 ("XOR A", ArgumentType::Implied) => self.xor_a(),
                 _ => {
@@ -49,7 +50,16 @@ impl Cpu {
                            self.registers.pc)
                 }
             }
+        } else {
+            panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+                   byte,
+                   self.registers.pc)
         }
+    }
+
+    fn ld_hl_imm16(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm16();
+        self.registers.set_hl(val);
     }
 
     fn jp_imm16(&mut self, operand: &Operand) {
