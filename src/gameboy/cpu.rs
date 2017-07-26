@@ -53,6 +53,7 @@ impl Cpu {
             self.registers.pc += opcode.length as usize - 1;
 
             match (opcode.mnemonic, opcode.argument_type) {
+                ("DEC B", ArgumentType::Implied) => self.dec_b(),
                 ("LD B, {imm8}", ArgumentType::Imm8) => self.ld_b_imm8(&operand),
                 ("LD C, {imm8}", ArgumentType::Imm8) => self.ld_c_imm8(&operand),
                 ("LD HL, {imm16}", ArgumentType::Imm16) => self.ld_hl_imm16(&operand),
@@ -60,7 +61,7 @@ impl Cpu {
                 ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
                 ("XOR A", ArgumentType::Implied) => self.xor_a(),
                 _ => {
-                    panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+                    panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
                            opcode.code,
                            self.registers.pc)
                 }
@@ -72,6 +73,14 @@ impl Cpu {
         panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
                byte,
                self.registers.pc);
+    }
+    fn dec_b(&mut self) {
+        let b = &mut self.registers.b;
+        *b = b.wrapping_sub(0x01);
+
+        self.registers.flags.zero = *b == 0x00;
+        self.registers.flags.n = true;
+        self.registers.flags.h = (*b & 0x0F) == 0x0F;
     }
 
     fn ld_b_imm8(&mut self, operand: &Operand) {

@@ -7,6 +7,30 @@ mod tests {
     use gbrs::gameboy::{Cpu, Interconnect};
 
     #[test]
+    fn dec_b() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x05]);
+
+        cpu.registers.b = 0x01;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x00, cpu.registers.b);
+        assert_eq!(true, cpu.registers.flags.zero);
+        assert_eq!(false, cpu.registers.flags.h);
+    }
+
+    #[test]
+    fn dec_b_2() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x05]);
+
+        cpu.registers.b = 0x00;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xFF, cpu.registers.b);
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.h);
+    }
+
+    #[test]
     fn xor_a_xors_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF]);
 
