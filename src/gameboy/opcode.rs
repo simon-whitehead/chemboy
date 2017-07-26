@@ -32,7 +32,7 @@ pub struct OpCode {
     pub code: u8,
     pub mnemonic: &'static str,
     pub length: u8,
-    pub time: u8,
+    pub cycles: u8,
     pub argument_type: ArgumentType,
 }
 
@@ -55,34 +55,34 @@ static OpCodes: [OpCode; 5] = [OpCode {
                                    code: 0x31,
                                    mnemonic: "LD SP, {imm16}",
                                    length: 3,
-                                   time: 3,
+                                   cycles: 12,
                                    argument_type: ArgumentType::Imm16,
                                },
                                OpCode {
                                    code: 0x21,
                                    mnemonic: "LD HL, {imm16}",
                                    length: 3,
-                                   time: 3,
+                                   cycles: 12,
                                    argument_type: ArgumentType::Imm16,
                                },
                                OpCode {
                                    code: 0x32,
                                    mnemonic: "LD (HLD), A",
                                    length: 1,
-                                   time: 2,
+                                   cycles: 8,
                                    argument_type: ArgumentType::Implied,
                                },
                                OpCode {
                                    code: 0xAF,
                                    mnemonic: "XOR A",
                                    length: 1,
-                                   time: 1,
+                                   cycles: 4,
                                    argument_type: ArgumentType::Implied,
                                },
                                OpCode {
                                    code: 0xC3,
                                    mnemonic: "JP {imm16}",
                                    length: 3,
-                                   time: 4,
+                                   cycles: 12,
                                    argument_type: ArgumentType::Imm16,
                                }];

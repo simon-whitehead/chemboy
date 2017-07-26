@@ -7,6 +7,8 @@ use gameboy::Interconnect;
 use gameboy::memory_map;
 use gameboy::opcode::{OpCode, Operand, ArgumentType};
 
+const MAX_CYCLES: usize = 69905;
+
 pub struct Cpu {
     rom: Vec<u8>,
     pub registers: registers::Registers,
@@ -30,7 +32,16 @@ impl Cpu {
         }
     }
 
-    pub fn step(&mut self, interconnect: &Interconnect) {
+    pub fn cycle(&mut self, interconnect: &Interconnect) {
+        let mut cycles = 0;
+
+        while cycles < MAX_CYCLES {
+            let c = self.step(interconnect);
+            cycles += c as usize;
+        }
+    }
+
+    pub fn step(&mut self, interconnect: &Interconnect) -> u8 {
         let byte = self.rom[self.registers.pc];
         println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
         self.registers.pc += 1;
@@ -50,11 +61,13 @@ impl Cpu {
                            self.registers.pc)
                 }
             }
-        } else {
-            panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-                   byte,
-                   self.registers.pc)
+
+            return opcode.cycles;
         }
+
+        panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+               byte,
+               self.registers.pc);
     }
 
     fn ld_hl_imm16(&mut self, operand: &Operand) {
