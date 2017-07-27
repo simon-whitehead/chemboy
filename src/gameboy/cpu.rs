@@ -23,11 +23,13 @@ impl Cpu {
     }
 
     fn get_operand_from_opcode(&self, interconnect: &Interconnect, opcode: &OpCode) -> Operand {
+        let operand_start = self.registers.pc + 0x01;
+
         match opcode.argument_type {
             ArgumentType::Implied => Operand::None,
-            ArgumentType::Imm8 => Operand::Imm8(self.rom[self.registers.pc]),
+            ArgumentType::Imm8 => Operand::Imm8(self.rom[operand_start]),
             ArgumentType::Imm16 => {
-                Operand::Imm16(LittleEndian::read_u16(&self.rom[self.registers.pc..]))
+                Operand::Imm16(LittleEndian::read_u16(&self.rom[operand_start..]))
             }
             _ => panic!("Unknown opcode argument type"),
         }
@@ -45,7 +47,6 @@ impl Cpu {
     pub fn step(&mut self, interconnect: &mut Interconnect) -> u8 {
         let byte = self.rom[self.registers.pc];
         println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
-        self.registers.pc += 1;
 
         if let Some(opcode) = OpCode::from_byte(byte) {
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
@@ -56,24 +57,30 @@ impl Cpu {
                 ("DEC B", ArgumentType::Implied) => self.dec_b(),
                 ("LD B, {imm8}", ArgumentType::Imm8) => self.ld_b_imm8(&operand),
                 ("LD C, {imm8}", ArgumentType::Imm8) => self.ld_c_imm8(&operand),
+                ("JR NZ, {imm8}", ArgumentType::Imm8) => self.jr_nz_imm8(&operand),
                 ("LD HL, {imm16}", ArgumentType::Imm16) => self.ld_hl_imm16(&operand),
                 ("LD (HLD), A", ArgumentType::Implied) => self.ld_hld_a(interconnect),
                 ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
                 ("XOR A", ArgumentType::Implied) => self.xor_a(),
                 _ => {
-                    panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
-                           opcode.code,
-                           self.registers.pc)
+                    panic!(
+                        "Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
+                        opcode.code,
+                        self.registers.pc
+                    )
                 }
             }
 
             return opcode.cycles;
         }
 
-        panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-               byte,
-               self.registers.pc);
+        panic!(
+            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+            byte,
+            self.registers.pc
+        );
     }
+
     fn dec_b(&mut self) {
         let b = &mut self.registers.b;
         *b = b.wrapping_sub(0x01);
@@ -91,6 +98,12 @@ impl Cpu {
     fn ld_c_imm8(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
         self.registers.c = val;
+    }
+
+    fn jr_nz_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        println!("Jumping back {} bytes", val as i8);
+        self.relative_jump(val);
     }
 
     fn ld_hl_imm16(&mut self, operand: &Operand) {
@@ -115,5 +128,15 @@ impl Cpu {
         self.registers.flags.n = false;
         self.registers.flags.h = false;
         self.registers.flags.cy = false;
+    }
+
+    fn relative_jump(&mut self, offset: u8) {
+        // If the sign bit is there, negate the PC by the difference
+        // between 256 and the offset
+        if offset & 0x80 == 0x80 {
+            self.registers.pc -= 0x100 - offset as usize;
+        } else {
+            self.registers.pc += offset as usize;
+        }
     }
 }

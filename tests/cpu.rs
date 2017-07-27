@@ -41,6 +41,21 @@ mod tests {
     }
 
     #[test]
+    fn jr_nz_imm8() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF 0x20 0xFF]);
+
+        cpu.step(&mut interconnect);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0, cpu.registers.pc);
+
+        cpu.registers.a = 0xFF;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0, cpu.registers.a);
+    }
+
+    #[test]
     fn ld_hl_imm16() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x21 0x5B 0x3A]);
 
