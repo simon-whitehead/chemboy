@@ -25,6 +25,7 @@ fn main() {
     let rom = matches.value_of("rom").unwrap();
     let rom_data = load_rom(rom).unwrap();
     let mut gameboy = gameboy::GameBoy::new(false, rom_data);
+    println!("Loading game: {}", gameboy.game_title);
 
     'init: loop {
         match gameboy.run() {

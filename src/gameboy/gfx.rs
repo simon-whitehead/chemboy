@@ -1,3 +1,4 @@
+use std::ops::Range;
 
 pub struct Gfx {
     pub ram: [u8; 8192],
@@ -23,5 +24,9 @@ impl Gfx {
         let result: u16 = ((h as u16) << 8) | l as u16;
 
         result
+    }
+
+    pub fn read_bytes(&self, r: Range<u16>) -> &[u8] {
+        &self.ram[r.start as usize..r.end as usize]
     }
 }

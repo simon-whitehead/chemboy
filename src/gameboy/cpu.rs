@@ -18,6 +18,10 @@ impl Cpu {
         Cpu { registers: registers::Registers::new(gameboy_color) }
     }
 
+    pub fn reset(&mut self) {
+        self.registers.pc = 0x100;
+    }
+
     fn get_operand_from_opcode(&self, interconnect: &Interconnect, opcode: &OpCode) -> Operand {
         let operand_start = self.registers.pc + 0x01;
 

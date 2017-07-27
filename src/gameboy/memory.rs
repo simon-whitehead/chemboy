@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use byteorder::{ByteOrder, LittleEndian};
 
 pub struct Memory {
@@ -17,6 +19,10 @@ impl Memory {
     pub fn read_u16(&self, addr: u16) -> u16 {
         let addr = addr as usize;
         LittleEndian::read_u16(&self.ram[addr..])
+    }
+
+    pub fn read_bytes(&self, r: Range<u16>) -> &[u8] {
+        &self.ram[r.start as usize..r.end as usize]
     }
 
     pub fn write_u8(&mut self, addr: u16, value: u8) {

@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use byteorder::{ByteOrder, LittleEndian};
 
 use gameboy::{Gfx, Memory};
@@ -46,6 +48,17 @@ impl Interconnect {
             Address::CartRomOtherBank(addr) => self.rom[addr as usize],
             Address::Gfx(value) => self.gfx.read_u8(value),
             _ => panic!("Unable to read address: {:#X}", addr),
+        }
+    }
+
+    pub fn read_bytes(&self, r: Range<u16>) -> &[u8] {
+        match memory_map::map_address(r.start) {
+            Address::Ram(addr) |
+            Address::RamShadow(addr) => self.ram.read_bytes(r),
+            Address::CartRom(addr) |
+            Address::CartRomOtherBank(addr) => &self.rom[r.start as usize .. r.end as usize],
+            Address::Gfx(value) => self.gfx.read_bytes(r),
+            _ => panic!("Unable to read address range: {:?}", r),
         }
     }
 
