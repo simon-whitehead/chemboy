@@ -8,7 +8,7 @@ pub struct Registers {
     pub h: u8,
     pub l: u8,
 
-    pub pc: usize,
+    pub pc: u16,
     pub sp: usize,
 
     pub flags: Flags,
@@ -40,7 +40,7 @@ impl Registers {
     }
 
     pub fn set_pc(&mut self, addr: u16) {
-        self.pc = addr as usize;
+        self.pc = addr;
     }
 
     pub fn get_hl(&self) -> u16 {

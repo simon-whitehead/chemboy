@@ -97,6 +97,6 @@ mod tests {
     }
 
     fn create_cpu(rom: Vec<u8>) -> (Cpu, Interconnect) {
-        (Cpu::new(false, rom), Interconnect::new())
+        (Cpu::new(false), Interconnect::with_rom(rom.into_boxed_slice()))
     }
 }

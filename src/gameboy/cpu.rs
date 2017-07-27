@@ -10,16 +10,12 @@ use gameboy::opcode::{OpCode, Operand, ArgumentType};
 const MAX_CYCLES: usize = 69905;
 
 pub struct Cpu {
-    rom: Vec<u8>,
     pub registers: registers::Registers,
 }
 
 impl Cpu {
-    pub fn new(gameboy_color: bool, rom: Vec<u8>) -> Cpu {
-        Cpu {
-            rom: rom,
-            registers: registers::Registers::new(gameboy_color),
-        }
+    pub fn new(gameboy_color: bool) -> Cpu {
+        Cpu { registers: registers::Registers::new(gameboy_color) }
     }
 
     fn get_operand_from_opcode(&self, interconnect: &Interconnect, opcode: &OpCode) -> Operand {
@@ -27,10 +23,8 @@ impl Cpu {
 
         match opcode.argument_type {
             ArgumentType::Implied => Operand::None,
-            ArgumentType::Imm8 => Operand::Imm8(self.rom[operand_start]),
-            ArgumentType::Imm16 => {
-                Operand::Imm16(LittleEndian::read_u16(&self.rom[operand_start..]))
-            }
+            ArgumentType::Imm8 => Operand::Imm8(interconnect.read_byte(operand_start)),
+            ArgumentType::Imm16 => Operand::Imm16(interconnect.read_u16(operand_start)),
             _ => panic!("Unknown opcode argument type"),
         }
     }
@@ -45,13 +39,13 @@ impl Cpu {
     }
 
     pub fn step(&mut self, interconnect: &mut Interconnect) -> u8 {
-        let byte = self.rom[self.registers.pc];
+        let byte = interconnect.read_byte(self.registers.pc);
         println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
 
         if let Some(opcode) = OpCode::from_byte(byte) {
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            self.registers.pc += opcode.length as usize - 1;
+            self.registers.pc += opcode.length - 1;
 
             match (opcode.mnemonic, opcode.argument_type) {
                 ("DEC B", ArgumentType::Implied) => self.dec_b(),
@@ -63,22 +57,18 @@ impl Cpu {
                 ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
                 ("XOR A", ArgumentType::Implied) => self.xor_a(),
                 _ => {
-                    panic!(
-                        "Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
-                        opcode.code,
-                        self.registers.pc
-                    )
+                    panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
+                           opcode.code,
+                           self.registers.pc)
                 }
             }
 
             return opcode.cycles;
         }
 
-        panic!(
-            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-            byte,
-            self.registers.pc
-        );
+        panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+               byte,
+               self.registers.pc);
     }
 
     fn dec_b(&mut self) {
@@ -134,9 +124,9 @@ impl Cpu {
         // If the sign bit is there, negate the PC by the difference
         // between 256 and the offset
         if offset & 0x80 == 0x80 {
-            self.registers.pc -= 0x100 - offset as usize;
+            self.registers.pc -= 0x100 - offset as u16;
         } else {
-            self.registers.pc += offset as usize;
+            self.registers.pc += offset as u16;
         }
     }
 }
