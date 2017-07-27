@@ -49,13 +49,14 @@ impl Cpu {
         if let Some(opcode) = OpCode::from_byte(byte) {
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            self.registers.pc += opcode.length - 1;
+            self.registers.pc += opcode.length;
 
             match (opcode.mnemonic, opcode.argument_type) {
+                ("NOP", ArgumentType::Implied) => (),
                 ("DEC B", ArgumentType::Implied) => self.dec_b(),
                 ("LD B, {imm8}", ArgumentType::Imm8) => self.ld_b_imm8(&operand),
                 ("LD C, {imm8}", ArgumentType::Imm8) => self.ld_c_imm8(&operand),
-                ("JR NZ, {imm8}", ArgumentType::Imm8) => self.jr_nz_imm8(&operand),
+                ("JR NZ, {imm8}", ArgumentType::Imm8) => self.jr_nz_imm8(&operand, opcode.length),
                 ("LD HL, {imm16}", ArgumentType::Imm16) => self.ld_hl_imm16(&operand),
                 ("LD (HLD), A", ArgumentType::Implied) => self.ld_hld_a(interconnect),
                 ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
@@ -94,10 +95,12 @@ impl Cpu {
         self.registers.c = val;
     }
 
-    fn jr_nz_imm8(&mut self, operand: &Operand) {
-        let val = operand.unwrap_imm8();
-        println!("Jumping back {} bytes", val as i8);
-        self.relative_jump(val);
+    fn jr_nz_imm8(&mut self, operand: &Operand, len: u16) {
+        let val = operand.unwrap_imm8() - len as u8;
+
+        if self.registers.flags.zero == false {
+            self.relative_jump(val);
+        }
     }
 
     fn ld_hl_imm16(&mut self, operand: &Operand) {

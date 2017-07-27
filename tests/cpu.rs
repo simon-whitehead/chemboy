@@ -45,6 +45,7 @@ mod tests {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF 0x20 0xFF]);
 
         cpu.step(&mut interconnect);
+        cpu.registers.flags.zero = false;
         cpu.step(&mut interconnect);
 
         assert_eq!(0, cpu.registers.pc);
