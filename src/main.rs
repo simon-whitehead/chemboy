@@ -13,19 +13,22 @@ fn main() {
         .version("0.0.0.1")
         .author("Simon Whitehead")
         .about("A GameBoy and GameBoy Colour emulator written in Rust")
-        .arg(Arg::with_name("rom")
-            .short("r")
-            .long("rom")
-            .value_name("ROM_PATH")
-            .required(true)
-            .help("Path to a Gameboy or Gameboy Color ROM")
-            .takes_value(true))
+        .arg(
+            Arg::with_name("rom")
+                .short("r")
+                .long("rom")
+                .value_name("ROM_PATH")
+                .required(true)
+                .help("Path to a Gameboy or Gameboy Color ROM")
+                .takes_value(true),
+        )
         .get_matches();
 
     let rom = matches.value_of("rom").unwrap();
     let rom_data = load_rom(rom).unwrap();
-    let mut gameboy = gameboy::GameBoy::new(false, rom_data);
-    println!("Loading game: {}", gameboy.game_title);
+    let cart = gameboy::Cartridge::with_rom(rom_data);
+    let mut gameboy = gameboy::GameBoy::new(false, cart);
+    println!("Loading game: {}", gameboy.cart_details().game_title);
 
     'init: loop {
         match gameboy.run() {

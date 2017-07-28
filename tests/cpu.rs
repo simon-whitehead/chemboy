@@ -4,7 +4,7 @@ extern crate gbrs;
 #[cfg(test)]
 mod tests {
 
-    use gbrs::gameboy::{Cpu, Interconnect};
+    use gbrs::gameboy::{Cartridge, Cpu, Interconnect};
 
     #[test]
     fn dec_b() {
@@ -98,6 +98,7 @@ mod tests {
     }
 
     fn create_cpu(rom: Vec<u8>) -> (Cpu, Interconnect) {
-        (Cpu::new(false), Interconnect::with_rom(rom.into_boxed_slice()))
+        let cart = Cartridge::with_rom(rom);
+        (Cpu::new(false), Interconnect::with_cart(cart))
     }
 }

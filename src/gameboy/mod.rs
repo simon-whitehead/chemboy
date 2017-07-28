@@ -1,6 +1,7 @@
 #[macro_use]
 mod macros;
 
+mod cartridge;
 mod cpu;
 mod gameboy;
 mod gfx;
@@ -11,6 +12,7 @@ mod registers;
 
 pub mod opcode;
 
+pub use self::cartridge::{Cartridge, CartridgeDetails};
 pub use self::cpu::Cpu;
 pub use self::gameboy::GameBoy;
 pub use self::gfx::Gfx;

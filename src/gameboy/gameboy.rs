@@ -1,19 +1,17 @@
-use ::gameboy::cpu;
-use ::gameboy::interconnect::Interconnect;
+use gameboy::cartridge::{Cartridge, CartridgeDetails};
+use gameboy::cpu;
+use gameboy::interconnect::Interconnect;
 
 pub struct GameBoy {
-    pub game_title: String,
-
     cpu: cpu::Cpu,
     interconnect: Interconnect,
 }
 
 impl GameBoy {
-    pub fn new(gameboy_color: bool, rom: Vec<u8>) -> GameBoy {
+    pub fn new(gameboy_color: bool, cart: Cartridge) -> GameBoy {
         let mut gb = GameBoy {
             cpu: cpu::Cpu::new(gameboy_color),
-            interconnect: Interconnect::with_rom(rom.into_boxed_slice()),
-            game_title: "Unknown".into()
+            interconnect: Interconnect::with_cart(cart),
         };
         gb.reset();
         gb
@@ -27,11 +25,9 @@ impl GameBoy {
 
     pub fn reset(&mut self) {
         self.cpu.reset();
-        self.parse_game_title();
     }
 
-    fn parse_game_title(&mut self) {
-        let game_title_bytes = self.interconnect.read_bytes(0x134..0x142);
-        self.game_title = String::from_utf8_lossy(&game_title_bytes).into();
+    pub fn cart_details(&self) -> CartridgeDetails {
+        self.interconnect.cart_details()
     }
 }
