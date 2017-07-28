@@ -44,12 +44,39 @@ impl Registers {
         self.pc = addr;
     }
 
+    pub fn get_af(&self) -> u16 {
+        ((self.a as u16) << 0x08) | self.f as u16
+    }
+
+    pub fn set_af(&mut self, val: u16) {
+        self.a = (val >> 0x08) as u8;
+        self.f = (val & 0xFF) as u8;
+    }
+
+    pub fn get_bc(&self) -> u16 {
+        ((self.b as u16) << 0x08) | self.c as u16
+    }
+
+    pub fn set_bc(&mut self, val: u16) {
+        self.b = (val >> 0x08) as u8;
+        self.c = (val & 0xFF) as u8;
+    }
+
+    pub fn get_de(&self) -> u16 {
+        ((self.d as u16) << 0x08) | self.e as u16
+    }
+
+    pub fn set_de(&mut self, val: u16) {
+        self.d = (val >> 0x08) as u8;
+        self.e = (val & 0xFF) as u8;
+    }
+
     pub fn get_hl(&self) -> u16 {
         ((self.h as u16) << 0x08) | self.l as u16
     }
 
     pub fn set_hl(&mut self, val: u16) {
-        self.h = ((val >> 0x08) & 0xFF) as u8;
+        self.h = (val >> 0x08) as u8;
         self.l = (val & 0xFF) as u8;
     }
 }

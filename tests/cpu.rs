@@ -90,10 +90,10 @@ mod tests {
 
         cpu.registers.a = 0xE5;
         cpu.registers.set_hl(0xC000);
-        interconnect.write_byte(0xC000, 0xE3);
+        interconnect.write_u8(0xC000, 0xE3);
         cpu.step(&mut interconnect);
 
-        assert_eq!(0xE5, interconnect.read_byte(0xC000));
+        assert_eq!(0xE5, interconnect.read_u8(0xC000));
         assert_eq!(0xBFFF, cpu.registers.get_hl());
     }
 

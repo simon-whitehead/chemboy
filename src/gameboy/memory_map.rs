@@ -1,15 +1,12 @@
 
-const CART_ROM_BANK_ZERO_START: u16 = 0x000;
-const CART_ROM_BANK_ZERO_END: u16 = 0x3FFF;
+const CART_ROM_START: u16 = 0x000;
+const CART_ROM_END: u16 = 0x7FFF;
 
 const BIOS_START: u16 = 0x0000;
 const BIOS_END: u16 = 0x00FF;
 
 const CART_HEADER_START: u16 = 0x0100;
 const CART_HEADER_END: u16 = 0x014F;
-
-const CART_ROM_OTHER_BANK_START: u16 = 0x4000;
-const CART_ROM_OTHER_BANK_END: u16 = 0x7FFF;
 
 const GFX_RAM_START: u16 = 0x8000;
 const GFX_RAM_END: u16 = 0x9FFF;
@@ -49,24 +46,22 @@ pub enum Address {
 
 pub fn map_address(virtual_address: u16) -> Address {
     match virtual_address {
-        CART_RAM_START ... CART_RAM_END => Address::CartRam(virtual_address - CART_RAM_START),
-        CART_ROM_BANK_ZERO_START...CART_ROM_BANK_ZERO_END => {
-            Address::CartRom(virtual_address - CART_ROM_BANK_ZERO_START)
-        }
+        CART_ROM_START...CART_ROM_END => Address::CartRom(virtual_address - CART_ROM_START),
+        CART_RAM_START...CART_RAM_END => Address::CartRam(virtual_address - CART_RAM_START),
         GFX_RAM_START...GFX_RAM_END => Address::Gfx(virtual_address - GFX_RAM_START),
         RAM_START...RAM_END => Address::Ram(virtual_address - RAM_START),
+        IO_START...IO_END => Address::Io((virtual_address - IO_START) as u8),
         _ => panic!("Address {:#X} outside valid memory.", virtual_address),
     }
 }
 
 pub fn map_address_unwrap(virtual_address: u16) -> u16 {
     match virtual_address {
-        CART_RAM_START ... CART_RAM_END => virtual_address - CART_RAM_START,
-        CART_ROM_BANK_ZERO_START...CART_ROM_BANK_ZERO_END => {
-            virtual_address - CART_ROM_BANK_ZERO_START
-        }
+        CART_RAM_START...CART_RAM_END => virtual_address - CART_RAM_START,
+        CART_ROM_START...CART_ROM_END => virtual_address - CART_ROM_START,
         GFX_RAM_START...GFX_RAM_END => virtual_address - GFX_RAM_START,
         RAM_START...RAM_END => virtual_address - RAM_START,
+        IO_START...IO_END => (virtual_address - IO_START),
         _ => panic!("Address {:#X} outside valid memory.", virtual_address),
     }
 }

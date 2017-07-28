@@ -24,7 +24,7 @@ impl GameBoy {
     }
 
     pub fn reset(&mut self) {
-        self.cpu.reset();
+        self.cpu.reset(&mut self.interconnect);
     }
 
     pub fn cart_details(&self) -> CartridgeDetails {

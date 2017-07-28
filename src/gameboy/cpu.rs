@@ -18,8 +18,44 @@ impl Cpu {
         Cpu { registers: registers::Registers::new(gameboy_color) }
     }
 
-    pub fn reset(&mut self) {
+    pub fn reset(&mut self, interconnect: &mut Interconnect) {
         self.registers.pc = 0x100;
+        self.registers.set_af(0x01B0);
+        self.registers.set_bc(0x0013);
+        self.registers.set_de(0x00D8);
+        self.registers.set_hl(0x014D);
+
+        interconnect.write_u8(0xFF05, 0x00);
+        interconnect.write_u8(0xFF06, 0x00);
+        interconnect.write_u8(0xFF07, 0x00);
+        interconnect.write_u8(0xFF10, 0x80);
+        interconnect.write_u8(0xFF11, 0xBF);
+        interconnect.write_u8(0xFF12, 0xF3);
+        interconnect.write_u8(0xFF14, 0xBF);
+        interconnect.write_u8(0xFF16, 0x3F);
+        interconnect.write_u8(0xFF17, 0x00);
+        interconnect.write_u8(0xFF19, 0xBF);
+        interconnect.write_u8(0xFF1A, 0x7F);
+        interconnect.write_u8(0xFF1B, 0xFF);
+        interconnect.write_u8(0xFF1C, 0x9F);
+        interconnect.write_u8(0xFF1E, 0xBF);
+        interconnect.write_u8(0xFF20, 0xFF);
+        interconnect.write_u8(0xFF21, 0x00);
+        interconnect.write_u8(0xFF22, 0x00);
+        interconnect.write_u8(0xFF23, 0xBF);
+        interconnect.write_u8(0xFF24, 0x77);
+        interconnect.write_u8(0xFF25, 0xF3);
+        interconnect.write_u8(0xFF26, 0xF1);
+        interconnect.write_u8(0xFF40, 0x91);
+        interconnect.write_u8(0xFF42, 0x00);
+        interconnect.write_u8(0xFF43, 0x00);
+        interconnect.write_u8(0xFF45, 0x00);
+        interconnect.write_u8(0xFF47, 0xFC);
+        interconnect.write_u8(0xFF48, 0xFF);
+        interconnect.write_u8(0xFF49, 0xFF);
+        interconnect.write_u8(0xFF4A, 0x00);
+        interconnect.write_u8(0xFF4B, 0x00);
+        interconnect.write_u8(0xFFFF, 0x00);
     }
 
     fn get_operand_from_opcode(&self, interconnect: &Interconnect, opcode: &OpCode) -> Operand {
@@ -27,7 +63,7 @@ impl Cpu {
 
         match opcode.argument_type {
             ArgumentType::Implied => Operand::None,
-            ArgumentType::Imm8 => Operand::Imm8(interconnect.read_byte(operand_start)),
+            ArgumentType::Imm8 => Operand::Imm8(interconnect.read_u8(operand_start)),
             ArgumentType::Imm16 => Operand::Imm16(interconnect.read_u16(operand_start)),
             _ => panic!("Unknown opcode argument type"),
         }
@@ -43,7 +79,7 @@ impl Cpu {
     }
 
     pub fn step(&mut self, interconnect: &mut Interconnect) -> u8 {
-        let byte = interconnect.read_byte(self.registers.pc);
+        let byte = interconnect.read_u8(self.registers.pc);
         println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
 
         if let Some(opcode) = OpCode::from_byte(byte) {
@@ -56,7 +92,9 @@ impl Cpu {
                 ("DEC B", ArgumentType::Implied) => self.dec_b(),
                 ("LD B, {imm8}", ArgumentType::Imm8) => self.ld_b_imm8(&operand),
                 ("LD C, {imm8}", ArgumentType::Imm8) => self.ld_c_imm8(&operand),
-                ("JR NZ, {imm8}", ArgumentType::Imm8) => self.jr_nz_imm8(&operand, opcode.length),
+                ("JR NZ, {imm8}", ArgumentType::Imm8) => {
+                    self.jr_nz_imm8(&operand, opcode.length, interconnect)
+                }
                 ("LD HL, {imm16}", ArgumentType::Imm16) => self.ld_hl_imm16(&operand),
                 ("LD (HLD), A", ArgumentType::Implied) => self.ld_hld_a(interconnect),
                 ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
@@ -95,8 +133,12 @@ impl Cpu {
         self.registers.c = val;
     }
 
-    fn jr_nz_imm8(&mut self, operand: &Operand, len: u16) {
-        let val = operand.unwrap_imm8() - len as u8;
+    fn jr_nz_imm8(&mut self, operand: &Operand, len: u16, interconnect: &Interconnect) {
+        let from = operand.unwrap_imm8();
+        if len > from as u16 {
+            interconnect.cart.as_ref().unwrap().rom.dump("/Users/Simon/crash_dump.bin");
+        }
+        let val = from - len as u8;
 
         if self.registers.flags.zero == false {
             self.relative_jump(val);
@@ -110,7 +152,10 @@ impl Cpu {
 
     fn ld_hld_a(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
-        interconnect.write_byte(addr, self.registers.a);
+        println!("LD (HLD), A: writing {:02X} to {:04X}",
+                 self.registers.a,
+                 addr);
+        interconnect.write_u8(addr, self.registers.a);
         self.registers.set_hl(addr - 0x01);
     }
 
