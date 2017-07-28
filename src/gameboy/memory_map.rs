@@ -14,8 +14,8 @@ const CART_ROM_OTHER_BANK_END: u16 = 0x7FFF;
 const GFX_RAM_START: u16 = 0x8000;
 const GFX_RAM_END: u16 = 0x9FFF;
 
-const EXTERNAL_RAM_START: u16 = 0xA000;
-const EXTERNAL_RAM_END: u16 = 0xBFFF;
+const CART_RAM_START: u16 = 0xA000;
+const CART_RAM_END: u16 = 0xBFFF;
 
 const RAM_START: u16 = 0xC000;
 const RAM_END: u16 = 0xDFFF;
@@ -36,6 +36,7 @@ pub enum Address {
     Bios(u8),
     CartRom(u16),
     CartHeader(u16),
+    CartRam(u16),
     CartRomOtherBank(u16),
     Gfx(u16),
     ExternalRam(u16),
@@ -48,6 +49,7 @@ pub enum Address {
 
 pub fn map_address(virtual_address: u16) -> Address {
     match virtual_address {
+        CART_RAM_START ... CART_RAM_END => Address::CartRam(virtual_address - CART_RAM_START),
         CART_ROM_BANK_ZERO_START...CART_ROM_BANK_ZERO_END => {
             Address::CartRom(virtual_address - CART_ROM_BANK_ZERO_START)
         }
@@ -59,6 +61,7 @@ pub fn map_address(virtual_address: u16) -> Address {
 
 pub fn map_address_unwrap(virtual_address: u16) -> u16 {
     match virtual_address {
+        CART_RAM_START ... CART_RAM_END => virtual_address - CART_RAM_START,
         CART_ROM_BANK_ZERO_START...CART_ROM_BANK_ZERO_END => {
             virtual_address - CART_ROM_BANK_ZERO_START
         }

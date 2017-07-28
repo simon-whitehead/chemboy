@@ -35,10 +35,13 @@ impl Interconnect {
     }
 
     pub fn write_byte(&mut self, addr: u16, byte: u8) {
+        let cart = self.cart.as_mut().expect("Cartridge is empty");
+
         match memory_map::map_address(addr) {
             Address::Ram(a) |
             Address::RamShadow(a) => self.ram.write_u8(a, byte),
-            Address::Gfx(value) => self.gfx.write_u8(value, byte),
+            Address::Gfx(a) => self.gfx.write_u8(a, byte),
+            Address::CartRam(a) => cart.ram.write_u8(a, byte),
             _ => {
                 panic!(
                     "Unable to write byte to: {:#X}, invalid memory region.",
@@ -57,6 +60,7 @@ impl Interconnect {
             Address::CartRom(addr) |
             Address::CartRomOtherBank(addr) => cart[addr as usize],
             Address::Gfx(value) => self.gfx.read_u8(value),
+            Address::CartRam(a) => cart.ram.read_u8(a),
             _ => panic!("Unable to read address: {:#X}", addr),
         }
     }
@@ -65,11 +69,12 @@ impl Interconnect {
         let cart = self.cart.as_ref().expect("Cartridge is empty");
 
         match memory_map::map_address(r.start) {
-            Address::Ram(addr) |
-            Address::RamShadow(addr) => self.ram.read_bytes(r),
-            Address::CartRom(addr) |
-            Address::CartRomOtherBank(addr) => &cart[r.start as usize..r.end as usize],
-            Address::Gfx(value) => self.gfx.read_bytes(r),
+            Address::Ram(_) |
+            Address::RamShadow(_) => self.ram.read_bytes(r),
+            Address::CartRom(_) |
+            Address::CartRomOtherBank(_) => &cart[r.start as usize..r.end as usize],
+            Address::Gfx(_) => self.gfx.read_bytes(r),
+            Address::CartRam(_) => cart.ram.read_bytes(r),
             _ => panic!("Unable to read address range: {:?}", r),
         }
     }
@@ -83,6 +88,7 @@ impl Interconnect {
             Address::CartRom(addr) |
             Address::CartRomOtherBank(addr) => LittleEndian::read_u16(&cart[addr as usize..]),
             Address::Gfx(value) => self.gfx.read_u16(value),
+            Address::CartRam(a) => cart.ram.read_u16(a),
             _ => panic!("Unable to read address: {:#X}", addr),
         }
     }
