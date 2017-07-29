@@ -92,6 +92,7 @@ impl Cpu {
                 ("NOP", ArgumentType::Implied) => (),
                 ("DEC B", ArgumentType::Implied) => self.dec_b(),
                 ("LD B, {imm8}", ArgumentType::Imm8) => self.ld_b_imm8(&operand),
+                ("DEC C", ArgumentType::Implied) => self.dec_c(),
                 ("LD C, {imm8}", ArgumentType::Imm8) => self.ld_c_imm8(&operand),
                 ("JR NZ, {imm8}", ArgumentType::Imm8) => self.jr_nz_imm8(&operand, interconnect),
                 ("LD HL, {imm16}", ArgumentType::Imm16) => self.ld_hl_imm16(&operand),
@@ -121,6 +122,14 @@ impl Cpu {
         self.registers.flags.h = (self.registers.b & 0x0F) == 0x0F;
     }
 
+    fn dec_c(&mut self) {
+        self.registers.c = self.registers.c.wrapping_sub(0x01);
+
+        self.registers.flags.zero = self.registers.c == 0x00;
+        self.registers.flags.n = true;
+        self.registers.flags.h = (self.registers.c & 0x0F) == 0x0F;
+    }
+
     fn ld_b_imm8(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
         self.registers.b = val;
@@ -135,9 +144,7 @@ impl Cpu {
         let offset = operand.unwrap_imm8();
 
         if self.registers.flags.zero == false {
-            println!("Jumping back {:02X} from {:04X}", offset, self.registers.pc);
             self.relative_jump(offset);
-            println!("Landed on {:04X}", self.registers.pc);
         }
     }
 
