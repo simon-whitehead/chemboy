@@ -58,7 +58,7 @@ impl Interconnect {
                 println!("err: tried to write to memory mapped I/O at {:04X} (not implemented yet)",
                          a)
             }
-            Address::Interrupt(a) => self.interrupt = byte,
+            Address::InterruptEnableRegister(a) => self.interrupt = byte,
             _ => {
                 panic!("Unable to write byte to: {:#X}, invalid memory region.",
                        addr)
@@ -81,7 +81,7 @@ impl Interconnect {
                 println!("err: tried to read from memory mapped I/O (not implemented yet)");
                 0
             }
-            Address::Interrupt(a) => self.interrupt,
+            Address::InterruptEnableRegister(a) => self.interrupt,
             _ => panic!("Unable to read address: {:#X}", addr),
         }
     }

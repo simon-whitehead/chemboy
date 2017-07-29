@@ -29,7 +29,7 @@ const IO_END: u16 = 0xFF7F;
 const ZRAM_START: u16 = 0xFF80;
 const ZRAM_END: u16 = 0xFFFE;
 
-const INTERRUPT: u16 = 0xFFFF;
+const INTERRUPT_ENABLE_REGISTER: u16 = 0xFFFF;
 
 pub enum Address {
     Bios(u8),
@@ -44,7 +44,7 @@ pub enum Address {
     SpriteInformation(u16),
     Io(u8),
     ZRam(u16),
-    Interrupt(u16),
+    InterruptEnableRegister(u16),
 }
 
 pub fn map_address(virtual_address: u16) -> Address {
@@ -55,7 +55,9 @@ pub fn map_address(virtual_address: u16) -> Address {
         RAM_START...RAM_END => Address::Ram(virtual_address - RAM_START),
         IO_START...IO_END => Address::Io((virtual_address - IO_START) as u8),
         ZRAM_START...ZRAM_END => Address::ZRam(virtual_address - ZRAM_START),
-        INTERRUPT => Address::Interrupt(virtual_address - INTERRUPT),
+        INTERRUPT_ENABLE_REGISTER => {
+            Address::InterruptEnableRegister(virtual_address - INTERRUPT_ENABLE_REGISTER)
+        }
         _ => panic!("Address {:#X} outside valid memory.", virtual_address),
     }
 }
@@ -68,7 +70,7 @@ pub fn map_address_unwrap(virtual_address: u16) -> u16 {
         RAM_START...RAM_END => virtual_address - RAM_START,
         IO_START...IO_END => (virtual_address - IO_START),
         ZRAM_START...ZRAM_END => (virtual_address - ZRAM_START),
-        INTERRUPT => virtual_address - INTERRUPT,
+        INTERRUPT_ENABLE_REGISTER => virtual_address - INTERRUPT_ENABLE_REGISTER,
         _ => panic!("Address {:#X} outside valid memory.", virtual_address),
     }
 }
