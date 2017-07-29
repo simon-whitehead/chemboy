@@ -98,6 +98,7 @@ impl Cpu {
                 ("LD HL, {imm16}", ArgumentType::Imm16) => self.ld_hl_imm16(&operand),
                 ("LD (HLD), A", ArgumentType::Implied) => self.ld_hld_a(interconnect),
                 ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
+                ("LD A, {imm8}", ArgumentType::Imm8) => self.ld_a_imm8(&operand),
                 ("XOR A", ArgumentType::Implied) => self.xor_a(),
                 _ => {
                     panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
@@ -128,6 +129,11 @@ impl Cpu {
         self.registers.flags.zero = self.registers.c == 0x00;
         self.registers.flags.n = true;
         self.registers.flags.h = (self.registers.c & 0x0F) == 0x0F;
+    }
+
+    fn ld_a_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        self.registers.a = val;
     }
 
     fn ld_b_imm8(&mut self, operand: &Operand) {

@@ -121,6 +121,16 @@ mod tests {
         assert_eq!(0xBFFF, cpu.registers.get_hl());
     }
 
+    #[test]
+    fn ld_a_imm8() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x3E 0xA3]);
+
+        cpu.registers.a = 0xE5;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xA3, cpu.registers.a);
+    }
+
     fn create_cpu(rom: Vec<u8>) -> (Cpu, Interconnect) {
         let cart = Cartridge::with_rom(rom);
         (Cpu::new(false), Interconnect::with_cart(cart))
