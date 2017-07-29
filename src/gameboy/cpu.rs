@@ -24,6 +24,7 @@ impl Cpu {
         self.registers.set_bc(0x0013);
         self.registers.set_de(0x00D8);
         self.registers.set_hl(0x014D);
+        self.registers.sp = 0xFFFE;
 
         interconnect.write_u8(0xFF05, 0x00);
         interconnect.write_u8(0xFF06, 0x00);
@@ -80,11 +81,11 @@ impl Cpu {
 
     pub fn step(&mut self, interconnect: &mut Interconnect) -> u8 {
         let byte = interconnect.read_u8(self.registers.pc);
-        println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
 
         if let Some(opcode) = OpCode::from_byte(byte) {
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
+            println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
             self.registers.pc += opcode.length;
 
             match (opcode.mnemonic, opcode.argument_type) {
@@ -92,9 +93,7 @@ impl Cpu {
                 ("DEC B", ArgumentType::Implied) => self.dec_b(),
                 ("LD B, {imm8}", ArgumentType::Imm8) => self.ld_b_imm8(&operand),
                 ("LD C, {imm8}", ArgumentType::Imm8) => self.ld_c_imm8(&operand),
-                ("JR NZ, {imm8}", ArgumentType::Imm8) => {
-                    self.jr_nz_imm8(&operand, opcode.length, interconnect)
-                }
+                ("JR NZ, {imm8}", ArgumentType::Imm8) => self.jr_nz_imm8(&operand, interconnect),
                 ("LD HL, {imm16}", ArgumentType::Imm16) => self.ld_hl_imm16(&operand),
                 ("LD (HLD), A", ArgumentType::Implied) => self.ld_hld_a(interconnect),
                 ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
@@ -115,12 +114,11 @@ impl Cpu {
     }
 
     fn dec_b(&mut self) {
-        let b = &mut self.registers.b;
-        *b = b.wrapping_sub(0x01);
+        self.registers.b = self.registers.b.wrapping_sub(0x01);
 
-        self.registers.flags.zero = *b == 0x00;
+        self.registers.flags.zero = self.registers.b == 0x00;
         self.registers.flags.n = true;
-        self.registers.flags.h = (*b & 0x0F) == 0x0F;
+        self.registers.flags.h = (self.registers.b & 0x0F) == 0x0F;
     }
 
     fn ld_b_imm8(&mut self, operand: &Operand) {
@@ -133,15 +131,13 @@ impl Cpu {
         self.registers.c = val;
     }
 
-    fn jr_nz_imm8(&mut self, operand: &Operand, len: u16, interconnect: &Interconnect) {
-        let from = operand.unwrap_imm8();
-        if len > from as u16 {
-            interconnect.cart.as_ref().unwrap().rom.dump("/Users/Simon/crash_dump.bin");
-        }
-        let val = from - len as u8;
+    fn jr_nz_imm8(&mut self, operand: &Operand, interconnect: &Interconnect) {
+        let offset = operand.unwrap_imm8();
 
         if self.registers.flags.zero == false {
-            self.relative_jump(val);
+            println!("Jumping back {:02X} from {:04X}", offset, self.registers.pc);
+            self.relative_jump(offset);
+            println!("Landed on {:04X}", self.registers.pc);
         }
     }
 
@@ -152,9 +148,6 @@ impl Cpu {
 
     fn ld_hld_a(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
-        println!("LD (HLD), A: writing {:02X} to {:04X}",
-                 self.registers.a,
-                 addr);
         interconnect.write_u8(addr, self.registers.a);
         self.registers.set_hl(addr - 0x01);
     }

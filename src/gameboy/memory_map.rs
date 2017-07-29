@@ -1,5 +1,5 @@
 
-const CART_ROM_START: u16 = 0x000;
+const CART_ROM_START: u16 = 0x0000;
 const CART_ROM_END: u16 = 0x7FFF;
 
 const BIOS_START: u16 = 0x0000;
@@ -26,8 +26,10 @@ const GFX_SPRITE_INFO_END: u16 = 0xFE9F;
 const IO_START: u16 = 0xFF00;
 const IO_END: u16 = 0xFF7F;
 
-const STACK_START: u16 = 0xFF80;
-const STACK_END: u16 = 0xFFFF;
+const ZRAM_START: u16 = 0xFF80;
+const ZRAM_END: u16 = 0xFFFE;
+
+const INTERRUPT: u16 = 0xFFFF;
 
 pub enum Address {
     Bios(u8),
@@ -41,7 +43,8 @@ pub enum Address {
     RamShadow(u16),
     SpriteInformation(u16),
     Io(u8),
-    Stack(u8),
+    ZRam(u16),
+    Interrupt(u16),
 }
 
 pub fn map_address(virtual_address: u16) -> Address {
@@ -51,6 +54,8 @@ pub fn map_address(virtual_address: u16) -> Address {
         GFX_RAM_START...GFX_RAM_END => Address::Gfx(virtual_address - GFX_RAM_START),
         RAM_START...RAM_END => Address::Ram(virtual_address - RAM_START),
         IO_START...IO_END => Address::Io((virtual_address - IO_START) as u8),
+        ZRAM_START...ZRAM_END => Address::ZRam(virtual_address - ZRAM_START),
+        INTERRUPT => Address::Interrupt(virtual_address - INTERRUPT),
         _ => panic!("Address {:#X} outside valid memory.", virtual_address),
     }
 }
@@ -62,6 +67,8 @@ pub fn map_address_unwrap(virtual_address: u16) -> u16 {
         GFX_RAM_START...GFX_RAM_END => virtual_address - GFX_RAM_START,
         RAM_START...RAM_END => virtual_address - RAM_START,
         IO_START...IO_END => (virtual_address - IO_START),
+        ZRAM_START...ZRAM_END => (virtual_address - ZRAM_START),
+        INTERRUPT => virtual_address - INTERRUPT,
         _ => panic!("Address {:#X} outside valid memory.", virtual_address),
     }
 }

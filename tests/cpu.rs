@@ -42,7 +42,7 @@ mod tests {
 
     #[test]
     fn jr_nz_imm8() {
-        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF 0x20 0xFF]);
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF 0x20 0xFD]);
 
         cpu.step(&mut interconnect);
         cpu.registers.flags.zero = false;
