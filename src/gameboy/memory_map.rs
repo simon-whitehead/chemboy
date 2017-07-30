@@ -42,7 +42,7 @@ pub enum Address {
     Ram(u16),
     RamShadow(u16),
     SpriteInformation(u16),
-    Io(u8),
+    Io(u16),
     ZRam(u16),
     InterruptEnableRegister(u16),
 }
@@ -53,7 +53,7 @@ pub fn map_address(virtual_address: u16) -> Address {
         CART_RAM_START...CART_RAM_END => Address::CartRam(virtual_address - CART_RAM_START),
         GFX_RAM_START...GFX_RAM_END => Address::Gfx(virtual_address - GFX_RAM_START),
         RAM_START...RAM_END => Address::Ram(virtual_address - RAM_START),
-        IO_START...IO_END => Address::Io((virtual_address - IO_START) as u8),
+        IO_START...IO_END => Address::Io(virtual_address - IO_START),
         ZRAM_START...ZRAM_END => Address::ZRam(virtual_address - ZRAM_START),
         INTERRUPT_ENABLE_REGISTER => {
             Address::InterruptEnableRegister(virtual_address - INTERRUPT_ENABLE_REGISTER)

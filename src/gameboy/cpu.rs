@@ -88,19 +88,20 @@ impl Cpu {
             println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
             self.registers.pc += opcode.length;
 
-            match (opcode.mnemonic, opcode.argument_type) {
-                ("NOP", ArgumentType::Implied) => (),
-                ("DEC B", ArgumentType::Implied) => self.dec_b(),
-                ("LD B, {imm8}", ArgumentType::Imm8) => self.ld_b_imm8(&operand),
-                ("DEC C", ArgumentType::Implied) => self.dec_c(),
-                ("LD C, {imm8}", ArgumentType::Imm8) => self.ld_c_imm8(&operand),
-                ("JR NZ, {imm8}", ArgumentType::Imm8) => self.jr_nz_imm8(&operand, interconnect),
-                ("LD HL, {imm16}", ArgumentType::Imm16) => self.ld_hl_imm16(&operand),
-                ("LD (HLD), A", ArgumentType::Implied) => self.ld_hld_a(interconnect),
-                ("JP {imm16}", ArgumentType::Imm16) => self.jp_imm16(&operand),
-                ("LD A, {imm8}", ArgumentType::Imm8) => self.ld_a_imm8(&operand),
-                ("XOR A", ArgumentType::Implied) => self.xor_a(),
-                ("DI", ArgumentType::Implied) => self.di(),
+            match opcode.code {
+                0x00 => (),
+                0x05 => self.dec_b(),
+                0x06 => self.ld_b_imm8(&operand),
+                0x0D => self.dec_c(),
+                0x0E => self.ld_c_imm8(&operand),
+                0x20 => self.jr_nz_imm8(&operand, interconnect),
+                0x21 => self.ld_hl_imm16(&operand),
+                0x32 => self.ld_hld_a(interconnect),
+                0x3E => self.ld_a_imm8(&operand),
+                0xAF => self.xor_a(),
+                0xC3 => self.jp_imm16(&operand),
+                0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
+                0xF3 => self.di(),
                 _ => {
                     panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
                            opcode.code,
@@ -151,12 +152,11 @@ impl Cpu {
         self.registers.c = val;
     }
 
-    fn jr_nz_imm8(&mut self, operand: &Operand, interconnect: &Interconnect) {
+    fn ld_ff00_imm8_a(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
         let offset = operand.unwrap_imm8();
-
-        if self.registers.flags.zero == false {
-            self.relative_jump(offset);
-        }
+        let addr = 0xFF00 as u16 + offset as u16;
+        interconnect.write_u8(addr, self.registers.a);
+        println!("Wrote: {:02X} to {:04X}", self.registers.a, addr);
     }
 
     fn ld_hl_imm16(&mut self, operand: &Operand) {
@@ -173,6 +173,14 @@ impl Cpu {
     fn jp_imm16(&mut self, operand: &Operand) {
         let addr = operand.unwrap_imm16();
         self.registers.set_pc(addr);
+    }
+
+    fn jr_nz_imm8(&mut self, operand: &Operand, interconnect: &Interconnect) {
+        let offset = operand.unwrap_imm8();
+
+        if self.registers.flags.zero == false {
+            self.relative_jump(offset);
+        }
     }
 
     fn xor_a(&mut self) {

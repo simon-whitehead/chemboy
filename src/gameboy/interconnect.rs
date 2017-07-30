@@ -8,11 +8,13 @@ use super::memory_map::{self, Address};
 
 const MAIN_MEM_SIZE: usize = 0x2000;
 const ZRAM_SIZE: usize = 0x7F;
+const MMAP_SIZE: usize = 0x7F;
 
 pub struct Interconnect {
     pub gfx: Gfx,
     pub ram: Memory,
     pub zram: Memory,
+    pub mmap_io: Memory,
     pub cart: Option<Cartridge>,
     pub interrupt: u8,
 }
@@ -23,6 +25,7 @@ impl Interconnect {
             gfx: Gfx::new(),
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
+            mmap_io: Memory::new(MMAP_SIZE),
             cart: None,
             interrupt: 0x00,
         }
@@ -33,6 +36,7 @@ impl Interconnect {
             gfx: Gfx::new(),
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
+            mmap_io: Memory::new(MMAP_SIZE),
             cart: Some(cart),
             interrupt: 0x00,
         }
@@ -54,10 +58,7 @@ impl Interconnect {
             Address::CartRam(a) => cart.ram.write_u8(a, byte),
             Address::CartRom(a) => cart.rom.write_u8(a, byte),
             Address::ZRam(a) => self.zram.write_u8(a, byte),
-            Address::Io(a) => {
-                println!("err: tried to write to memory mapped I/O at {:04X} (not implemented yet)",
-                         a)
-            }
+            Address::Io(a) => self.mmap_io.write_u8(a, byte),
             Address::InterruptEnableRegister(a) => self.interrupt = byte,
             _ => {
                 panic!("Unable to write byte to: {:#X}, invalid memory region.",
@@ -77,10 +78,7 @@ impl Interconnect {
             Address::Gfx(value) => self.gfx.read_u8(value),
             Address::CartRam(a) => cart.ram.read_u8(a),
             Address::ZRam(a) => self.zram.read_u8(a),
-            Address::Io(a) => {
-                println!("err: tried to read from memory mapped I/O (not implemented yet)");
-                0
-            }
+            Address::Io(a) => self.mmap_io.read_u8(a),
             Address::InterruptEnableRegister(a) => self.interrupt,
             _ => panic!("Unable to read address: {:#X}", addr),
         }
@@ -97,10 +95,7 @@ impl Interconnect {
             Address::Gfx(_) => self.gfx.read_bytes(r),
             Address::CartRam(_) => cart.ram.read_bytes(r),
             Address::ZRam(_) => self.zram.read_bytes(r),
-            Address::Io(a) => {
-                println!("err: tried to read from memory mapped I/O (not implemented yet)");
-                &[]
-            }
+            Address::Io(a) => self.mmap_io.read_bytes(r),
             _ => panic!("Unable to read address range: {:?}", r),
         }
     }
@@ -116,10 +111,7 @@ impl Interconnect {
             Address::Gfx(value) => self.gfx.read_u16(value),
             Address::CartRam(a) => cart.ram.read_u16(a),
             Address::ZRam(a) => self.zram.read_u16(a),
-            Address::Io(a) => {
-                println!("err: tried to read from memory mapped I/O (not implemented yet)");
-                0
-            }
+            Address::Io(a) => self.mmap_io.read_u16(a),
             _ => panic!("Unable to read address: {:#X}", addr),
         }
     }

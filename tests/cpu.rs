@@ -65,16 +65,6 @@ mod tests {
     }
 
     #[test]
-    fn xor_a_xors_a() {
-        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF]);
-
-        cpu.registers.a = 0xFF;
-        cpu.step(&mut interconnect);
-
-        assert_eq!(0, cpu.registers.a);
-    }
-
-    #[test]
     fn jr_nz_imm8() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF 0x20 0xFD]);
 
@@ -91,13 +81,22 @@ mod tests {
     }
 
     #[test]
-    fn ld_hl_imm16() {
-        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x21 0x5B 0x3A]);
+    fn ld_a_imm8() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x3E 0xA3]);
+
+        cpu.registers.a = 0xE5;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xA3, cpu.registers.a);
+    }
+
+    #[test]
+    fn ld_b_imm8() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x06 0xA5]);
 
         cpu.step(&mut interconnect);
 
-        assert_eq!(0x3A, cpu.registers.h);
-        assert_eq!(0x5B, cpu.registers.l);
+        assert_eq!(0xA5, cpu.registers.b);
     }
 
     #[test]
@@ -110,12 +109,23 @@ mod tests {
     }
 
     #[test]
-    fn ld_b_imm8() {
-        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x06 0xA5]);
+    fn ld_ff00_imm8_a() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xE0 0x32]);
+
+        cpu.registers.a = 0xAF;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xAF, interconnect.read_u8(0xFF32));
+    }
+
+    #[test]
+    fn ld_hl_imm16() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x21 0x5B 0x3A]);
 
         cpu.step(&mut interconnect);
 
-        assert_eq!(0xA5, cpu.registers.b);
+        assert_eq!(0x3A, cpu.registers.h);
+        assert_eq!(0x5B, cpu.registers.l);
     }
 
     #[test]
@@ -132,13 +142,13 @@ mod tests {
     }
 
     #[test]
-    fn ld_a_imm8() {
-        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x3E 0xA3]);
+    fn xor_a_xors_a() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF]);
 
-        cpu.registers.a = 0xE5;
+        cpu.registers.a = 0xFF;
         cpu.step(&mut interconnect);
 
-        assert_eq!(0xA3, cpu.registers.a);
+        assert_eq!(0, cpu.registers.a);
     }
 
     fn create_cpu(rom: Vec<u8>) -> (Cpu, Interconnect) {
