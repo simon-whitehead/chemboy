@@ -42,6 +42,10 @@ impl Interconnect {
         }
     }
 
+    pub fn step(&mut self, cycles: u8) {
+        self.gpu.step(cycles);
+    }
+
     pub fn cart_details(&self) -> CartridgeDetails {
         let cart = self.cart.as_ref().expect("Cartridge is empty");
 
@@ -75,10 +79,15 @@ impl Interconnect {
             Address::RamShadow(addr) => self.ram.read_u8(addr),
             Address::CartRom(addr) |
             Address::CartRomOtherBank(addr) => cart.rom.read_u8(addr),
-            Address::Gfx(value) => self.gpu.ram.read_u8(value),
+            Address::Gfx(value) => self.gpu.read_u8(value),
             Address::CartRam(a) => cart.ram.read_u8(a),
             Address::ZRam(a) => self.zram.read_u8(a),
-            Address::Io(a) => self.mmap_io.read_u8(a),
+            Address::Io(a) => {
+                match a {
+                    0x44 => self.gpu.read_u8(a), // LY $FF44 register in GPU
+                    _ => panic!("read memory mapped I/O in unsupported range"),
+                }
+            }
             Address::InterruptEnableRegister(a) => self.interrupt,
             _ => panic!("Unable to read address: {:#X}", addr),
         }

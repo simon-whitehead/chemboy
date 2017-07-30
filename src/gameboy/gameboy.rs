@@ -18,7 +18,8 @@ impl GameBoy {
     }
 
     pub fn run(&mut self) -> bool {
-        self.cpu.step(&mut self.interconnect);
+        let cycles = self.cpu.step(&mut self.interconnect);
+        self.interconnect.step(cycles);
 
         return true;
     }
