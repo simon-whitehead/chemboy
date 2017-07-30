@@ -55,6 +55,16 @@ mod tests {
     }
 
     #[test]
+    fn di() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xF3]);
+
+        cpu.registers.flags.ime = true;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(false, cpu.registers.flags.ime);
+    }
+
+    #[test]
     fn xor_a_xors_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF]);
 

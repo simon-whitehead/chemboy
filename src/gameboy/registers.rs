@@ -87,6 +87,8 @@ pub struct Flags {
     pub n: bool,
     pub h: bool,
     pub cy: bool,
+
+    pub ime: bool,
 }
 
 impl Flags {
@@ -96,6 +98,7 @@ impl Flags {
             n: false,
             h: false,
             cy: false,
+            ime: true,
         }
     }
 }
