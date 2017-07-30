@@ -101,6 +101,7 @@ impl Cpu {
                 0xAF => self.xor_a(),
                 0xC3 => self.jp_imm16(&operand),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
+                0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF3 => self.di(),
                 _ => {
                     panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
@@ -152,11 +153,16 @@ impl Cpu {
         self.registers.c = val;
     }
 
+    fn ld_a_ff00_imm8(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
+        let offset = operand.unwrap_imm8();
+        let addr = 0xFF00 as u16 + offset as u16;
+        self.registers.a = interconnect.read_u8(addr);
+    }
+
     fn ld_ff00_imm8_a(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
         let offset = operand.unwrap_imm8();
         let addr = 0xFF00 as u16 + offset as u16;
         interconnect.write_u8(addr, self.registers.a);
-        println!("Wrote: {:02X} to {:04X}", self.registers.a, addr);
     }
 
     fn ld_hl_imm16(&mut self, operand: &Operand) {
