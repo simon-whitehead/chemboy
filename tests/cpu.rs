@@ -7,6 +7,19 @@ mod tests {
     use gbrs::gameboy::{Cartridge, Cpu, Interconnect};
 
     #[test]
+    fn cp_n() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xFE 0x3C]);
+
+        cpu.registers.a = 0x3C;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(true, cpu.registers.flags.zero);
+        assert_eq!(false, cpu.registers.flags.half_carry);
+        assert_eq!(true, cpu.registers.flags.negative);
+        assert_eq!(false, cpu.registers.flags.carry);
+    }
+
+    #[test]
     fn dec_b() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x05]);
 
@@ -15,7 +28,7 @@ mod tests {
 
         assert_eq!(0x00, cpu.registers.b);
         assert_eq!(true, cpu.registers.flags.zero);
-        assert_eq!(false, cpu.registers.flags.h);
+        assert_eq!(false, cpu.registers.flags.half_carry);
     }
 
     #[test]
@@ -27,7 +40,7 @@ mod tests {
 
         assert_eq!(0xFF, cpu.registers.b);
         assert_eq!(false, cpu.registers.flags.zero);
-        assert_eq!(true, cpu.registers.flags.h);
+        assert_eq!(true, cpu.registers.flags.half_carry);
     }
 
     #[test]
@@ -39,7 +52,7 @@ mod tests {
 
         assert_eq!(0x00, cpu.registers.c);
         assert_eq!(true, cpu.registers.flags.zero);
-        assert_eq!(false, cpu.registers.flags.h);
+        assert_eq!(false, cpu.registers.flags.half_carry);
     }
 
     #[test]
@@ -51,7 +64,7 @@ mod tests {
 
         assert_eq!(0xFF, cpu.registers.c);
         assert_eq!(false, cpu.registers.flags.zero);
-        assert_eq!(true, cpu.registers.flags.h);
+        assert_eq!(true, cpu.registers.flags.half_carry);
     }
 
     #[test]

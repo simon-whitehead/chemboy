@@ -103,6 +103,7 @@ impl Cpu {
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF3 => self.di(),
+                0xFE => self.cp_n(&operand),
                 _ => {
                     panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
                            opcode.code,
@@ -118,20 +119,30 @@ impl Cpu {
                self.registers.pc);
     }
 
+    fn cp_n(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        let result = self.registers.a - val;
+
+        self.registers.flags.zero = result == 0x00;
+        self.registers.flags.negative = true;
+        self.registers.flags.half_carry = (result & 0x0F) == 0x0F;
+        self.registers.flags.carry = self.registers.a < val;
+    }
+
     fn dec_b(&mut self) {
         self.registers.b = self.registers.b.wrapping_sub(0x01);
 
         self.registers.flags.zero = self.registers.b == 0x00;
-        self.registers.flags.n = true;
-        self.registers.flags.h = (self.registers.b & 0x0F) == 0x0F;
+        self.registers.flags.negative = true;
+        self.registers.flags.half_carry = (self.registers.b & 0x0F) == 0x0F;
     }
 
     fn dec_c(&mut self) {
         self.registers.c = self.registers.c.wrapping_sub(0x01);
 
         self.registers.flags.zero = self.registers.c == 0x00;
-        self.registers.flags.n = true;
-        self.registers.flags.h = (self.registers.c & 0x0F) == 0x0F;
+        self.registers.flags.negative = true;
+        self.registers.flags.half_carry = (self.registers.c & 0x0F) == 0x0F;
     }
 
     fn di(&mut self) {
@@ -192,9 +203,9 @@ impl Cpu {
     fn xor_a(&mut self) {
         self.registers.a ^= self.registers.a;
         self.registers.flags.zero = self.registers.a == 0x00;
-        self.registers.flags.n = false;
-        self.registers.flags.h = false;
-        self.registers.flags.cy = false;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
     }
 
     fn relative_jump(&mut self, offset: u8) {

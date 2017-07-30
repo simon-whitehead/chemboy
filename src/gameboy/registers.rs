@@ -84,9 +84,9 @@ impl Registers {
 #[derive(Eq, PartialEq)]
 pub struct Flags {
     pub zero: bool,
-    pub n: bool,
-    pub h: bool,
-    pub cy: bool,
+    pub negative: bool,
+    pub half_carry: bool,
+    pub carry: bool,
 
     pub ime: bool,
 }
@@ -95,9 +95,9 @@ impl Flags {
     pub fn new() -> Flags {
         Flags {
             zero: true,
-            n: false,
-            h: false,
-            cy: false,
+            negative: false,
+            half_carry: false,
+            carry: false,
             ime: true,
         }
     }
