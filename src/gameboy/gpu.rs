@@ -4,12 +4,12 @@ use gameboy::Memory;
 
 const VRAM_SIZE: usize = 0x4000;
 
-pub struct Gfx {
+pub struct Gpu {
     pub ram: Memory,
 }
 
-impl Gfx {
-    pub fn new() -> Gfx {
-        Gfx { ram: Memory::new(VRAM_SIZE) }
+impl Gpu {
+    pub fn new() -> Gpu {
+        Gpu { ram: Memory::new(VRAM_SIZE) }
     }
 }

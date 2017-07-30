@@ -3,7 +3,7 @@ mod macros;
 
 mod cpu;
 mod gameboy;
-mod gfx;
+mod gpu;
 mod interconnect;
 mod memory;
 mod memory_map;
@@ -15,7 +15,7 @@ pub mod opcode;
 pub use self::cartridge::{Cartridge, CartridgeDetails};
 pub use self::cpu::Cpu;
 pub use self::gameboy::GameBoy;
-pub use self::gfx::Gfx;
+pub use self::gpu::Gpu;
 pub use self::memory::Memory;
 pub use self::interconnect::Interconnect;
 
