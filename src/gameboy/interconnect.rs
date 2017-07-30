@@ -54,7 +54,7 @@ impl Interconnect {
         match memory_map::map_address(addr) {
             Address::Ram(a) |
             Address::RamShadow(a) => self.ram.write_u8(a, byte),
-            Address::Gfx(a) => self.gfx.write_u8(a, byte),
+            Address::Gfx(a) => self.gfx.ram.write_u8(a, byte),
             Address::CartRam(a) => cart.ram.write_u8(a, byte),
             Address::CartRom(a) => cart.rom.write_u8(a, byte),
             Address::ZRam(a) => self.zram.write_u8(a, byte),
@@ -75,7 +75,7 @@ impl Interconnect {
             Address::RamShadow(addr) => self.ram.read_u8(addr),
             Address::CartRom(addr) |
             Address::CartRomOtherBank(addr) => cart.rom.read_u8(addr),
-            Address::Gfx(value) => self.gfx.read_u8(value),
+            Address::Gfx(value) => self.gfx.ram.read_u8(value),
             Address::CartRam(a) => cart.ram.read_u8(a),
             Address::ZRam(a) => self.zram.read_u8(a),
             Address::Io(a) => self.mmap_io.read_u8(a),
@@ -92,7 +92,7 @@ impl Interconnect {
             Address::RamShadow(_) => self.ram.read_bytes(r),
             Address::CartRom(_) |
             Address::CartRomOtherBank(_) => cart.rom.read_bytes(r),
-            Address::Gfx(_) => self.gfx.read_bytes(r),
+            Address::Gfx(_) => self.gfx.ram.read_bytes(r),
             Address::CartRam(_) => cart.ram.read_bytes(r),
             Address::ZRam(_) => self.zram.read_bytes(r),
             Address::Io(a) => self.mmap_io.read_bytes(r),
@@ -108,7 +108,7 @@ impl Interconnect {
             Address::RamShadow(addr) => self.ram.read_u16(addr),
             Address::CartRom(addr) |
             Address::CartRomOtherBank(addr) => cart.rom.read_u16(addr),
-            Address::Gfx(value) => self.gfx.read_u16(value),
+            Address::Gfx(value) => self.gfx.ram.read_u16(value),
             Address::CartRam(a) => cart.ram.read_u16(a),
             Address::ZRam(a) => self.zram.read_u16(a),
             Address::Io(a) => self.mmap_io.read_u16(a),

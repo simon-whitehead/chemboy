@@ -85,7 +85,7 @@ impl Cpu {
         if let Some(opcode) = OpCode::from_byte(byte) {
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
+            // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
             self.registers.pc += opcode.length;
 
             match opcode.code {
@@ -121,7 +121,7 @@ impl Cpu {
 
     fn cp_n(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
-        let result = self.registers.a - val;
+        let result = self.registers.a.wrapping_sub(val);
 
         self.registers.flags.zero = result == 0x00;
         self.registers.flags.negative = true;
