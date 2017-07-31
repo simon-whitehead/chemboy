@@ -65,7 +65,7 @@ impl Interconnect {
             Address::Io(a) => {
                 match a {
                     0x44 => self.gpu.write_u8(a, byte),
-                    _ => panic!("write memory mapped I/O in unsupported range"),
+                    _ => panic!("write memory mapped I/O in unsupported range: {:04X}", a),
                 }
             }
             Address::InterruptEnableRegister(a) => self.interrupt = byte,

@@ -89,6 +89,9 @@ pub struct Flags {
     pub carry: bool,
 
     pub ime: bool,
+
+    pub ie: InterruptEnabledFlags,
+    pub ir: InterruptRequestFlags,
 }
 
 impl Flags {
@@ -99,6 +102,51 @@ impl Flags {
             half_carry: false,
             carry: false,
             ime: true,
+
+            ie: InterruptEnabledFlags::new(),
+            ir: InterruptRequestFlags::new(),
+        }
+    }
+}
+
+#[derive(Eq, PartialEq)]
+pub struct InterruptRequestFlags {
+    pub vblank: bool,
+    pub lcdc: bool,
+    pub timer_overflow: bool,
+    pub serial_xfer_complete: bool,
+    pub term_negative_edge: bool,
+}
+
+impl InterruptRequestFlags {
+    pub fn new() -> InterruptRequestFlags {
+        InterruptRequestFlags {
+            vblank: false,
+            lcdc: false,
+            timer_overflow: false,
+            serial_xfer_complete: false,
+            term_negative_edge: false,
+        }
+    }
+}
+
+#[derive(Eq, PartialEq)]
+pub struct InterruptEnabledFlags {
+    pub vblank: bool,
+    pub lcdc: bool,
+    pub timer_overflow: bool,
+    pub serial_xfer_complete: bool,
+    pub term_negative_edge: bool,
+}
+
+impl InterruptEnabledFlags {
+    pub fn new() -> InterruptEnabledFlags {
+        InterruptEnabledFlags {
+            vblank: false,
+            lcdc: false,
+            timer_overflow: false,
+            serial_xfer_complete: false,
+            term_negative_edge: false,
         }
     }
 }
