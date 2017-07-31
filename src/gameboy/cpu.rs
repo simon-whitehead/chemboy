@@ -97,6 +97,7 @@ impl Cpu {
                 0x20 => self.jr_nz_imm8(&operand, interconnect),
                 0x21 => self.ld_hl_imm16(&operand),
                 0x32 => self.ld_hld_a(interconnect),
+                0x36 => self.ld_hl_imm8(&operand, interconnect),
                 0x3E => self.ld_a_imm8(&operand),
                 0xAF => self.xor_a(),
                 0xC3 => self.jp_imm16(&operand),
@@ -174,6 +175,13 @@ impl Cpu {
         let offset = operand.unwrap_imm8();
         let addr = 0xFF00 as u16 + offset as u16;
         interconnect.write_u8(addr, self.registers.a);
+    }
+
+    fn ld_hl_imm8(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
+        let val = operand.unwrap_imm8();
+        let addr = self.registers.get_hl();
+
+        interconnect.write_u8(addr, val);
     }
 
     fn ld_hl_imm16(&mut self, operand: &Operand) {

@@ -62,7 +62,12 @@ impl Interconnect {
             Address::CartRam(a) => cart.ram.write_u8(a, byte),
             Address::CartRom(a) => cart.rom.write_u8(a, byte),
             Address::ZRam(a) => self.zram.write_u8(a, byte),
-            Address::Io(a) => self.mmap_io.write_u8(a, byte),
+            Address::Io(a) => {
+                match a {
+                    0x44 => self.gpu.write_u8(a, byte),
+                    _ => panic!("write memory mapped I/O in unsupported range"),
+                }
+            }
             Address::InterruptEnableRegister(a) => self.interrupt = byte,
             _ => {
                 panic!("Unable to write byte to: {:#X}, invalid memory region.",

@@ -53,6 +53,13 @@ impl Gpu {
         }
     }
 
+    pub fn write_u8(&mut self, addr: u16, val: u8) {
+        match addr {
+            0x44 => self.write_lcdc_y(val),
+            _ => panic!("tried to write GPU memory that is not mapped"),
+        }
+    }
+
     pub fn write_lcdc_y(&mut self, val: u8) {
         self.ly = val;
     }

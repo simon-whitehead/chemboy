@@ -123,9 +123,9 @@ mod tests {
 
     #[test]
     fn ld_a_ff00_imm8() {
-        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xF0 0x32]);
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xF0 0x44]);
 
-        interconnect.write_u8(0xFF32, 0xA9);
+        interconnect.write_u8(0xFF44, 0xA9);
         cpu.step(&mut interconnect);
 
         assert_eq!(0xA9, cpu.registers.a);
@@ -133,12 +133,22 @@ mod tests {
 
     #[test]
     fn ld_ff00_imm8_a() {
-        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xE0 0x32]);
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xE0 0x44]);
 
         cpu.registers.a = 0xAF;
         cpu.step(&mut interconnect);
 
-        assert_eq!(0xAF, interconnect.read_u8(0xFF32));
+        assert_eq!(0xAF, interconnect.read_u8(0xFF44));
+    }
+
+    #[test]
+    fn ld_hl_imm8() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x36 0x5B]);
+
+        cpu.registers.set_hl(0x014D);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x5B, interconnect.read_u8(0x014D));
     }
 
     #[test]
