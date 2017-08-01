@@ -71,6 +71,7 @@ impl Interconnect {
             Address::ZRam(a) => self.zram.write_u8(a, byte),
             Address::Io(a) => {
                 match a {
+                    0x01...0x02 => println!("err: write to serial driver not supported"),
                     0x04...0x07 => self.timer.write_u8(a, byte),
                     0x0F => self.irq.request_flag = byte,
                     0x10...0x26 => println!("err: write to sound driver not supported"),
@@ -104,10 +105,11 @@ impl Interconnect {
             Address::ZRam(a) => self.zram.read_u8(a),
             Address::Io(a) => {
                 match a {
+                    0x01...0x02 => { println!("err: read from serial driver not supported"); 0 },
                     0x04...0x07 => self.timer.read_u8(a), 
                     0x0F => self.irq.request_flag,
                     0x10...0x26 => {
-                        println!("err: write to sound driver not supported");
+                        println!("err: read from sound driver not supported");
                         0
                     }
                     0x40...0x45 => self.gpu.read_u8(a), 

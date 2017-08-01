@@ -87,6 +87,7 @@ impl Gpu {
     pub fn read_u8(&self, addr: u16) -> u8 {
         match addr {
             0x40 => self.control_register,
+            0x41 => self.stat,
             0x42 => self.scroll_y,
             0x43 => self.scroll_x,
             0x4A => self.window_y,
@@ -103,6 +104,7 @@ impl Gpu {
     pub fn write_u8(&mut self, addr: u16, val: u8) {
         match addr {
             0x40 => self.control_register = val,
+            0x41 => self.stat = val,
             0x42 => self.scroll_y = val,
             0x43 => self.scroll_x = val,
             0x4A => self.window_y = val,
@@ -115,7 +117,7 @@ impl Gpu {
             0x47 => self.bg_palette = val,
             0x48 => self.palette0 = val,
             0x49 => self.palette1 = val,
-            _ => panic!("tried to write GPU memory that is not mapped"),
+            _ => panic!("tried to write GPU memory that is not mapped: {:04}", addr),
         }
     }
 
