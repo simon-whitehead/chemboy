@@ -1,5 +1,6 @@
 Gameboy:
     ✔ Add TIMER support @done (01/08/2017, 3:12:11 pm)
+    ☐ Add support for V-Blank interrupt
     ☐ Make sure interrupts honour the IME flag AND the IE flag
     ☐ Check interaction of AF regiter and Flags
 

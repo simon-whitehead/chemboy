@@ -13,7 +13,9 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn new(gameboy_color: bool) -> Cpu {
-        Cpu { registers: registers::Registers::new(gameboy_color) }
+        Cpu {
+            registers: registers::Registers::new(gameboy_color),
+        }
     }
 
     pub fn reset(&mut self, interconnect: &mut Interconnect) {
@@ -99,7 +101,7 @@ impl Cpu {
         if let Some(opcode) = OpCode::from_byte(byte) {
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
+            //println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
             self.registers.pc += opcode.length;
 
             match opcode.code {
@@ -126,18 +128,22 @@ impl Cpu {
                 0xF3 => self.di(),
                 0xFE => self.cp_n(&operand),
                 _ => {
-                    panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
-                           opcode.code,
-                           self.registers.pc)
+                    panic!(
+                        "Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
+                        opcode.code,
+                        self.registers.pc
+                    )
                 }
             }
 
             return opcode.cycles;
         }
 
-        panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-               byte,
-               self.registers.pc);
+        panic!(
+            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+            byte,
+            self.registers.pc
+        );
     }
 
     fn cp_n(&mut self, operand: &Operand) {
