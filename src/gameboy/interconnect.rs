@@ -69,6 +69,7 @@ impl Interconnect {
             Address::CartRam(a) => cart.ram.write_u8(a, byte),
             Address::CartRom(a) => cart.rom.write_u8(a, byte),
             Address::ZRam(a) => self.zram.write_u8(a, byte),
+            Address::Oam(a) => self.gpu.sprite_data.write_u8(a, byte),
             Address::Unused(_) => (),
             Address::Io(a) => {
                 match a {
@@ -99,9 +100,10 @@ impl Interconnect {
             Address::RamShadow(addr) => self.ram.read_u8(addr),
             Address::CartRom(addr) |
             Address::CartRomOtherBank(addr) => cart.rom.read_u8(addr),
-            Address::Gfx(value) => self.gpu.read_u8(value),
+            Address::Gfx(value) => self.gpu.ram.read_u8(value),
             Address::CartRam(a) => cart.ram.read_u8(a),
             Address::ZRam(a) => self.zram.read_u8(a),
+            Address::Oam(a) => self.gpu.sprite_data.read_u8(a),
             Address::Unused(_) => 0xFF, // Always return high
             Address::Io(a) => {
                 match a {

@@ -1,6 +1,7 @@
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
 
 const VRAM_SIZE: usize = 0x4000;
+const SPRITE_DATA_SIZE: usize = 0xA0;
 
 struct Color {
     r: u8,
@@ -27,6 +28,7 @@ impl Color {
 pub struct Gpu {
     pub enabled: bool,
     pub ram: Memory,
+    pub sprite_data: Memory,
     control_register: u8,
     stat: u8,
     scroll_y: u8,
@@ -47,6 +49,7 @@ impl Gpu {
         Gpu {
             enabled: true,
             ram: Memory::new(VRAM_SIZE),
+            sprite_data: Memory::new(SPRITE_DATA_SIZE),
             control_register: 0x00,
             stat: 0x00,
             scroll_y: 0x00,

@@ -44,7 +44,7 @@ pub enum Address {
     ExternalRam(u16),
     Ram(u16),
     RamShadow(u16),
-    SpriteInformation(u16),
+    Oam(u16),
     Unused(u16),
     Io(u16),
     ZRam(u16),
@@ -60,7 +60,7 @@ pub fn map_address(virtual_address: u16) -> Address {
         IO_START...IO_END => Address::Io(virtual_address - IO_START),
         ZRAM_START...ZRAM_END => Address::ZRam(virtual_address - ZRAM_START),
         GFX_SPRITE_INFO_START...GFX_SPRITE_INFO_END => {
-            Address::SpriteInformation(virtual_address - GFX_SPRITE_INFO_START)
+            Address::Oam(virtual_address - GFX_SPRITE_INFO_START)
         }
         UNUSED_MEMORY_START...UNUSED_MEMORY_END => {
             Address::Unused(virtual_address - UNUSED_MEMORY_START)
