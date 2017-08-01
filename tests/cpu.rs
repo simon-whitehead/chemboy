@@ -13,12 +13,12 @@ mod tests {
         //                               ^^^^^^^^^ jump to the 'INC C' opcode here --------^^^^
 
         cpu.registers.c = 0x3C;
-        cpu.step(&mut interconnect);
-        cpu.step(&mut interconnect);
-        cpu.step(&mut interconnect);
-        assert_eq!(0x0C, cpu.registers.pc);
-        assert_eq!(0x05, interconnect.read_u16(0xFFFD));
-        cpu.step(&mut interconnect);
+        cpu.step(&mut interconnect); // step over NOP
+        cpu.step(&mut interconnect); // step over NOP
+        cpu.step(&mut interconnect); // step over CALL 0x000C (jump to byte 12)
+        assert_eq!(0x0C, cpu.registers.pc); // program counter should be at byte 12
+        assert_eq!(0x05, interconnect.read_u16(0xFFFD)); // return address on stack should be byte 5 (2 nops + 3 bytes for the call)
+        cpu.step(&mut interconnect); // step over 'INC C'
         assert_eq!(0x3D, cpu.registers.c); // C should be 0x3C + 1
     }
 
