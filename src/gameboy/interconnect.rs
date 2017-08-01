@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use byteorder::{ByteOrder, LittleEndian};
 
-use gameboy::{Gpu, Memory, Timer};
+use gameboy::{CPU_FREQUENCY, MAX_CPU_CYCLES, MAX_DIV_REG_CYCLES, Gpu, Memory, Timer};
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
 use super::memory_map::{self, Address};
 
@@ -45,8 +45,9 @@ impl Interconnect {
         }
     }
 
-    pub fn step(&mut self, cycles: u8) {
+    pub fn step(&mut self, cycles: usize) {
         self.gpu.step(cycles);
+        self.timer.step(cycles);
     }
 
     pub fn cart_details(&self) -> CartridgeDetails {

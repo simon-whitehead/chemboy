@@ -22,7 +22,7 @@ impl Gpu {
         }
     }
 
-    pub fn step(&mut self, cycles: u8) {
+    pub fn step(&mut self, cycles: usize) {
         let cycles = cycles as isize;
 
         if !self.enabled {

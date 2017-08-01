@@ -22,3 +22,8 @@ pub use self::interconnect::Interconnect;
 pub use self::timer::Timer;
 
 pub use self::macros::*;
+
+
+pub const CPU_FREQUENCY: usize = 0x400000; // 4,194,304
+pub const MAX_CPU_CYCLES: usize = CPU_FREQUENCY / 60; // 60hz, our target refresh rate/fps
+pub const MAX_DIV_REG_CYCLES: usize = MAX_CPU_CYCLES / 0x10;

@@ -3,12 +3,9 @@
 use byteorder::{ByteOrder, LittleEndian};
 
 use gameboy::registers;
-use gameboy::Interconnect;
+use gameboy::{MAX_CPU_CYCLES, MAX_DIV_REG_CYCLES, Interconnect};
 use gameboy::memory_map;
 use gameboy::opcode::{OpCode, Operand, ArgumentType};
-
-const MAX_CPU_CYCLES: usize = 0x11111; // 69905
-const MAX_DIV_REG_CYCLES: usize = 0x112; // 274
 
 pub struct Cpu {
     pub registers: registers::Registers,
@@ -79,16 +76,7 @@ impl Cpu {
         while cycles < MAX_CPU_CYCLES {
             let c = self.step(interconnect);
             cycles += c as usize;
-            self.inc_div_register(cycles, interconnect);
-        }
-    }
-
-    fn inc_div_register(&mut self, cycles: usize, interconnect: &mut Interconnect) {
-        if cycles > MAX_DIV_REG_CYCLES {
-            // Increment the DIV register
-            let div = interconnect.read_u8(0xFF04);
-            let result = div.wrapping_add(0x01);
-            interconnect.write_u8(0xFF04, result);
+            interconnect.step(cycles);
         }
     }
 
