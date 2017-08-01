@@ -118,6 +118,7 @@ impl Cpu {
                 0xAF => self.xor_a(),
                 0xC3 => self.jp_imm16(&operand),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
+                0xE2 => self.ld_ff00_c_a(interconnect),
                 0xEA => self.ld_imm16_a(&operand, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF3 => self.di(),
@@ -198,6 +199,11 @@ impl Cpu {
     fn ld_ff00_imm8_a(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
         let offset = operand.unwrap_imm8();
         let addr = 0xFF00 as u16 + offset as u16;
+        interconnect.write_u8(addr, self.registers.a);
+    }
+
+    fn ld_ff00_c_a(&mut self, interconnect: &mut Interconnect) {
+        let addr = 0xFF00 as u16 + self.registers.c as u16;
         interconnect.write_u8(addr, self.registers.a);
     }
 
