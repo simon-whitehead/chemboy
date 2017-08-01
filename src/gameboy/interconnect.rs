@@ -72,6 +72,9 @@ impl Interconnect {
             Address::Io(a) => {
                 match a {
                     0x04 => self.timer.write_u8(a, byte),
+                    0x05 => self.timer.write_u8(a, byte),
+                    0x06 => self.timer.write_u8(a, byte), // $FF06 - TMA (modulo) register
+                    0x07 => self.timer.write_u8(a, byte), // $FF07 - TAC (control) register
                     0x44 => self.gpu.write_u8(a, byte),
                     _ => panic!("write memory mapped I/O in unsupported range: {:04X}", a),
                 }
@@ -100,6 +103,9 @@ impl Interconnect {
             Address::Io(a) => {
                 match a {
                     0x04 => self.timer.read_u8(a), // $FF04 - DIV register
+                    0x05 => self.timer.read_u8(a), // $FF05 - TIMA register
+                    0x06 => self.timer.read_u8(a), // $FF06 - TMA (modulo) register
+                    0x07 => self.timer.read_u8(a), // $FF07 - TAC (control) register
                     0x44 => self.gpu.read_u8(a), // LY $FF44 register in GPU
                     _ => panic!("read memory mapped I/O in unsupported range"),
                 }
@@ -122,6 +128,15 @@ impl Interconnect {
             Address::ZRam(_) => self.zram.read_bytes(r),
             Address::Io(a) => self.mmap_io.read_bytes(r),
             _ => panic!("Unable to read address range: {:?}", r),
+        }
+    }
+
+    pub fn write_u16(&mut self, addr: u16, val: u16) {
+        let cart = self.cart.as_ref().expect("Cartridge is empty");
+
+        match memory_map::map_address(addr) {
+            Address::ZRam(a) => self.zram.write_u16(a, val),
+            _ => panic!("Unable to read address: {:#X}", addr),
         }
     }
 

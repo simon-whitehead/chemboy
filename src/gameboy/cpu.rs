@@ -3,7 +3,7 @@
 use byteorder::{ByteOrder, LittleEndian};
 
 use gameboy::registers;
-use gameboy::{MAX_CPU_CYCLES, MAX_DIV_REG_CYCLES, Interconnect};
+use gameboy::{MAX_CPU_CYCLES, MAX_DIV_REG_CYCLES, Interconnect, Interrupt, Memory};
 use gameboy::memory_map;
 use gameboy::opcode::{OpCode, Operand, ArgumentType};
 
@@ -77,7 +77,22 @@ impl Cpu {
             let c = self.step(interconnect);
             cycles += c as usize;
             interconnect.step(cycles);
+            self.handle_interrupts(interconnect);
         }
+    }
+
+    pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) {
+        if interconnect.irq.enabled(Interrupt::Timer) {
+            interconnect.irq.disable(Interrupt::Timer);
+            self.call(0x50, interconnect);
+        }
+    }
+
+    fn call(&mut self, addr: u16, interconnect: &mut Interconnect) {
+        self.registers.sp -= 0x01;
+        interconnect.write_u16(self.registers.sp as u16, self.registers.pc);
+        self.registers.sp -= 0x01;
+        self.registers.pc = addr;
     }
 
     pub fn step(&mut self, interconnect: &mut Interconnect) -> u8 {
@@ -86,7 +101,7 @@ impl Cpu {
         if let Some(opcode) = OpCode::from_byte(byte) {
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
+            println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
             self.registers.pc += opcode.length;
 
             match opcode.code {

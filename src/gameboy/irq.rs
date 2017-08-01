@@ -20,7 +20,7 @@ impl Irq {
         }
     }
 
-    pub fn unrequest(&mut self, int: Interrupt) {
+    pub fn disable(&mut self, int: Interrupt) {
         use self::Interrupt::*;
 
         match int {
@@ -28,19 +28,11 @@ impl Irq {
         }
     }
 
-    pub fn enable(&mut self, int: Interrupt) {
+    pub fn enabled(&mut self, int: Interrupt) -> bool {
         use self::Interrupt::*;
 
         match int {
-            Timer => self.enable |= 0x04,
-        }
-    }
-
-    pub fn disable(&mut self, int: Interrupt) {
-        use self::Interrupt::*;
-
-        match int {
-            Timer => self.enable &= !0x04,
+            Timer => self.enable & 0x04 == 0x04,
         }
     }
 }

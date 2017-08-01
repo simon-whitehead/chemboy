@@ -28,6 +28,9 @@ impl Timer {
     pub fn read_u8(&self, addr: u16) -> u8 {
         match addr {
             0x04 => self.div,
+            0x05 => self.tima,
+            0x06 => self.tma,
+            0x07 => self.tac,
             _ => panic!("read timer memory that is unmapped"),
         }
     }
@@ -35,6 +38,9 @@ impl Timer {
     pub fn write_u8(&mut self, addr: u16, val: u8) {
         match addr {
             0x04 => self.div = 0,
+            0x05 => self.tima = val,
+            0x06 => self.tma = val,
+            0x07 => self.tac = val,
             _ => panic!("read timer memory that is unmapped"),
         }
     }
