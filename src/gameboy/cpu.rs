@@ -106,6 +106,7 @@ impl Cpu {
                 0x00 => (),
                 0x05 => self.dec_b(),
                 0x06 => self.ld_b_imm8(&operand),
+                0x0C => self.inc_c(),
                 0x0D => self.dec_c(),
                 0x0E => self.ld_c_imm8(&operand),
                 0x20 => self.jr_nz_imm8(&operand, interconnect),
@@ -140,32 +141,44 @@ impl Cpu {
 
     fn cp_n(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
-        let result = self.registers.a.wrapping_sub(val);
+        let r = self.registers.a;
+        let result = r.wrapping_sub(val);
 
         self.registers.flags.zero = result == 0x00;
         self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (result & 0x0F) == 0x0F;
+        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
         self.registers.flags.carry = self.registers.a < val;
     }
 
     fn dec_b(&mut self) {
-        self.registers.b = self.registers.b.wrapping_sub(0x01);
+        let r = self.registers.b;
+        self.registers.b = r.wrapping_sub(0x01);
 
         self.registers.flags.zero = self.registers.b == 0x00;
         self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (self.registers.b & 0x0F) == 0x0F;
+        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
     }
 
     fn dec_c(&mut self) {
-        self.registers.c = self.registers.c.wrapping_sub(0x01);
+        let r = self.registers.c;
+        self.registers.c = r.wrapping_sub(0x01);
 
         self.registers.flags.zero = self.registers.c == 0x00;
         self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (self.registers.c & 0x0F) == 0x0F;
+        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
     }
 
     fn di(&mut self) {
         self.registers.flags.ime = false;
+    }
+
+    fn inc_c(&mut self) {
+        let r = self.registers.c;
+        self.registers.c = r.wrapping_add(0x01);
+
+        self.registers.flags.zero = self.registers.c == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
     }
 
     fn ld_a_hli(&mut self, interconnect: &mut Interconnect) {
