@@ -7,8 +7,8 @@ use gameboy::cartridge::{Cartridge, CartridgeDetails};
 use super::memory_map::{self, Address};
 
 const MAIN_MEM_SIZE: usize = 0x2000;
-const ZRAM_SIZE: usize = 0x7F;
-const MMAP_SIZE: usize = 0x7F;
+const ZRAM_SIZE: usize = 0x80;
+const MMAP_SIZE: usize = 0x80;
 
 pub struct Interconnect {
     pub gpu: Gpu,
@@ -80,6 +80,7 @@ impl Interconnect {
                     0x40...0x45 => self.gpu.write_u8(a, byte),
                     0x47...0x49 => self.gpu.write_u8(a, byte),
                     0x4A...0x4B => self.gpu.write_u8(a, byte),
+                    0x7F => self.mmap_io.write_u8(a, byte),
                     0xFF => self.irq.enable_flag = byte,
                     _ => panic!("write memory mapped I/O in unsupported range: {:04X}", a),
                 }
@@ -120,6 +121,7 @@ impl Interconnect {
                     0x40...0x45 => self.gpu.read_u8(a), 
                     0x47...0x49 => self.gpu.read_u8(a),
                     0x4A...0x4B => self.gpu.read_u8(a),
+                    0x7F => self.mmap_io.read_u8(a),
                     0xFF => self.irq.enable_flag,
                     _ => panic!("read memory mapped I/O in unsupported range"),
                 }
