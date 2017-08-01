@@ -151,8 +151,10 @@ impl Interconnect {
         let cart = self.cart.as_ref().expect("Cartridge is empty");
 
         match memory_map::map_address(addr) {
+            Address::Ram(a) |
+            Address::RamShadow(a) => self.ram.write_u16(a, val),
             Address::ZRam(a) => self.zram.write_u16(a, val),
-            _ => panic!("Unable to read address: {:#X}", addr),
+            _ => panic!("Unable to write address: {:#X}", addr),
         }
     }
 
