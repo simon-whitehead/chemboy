@@ -110,6 +110,7 @@ impl Cpu {
                 0x0E => self.ld_c_imm8(&operand),
                 0x20 => self.jr_nz_imm8(&operand, interconnect),
                 0x21 => self.ld_hl_imm16(&operand),
+                0x31 => self.ld_sp_imm16(&operand),
                 0x32 => self.ld_hld_a(interconnect),
                 0x36 => self.ld_hl_imm8(&operand, interconnect),
                 0x3E => self.ld_a_imm8(&operand),
@@ -213,6 +214,11 @@ impl Cpu {
     fn ld_imm16_a(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
         let addr = operand.unwrap_imm16();
         interconnect.write_u8(addr, self.registers.a);
+    }
+
+    fn ld_sp_imm16(&mut self, operand: &Operand) {
+        let addr = operand.unwrap_imm16();
+        self.registers.sp = addr as usize;
     }
 
     fn jp_imm16(&mut self, operand: &Operand) {
