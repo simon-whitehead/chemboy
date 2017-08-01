@@ -71,11 +71,10 @@ impl Interconnect {
             Address::ZRam(a) => self.zram.write_u8(a, byte),
             Address::Io(a) => {
                 match a {
-                    0x04 => self.timer.write_u8(a, byte),
-                    0x05 => self.timer.write_u8(a, byte),
-                    0x06 => self.timer.write_u8(a, byte), // $FF06 - TMA (modulo) register
-                    0x07 => self.timer.write_u8(a, byte), // $FF07 - TAC (control) register
-                    0x44 => self.gpu.write_u8(a, byte),
+                    0x04...0x07 => self.timer.write_u8(a, byte),
+                    0x10...0x26 => println!("err: write to sound driver not supported"),
+                    0x40...0x45 => self.gpu.write_u8(a, byte),
+                    0x47...0x49 => self.gpu.write_u8(a, byte),
                     _ => panic!("write memory mapped I/O in unsupported range: {:04X}", a),
                 }
             }
@@ -102,11 +101,13 @@ impl Interconnect {
             Address::ZRam(a) => self.zram.read_u8(a),
             Address::Io(a) => {
                 match a {
-                    0x04 => self.timer.read_u8(a), // $FF04 - DIV register
-                    0x05 => self.timer.read_u8(a), // $FF05 - TIMA register
-                    0x06 => self.timer.read_u8(a), // $FF06 - TMA (modulo) register
-                    0x07 => self.timer.read_u8(a), // $FF07 - TAC (control) register
-                    0x44 => self.gpu.read_u8(a), // LY $FF44 register in GPU
+                    0x04...0x07 => self.timer.read_u8(a), 
+                    0x10...0x26 => {
+                        println!("err: write to sound driver not supported");
+                        0
+                    }
+                    0x40...0x45 => self.gpu.read_u8(a), 
+                    0x47...0x49 => self.gpu.read_u8(a),
                     _ => panic!("read memory mapped I/O in unsupported range"),
                 }
             }

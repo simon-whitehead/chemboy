@@ -1,6 +1,7 @@
 Gameboy:
-    ☐ Add TIMER support
+    ✔ Add TIMER support @done (01/08/2017, 3:12:11 pm)
     ☐ Make sure interrupts honour the IME flag AND the IE flag
+    ☐ Check interaction of AF regiter and Flags
 
 Emulator:
     ☐ Add metadata about ROM view
