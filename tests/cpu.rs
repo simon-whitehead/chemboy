@@ -7,6 +7,22 @@ mod tests {
     use gbrs::gameboy::{Cartridge, Cpu, Interconnect};
 
     #[test]
+    fn call() {
+        let (mut cpu, mut interconnect) =
+            create_cpu(gb_asm![0x00 0x00 0xCD 0x0C 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x0C]);
+        //                               ^^^^^^^^^ jump to the 'INC C' opcode here --------^^^^
+
+        cpu.registers.c = 0x3C;
+        cpu.step(&mut interconnect);
+        cpu.step(&mut interconnect);
+        cpu.step(&mut interconnect);
+        assert_eq!(0x0C, cpu.registers.pc);
+        assert_eq!(0x05, interconnect.read_u16(0xFFFD));
+        cpu.step(&mut interconnect);
+        assert_eq!(0x3D, cpu.registers.c); // C should be 0x3C + 1
+    }
+
+    #[test]
     fn cp_n() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xFE 0x3C]);
 

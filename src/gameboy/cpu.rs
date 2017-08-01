@@ -118,6 +118,7 @@ impl Cpu {
                 0x3E => self.ld_a_imm8(&operand),
                 0xAF => self.xor_a(),
                 0xC3 => self.jp_imm16(&operand),
+                0xCD => self.call(operand.unwrap_imm16(), interconnect),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE2 => self.ld_ff00_c_a(interconnect),
                 0xEA => self.ld_imm16_a(&operand, interconnect),
