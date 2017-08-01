@@ -7,7 +7,7 @@ pub struct Gpu {
     pub ram: Memory,
     ly: u8,
 
-    c: isize,
+    cycles: isize,
 }
 
 impl Gpu {
@@ -16,7 +16,7 @@ impl Gpu {
             enabled: true,
             ram: Memory::new(VRAM_SIZE),
             ly: 0,
-            c: 0,
+            cycles: 0,
         }
     }
 
@@ -35,9 +35,9 @@ impl Gpu {
             return;
         }
 
-        self.c -= cycles;
-        if self.c < 0 {
-            self.c = 0x1C8; // it takes 456 CPU clock cycles to draw 1 LCD scanline
+        self.cycles -= cycles;
+        if self.cycles < 0 {
+            self.cycles = 0x1C8; // it takes 456 CPU clock cycles to draw 1 LCD scanline
             self.ly = (self.ly + 0x01) % 0x9A; // LY can only be within 0...153
             if self.ly >= 0x90 {
                 // V-Blank
