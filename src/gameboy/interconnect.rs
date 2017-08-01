@@ -69,6 +69,7 @@ impl Interconnect {
             Address::CartRam(a) => cart.ram.write_u8(a, byte),
             Address::CartRom(a) => cart.rom.write_u8(a, byte),
             Address::ZRam(a) => self.zram.write_u8(a, byte),
+            Address::Unused(_) => (),
             Address::Io(a) => {
                 match a {
                     0x01...0x02 => println!("err: write to serial driver not supported"),
@@ -84,10 +85,8 @@ impl Interconnect {
             }
             Address::InterruptEnableRegister(a) => self.interrupt = byte,
             _ => {
-                panic!(
-                    "Unable to write byte to: {:#X}, invalid memory region.",
-                    addr
-                )
+                panic!("Unable to write byte to: {:#X}, invalid memory region.",
+                       addr)
             }
         }
     }
@@ -103,9 +102,13 @@ impl Interconnect {
             Address::Gfx(value) => self.gpu.read_u8(value),
             Address::CartRam(a) => cart.ram.read_u8(a),
             Address::ZRam(a) => self.zram.read_u8(a),
+            Address::Unused(_) => 0xFF, // Always return high
             Address::Io(a) => {
                 match a {
-                    0x01...0x02 => { println!("err: read from serial driver not supported"); 0 },
+                    0x01...0x02 => {
+                        println!("err: read from serial driver not supported");
+                        0
+                    }
                     0x04...0x07 => self.timer.read_u8(a), 
                     0x0F => self.irq.request_flag,
                     0x10...0x26 => {

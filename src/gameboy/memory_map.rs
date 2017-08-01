@@ -20,8 +20,11 @@ const RAM_END: u16 = 0xDFFF;
 const RAM_SHADOW_START: u16 = 0xE000;
 const RAM_SHADOW_END: u16 = 0xFDFF;
 
-const GFX_SPRITE_INFORMATION: u16 = 0xFE00;
+const GFX_SPRITE_INFO_START: u16 = 0xFE00;
 const GFX_SPRITE_INFO_END: u16 = 0xFE9F;
+
+const UNUSED_MEMORY_START: u16 = 0xFEA0;
+const UNUSED_MEMORY_END: u16 = 0xFEFF;
 
 const IO_START: u16 = 0xFF00;
 const IO_END: u16 = 0xFF7F;
@@ -42,6 +45,7 @@ pub enum Address {
     Ram(u16),
     RamShadow(u16),
     SpriteInformation(u16),
+    Unused(u16),
     Io(u16),
     ZRam(u16),
     InterruptEnableRegister(u16),
@@ -55,6 +59,12 @@ pub fn map_address(virtual_address: u16) -> Address {
         RAM_START...RAM_END => Address::Ram(virtual_address - RAM_START),
         IO_START...IO_END => Address::Io(virtual_address - IO_START),
         ZRAM_START...ZRAM_END => Address::ZRam(virtual_address - ZRAM_START),
+        GFX_SPRITE_INFO_START...GFX_SPRITE_INFO_END => {
+            Address::SpriteInformation(virtual_address - GFX_SPRITE_INFO_START)
+        }
+        UNUSED_MEMORY_START...UNUSED_MEMORY_END => {
+            Address::Unused(virtual_address - UNUSED_MEMORY_START)
+        }
         INTERRUPT_ENABLE_REGISTER => {
             Address::InterruptEnableRegister(virtual_address - INTERRUPT_ENABLE_REGISTER)
         }
@@ -70,6 +80,8 @@ pub fn map_address_unwrap(virtual_address: u16) -> u16 {
         RAM_START...RAM_END => virtual_address - RAM_START,
         IO_START...IO_END => (virtual_address - IO_START),
         ZRAM_START...ZRAM_END => (virtual_address - ZRAM_START),
+        GFX_SPRITE_INFO_START...GFX_SPRITE_INFO_END => virtual_address - GFX_SPRITE_INFO_START,
+        UNUSED_MEMORY_START...UNUSED_MEMORY_END => virtual_address - UNUSED_MEMORY_START,
         INTERRUPT_ENABLE_REGISTER => virtual_address - INTERRUPT_ENABLE_REGISTER,
         _ => panic!("Address {:#X} outside valid memory.", virtual_address),
     }
