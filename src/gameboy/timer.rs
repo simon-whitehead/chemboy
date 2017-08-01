@@ -1,4 +1,4 @@
-use gameboy::{MAX_CPU_CYCLES, Interconnect};
+use gameboy::{MAX_CPU_CYCLES, Interconnect, Irq, Interrupt};
 
 pub struct Timer {
     div: u8,
@@ -17,12 +17,12 @@ impl Timer {
         }
     }
 
-    pub fn step(&mut self, cycles: usize) {
+    pub fn step(&mut self, irq: &mut Irq, cycles: usize) {
         if !self.enabled() {
             return;
         }
         self.inc_div_register(cycles);
-        self.inc_tima_register(cycles);
+        self.inc_tima_register(irq, cycles);
     }
 
     pub fn read_u8(&self, addr: u16) -> u8 {
@@ -50,11 +50,12 @@ impl Timer {
         }
     }
 
-    fn inc_tima_register(&mut self, cycles: usize) {
+    fn inc_tima_register(&mut self, irq: &mut Irq, cycles: usize) {
         let rate = self.get_timer_frequency();
         if cycles > rate {
             if self.tima == 0xFF {
                 self.tima = self.tma; // set the TIMA register to be whatever is in the modulo TMA register
+                irq.request(Interrupt::Timer); // it overflowed, request a timer interrupt
             }
             self.tima.wrapping_add(0x01);
         }

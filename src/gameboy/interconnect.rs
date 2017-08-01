@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use byteorder::{ByteOrder, LittleEndian};
 
-use gameboy::{CPU_FREQUENCY, MAX_CPU_CYCLES, MAX_DIV_REG_CYCLES, Gpu, Memory, Timer};
+use gameboy::{CPU_FREQUENCY, MAX_CPU_CYCLES, MAX_DIV_REG_CYCLES, Gpu, Irq, Memory, Timer};
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
 use super::memory_map::{self, Address};
 
@@ -16,6 +16,7 @@ pub struct Interconnect {
     pub zram: Memory,
     pub mmap_io: Memory,
     pub timer: Timer,
+    pub irq: Irq,
     pub cart: Option<Cartridge>,
     pub interrupt: u8,
 }
@@ -28,6 +29,7 @@ impl Interconnect {
             zram: Memory::new(ZRAM_SIZE),
             mmap_io: Memory::new(MMAP_SIZE),
             timer: Timer::new(),
+            irq: Irq::new(),
             cart: None,
             interrupt: 0x00,
         }
@@ -40,6 +42,7 @@ impl Interconnect {
             zram: Memory::new(ZRAM_SIZE),
             mmap_io: Memory::new(MMAP_SIZE),
             timer: Timer::new(),
+            irq: Irq::new(),
             cart: Some(cart),
             interrupt: 0x00,
         }
@@ -47,7 +50,7 @@ impl Interconnect {
 
     pub fn step(&mut self, cycles: usize) {
         self.gpu.step(cycles);
-        self.timer.step(cycles);
+        self.timer.step(&mut self.irq, cycles);
     }
 
     pub fn cart_details(&self) -> CartridgeDetails {
