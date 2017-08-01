@@ -22,14 +22,6 @@ impl Gpu {
         }
     }
 
-    pub fn enable(&mut self) {
-        self.enabled = true;
-    }
-
-    pub fn disable(&mut self) {
-        self.enabled = false;
-    }
-
     pub fn step(&mut self, cycles: u8) {
         let cycles = cycles as isize;
 

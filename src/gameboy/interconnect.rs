@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use byteorder::{ByteOrder, LittleEndian};
 
-use gameboy::{Gpu, Memory};
+use gameboy::{Gpu, Memory, Timer};
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
 use super::memory_map::{self, Address};
 
@@ -15,6 +15,7 @@ pub struct Interconnect {
     pub ram: Memory,
     pub zram: Memory,
     pub mmap_io: Memory,
+    pub timer: Timer,
     pub cart: Option<Cartridge>,
     pub interrupt: u8,
 }
@@ -26,6 +27,7 @@ impl Interconnect {
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
             mmap_io: Memory::new(MMAP_SIZE),
+            timer: Timer::new(),
             cart: None,
             interrupt: 0x00,
         }
@@ -37,6 +39,7 @@ impl Interconnect {
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
             mmap_io: Memory::new(MMAP_SIZE),
+            timer: Timer::new(),
             cart: Some(cart),
             interrupt: 0x00,
         }
@@ -64,14 +67,17 @@ impl Interconnect {
             Address::ZRam(a) => self.zram.write_u8(a, byte),
             Address::Io(a) => {
                 match a {
+                    0x04 => self.timer.write_u8(a, byte),
                     0x44 => self.gpu.write_u8(a, byte),
                     _ => panic!("write memory mapped I/O in unsupported range: {:04X}", a),
                 }
             }
             Address::InterruptEnableRegister(a) => self.interrupt = byte,
             _ => {
-                panic!("Unable to write byte to: {:#X}, invalid memory region.",
-                       addr)
+                panic!(
+                    "Unable to write byte to: {:#X}, invalid memory region.",
+                    addr
+                )
             }
         }
     }
@@ -89,6 +95,7 @@ impl Interconnect {
             Address::ZRam(a) => self.zram.read_u8(a),
             Address::Io(a) => {
                 match a {
+                    0x04 => self.timer.read_u8(a), // $FF04 - DIV register
                     0x44 => self.gpu.read_u8(a), // LY $FF44 register in GPU
                     _ => panic!("read memory mapped I/O in unsupported range"),
                 }

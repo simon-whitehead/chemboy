@@ -7,7 +7,8 @@ use gameboy::Interconnect;
 use gameboy::memory_map;
 use gameboy::opcode::{OpCode, Operand, ArgumentType};
 
-const MAX_CYCLES: usize = 69905;
+const MAX_CPU_CYCLES: usize = 0x11111; // 69905
+const MAX_DIV_REG_CYCLES: usize = 0x112; // 274
 
 pub struct Cpu {
     pub registers: registers::Registers,
@@ -15,7 +16,9 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn new(gameboy_color: bool) -> Cpu {
-        Cpu { registers: registers::Registers::new(gameboy_color) }
+        Cpu {
+            registers: registers::Registers::new(gameboy_color),
+        }
     }
 
     pub fn reset(&mut self, interconnect: &mut Interconnect) {
@@ -73,9 +76,19 @@ impl Cpu {
     pub fn cycle(&mut self, interconnect: &mut Interconnect) {
         let mut cycles = 0;
 
-        while cycles < MAX_CYCLES {
+        while cycles < MAX_CPU_CYCLES {
             let c = self.step(interconnect);
             cycles += c as usize;
+            self.inc_div_register(cycles, interconnect);
+        }
+    }
+
+    fn inc_div_register(&mut self, cycles: usize, interconnect: &mut Interconnect) {
+        if cycles > MAX_DIV_REG_CYCLES {
+            // Increment the DIV register
+            let div = interconnect.read_u8(0xFF04);
+            let result = div.wrapping_add(0x01);
+            interconnect.write_u8(0xFF04, result);
         }
     }
 
@@ -106,18 +119,22 @@ impl Cpu {
                 0xF3 => self.di(),
                 0xFE => self.cp_n(&operand),
                 _ => {
-                    panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
-                           opcode.code,
-                           self.registers.pc)
+                    panic!(
+                        "Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
+                        opcode.code,
+                        self.registers.pc
+                    )
                 }
             }
 
             return opcode.cycles;
         }
 
-        panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-               byte,
-               self.registers.pc);
+        panic!(
+            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+            byte,
+            self.registers.pc
+        );
     }
 
     fn cp_n(&mut self, operand: &Operand) {
