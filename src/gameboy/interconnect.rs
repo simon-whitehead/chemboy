@@ -49,7 +49,7 @@ impl Interconnect {
     }
 
     pub fn step(&mut self, cycles: usize) {
-        self.gpu.step(cycles);
+        self.gpu.step(&mut self.irq, cycles);
         self.timer.step(&mut self.irq, cycles);
     }
 
@@ -72,9 +72,12 @@ impl Interconnect {
             Address::Io(a) => {
                 match a {
                     0x04...0x07 => self.timer.write_u8(a, byte),
+                    0x0F => self.irq.request_flag = byte,
                     0x10...0x26 => println!("err: write to sound driver not supported"),
                     0x40...0x45 => self.gpu.write_u8(a, byte),
                     0x47...0x49 => self.gpu.write_u8(a, byte),
+                    0x4A...0x4B => self.gpu.write_u8(a, byte),
+                    0xFF => self.irq.enable_flag = byte,
                     _ => panic!("write memory mapped I/O in unsupported range: {:04X}", a),
                 }
             }
@@ -102,12 +105,15 @@ impl Interconnect {
             Address::Io(a) => {
                 match a {
                     0x04...0x07 => self.timer.read_u8(a), 
+                    0x0F => self.irq.request_flag,
                     0x10...0x26 => {
                         println!("err: write to sound driver not supported");
                         0
                     }
                     0x40...0x45 => self.gpu.read_u8(a), 
                     0x47...0x49 => self.gpu.read_u8(a),
+                    0x4A...0x4B => self.gpu.read_u8(a),
+                    0xFF => self.irq.enable_flag,
                     _ => panic!("read memory mapped I/O in unsupported range"),
                 }
             }

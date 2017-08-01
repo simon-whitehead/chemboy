@@ -1,4 +1,4 @@
-use gameboy::{Interconnect, Memory};
+use gameboy::{Interconnect, Interrupt, Irq, Memory};
 
 const VRAM_SIZE: usize = 0x4000;
 
@@ -31,6 +31,8 @@ pub struct Gpu {
     stat: u8,
     scroll_y: u8,
     scroll_x: u8,
+    window_y: u8,
+    window_x: u8,
     ly: u8,
     lyc: u8,
     bg_palette: u8,
@@ -49,6 +51,8 @@ impl Gpu {
             stat: 0x00,
             scroll_y: 0x00,
             scroll_x: 0x00,
+            window_y: 0x00,
+            window_x: 0x00,
             ly: 0x00,
             lyc: 0x00,
             bg_palette: 0x00,
@@ -58,7 +62,7 @@ impl Gpu {
         }
     }
 
-    pub fn step(&mut self, cycles: usize) {
+    pub fn step(&mut self, irq: &mut Irq, cycles: usize) {
         let cycles = cycles as isize;
 
         if !self.enabled {
@@ -71,7 +75,11 @@ impl Gpu {
             self.ly = (self.ly + 0x01) % 0x9A; // LY can only be within 0...153
             if self.ly >= 0x90 {
                 // V-Blank
-                // println!("######## V-BLANK");
+                irq.request(Interrupt::Vblank);
+            }
+            self.check_coincidence();
+            if self.get_coincidence_flag() && self.coincidence_interrupt_enabled() {
+                irq.request(Interrupt::Lcd);
             }
         }
     }
@@ -81,6 +89,8 @@ impl Gpu {
             0x40 => self.control_register,
             0x42 => self.scroll_y,
             0x43 => self.scroll_x,
+            0x4A => self.window_y,
+            0x4B => self.window_x,
             0x44 => self.ly,
             0x45 => self.lyc,
             0x47 => self.bg_palette,
@@ -95,16 +105,26 @@ impl Gpu {
             0x40 => self.control_register = val,
             0x42 => self.scroll_y = val,
             0x43 => self.scroll_x = val,
+            0x4A => self.window_y = val,
+            0x4B => self.window_x = val,
             0x44 => self.ly = val,
             0x45 => {
                 self.lyc = val;
-                // If LY == LYC then set the coincidence flag
-                self.set_coincidence_flag(true);
+                self.check_coincidence();
             }
             0x47 => self.bg_palette = val,
             0x48 => self.palette0 = val,
             0x49 => self.palette1 = val,
             _ => panic!("tried to write GPU memory that is not mapped"),
+        }
+    }
+
+    fn check_coincidence(&mut self) {
+        // If LY == LYC then set the coincidence flag
+        if self.lyc == self.ly {
+            self.set_coincidence_flag(true);
+        } else {
+            self.set_coincidence_flag(false);
         }
     }
 
