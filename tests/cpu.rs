@@ -175,6 +175,17 @@ mod tests {
     }
 
     #[test]
+    fn ld_imm16_a() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xEA 0xC5 0xAF]);
+
+        cpu.registers.a = 0xCC;
+        interconnect.write_u8(0xAFC5, 0xE3);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xCC, interconnect.read_u8(0xAFC5));
+    }
+
+    #[test]
     fn xor_a_xors_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF]);
 
