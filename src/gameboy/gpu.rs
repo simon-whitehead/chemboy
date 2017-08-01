@@ -5,6 +5,7 @@ const VRAM_SIZE: usize = 0x4000;
 pub struct Gpu {
     pub enabled: bool,
     pub ram: Memory,
+    control_register: u8,
     ly: u8,
 
     cycles: isize,
@@ -15,6 +16,7 @@ impl Gpu {
         Gpu {
             enabled: true,
             ram: Memory::new(VRAM_SIZE),
+            control_register: 0,
             ly: 0,
             cycles: 0,
         }
@@ -48,6 +50,7 @@ impl Gpu {
 
     pub fn read_u8(&self, addr: u16) -> u8 {
         match addr {
+            0x40 => self.control_register,
             0x44 => self.ly,
             _ => panic!("tried to read GPU memory that is not mapped"),
         }
@@ -55,12 +58,9 @@ impl Gpu {
 
     pub fn write_u8(&mut self, addr: u16, val: u8) {
         match addr {
-            0x44 => self.write_lcdc_y(val),
+            0x40 => self.control_register = val,
+            0x44 => self.ly = val,
             _ => panic!("tried to write GPU memory that is not mapped"),
         }
-    }
-
-    pub fn write_lcdc_y(&mut self, val: u8) {
-        self.ly = val;
     }
 }
