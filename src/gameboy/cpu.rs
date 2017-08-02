@@ -13,9 +13,7 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn new(gameboy_color: bool) -> Cpu {
-        Cpu {
-            registers: registers::Registers::new(gameboy_color),
-        }
+        Cpu { registers: registers::Registers::new(gameboy_color) }
     }
 
     pub fn reset(&mut self, interconnect: &mut Interconnect) {
@@ -101,7 +99,7 @@ impl Cpu {
         if let Some(opcode) = OpCode::from_byte(byte) {
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            //println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
+            // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
             self.registers.pc += opcode.length;
 
             match opcode.code {
@@ -122,6 +120,7 @@ impl Cpu {
                 0x3E => self.ld_a_imm8(&operand),
                 0x78 => self.ld_a_b(),
                 0xAF => self.xor_a(),
+                0xB1 => self.or_c(),
                 0xC3 => self.jp_imm16(&operand),
                 0xCD => self.call(operand.unwrap_imm16(), interconnect),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
@@ -131,22 +130,18 @@ impl Cpu {
                 0xF3 => self.di(),
                 0xFE => self.cp_n(&operand),
                 _ => {
-                    panic!(
-                        "Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
-                        opcode.code,
-                        self.registers.pc
-                    )
+                    panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
+                           opcode.code,
+                           self.registers.pc)
                 }
             }
 
             return opcode.cycles;
         }
 
-        panic!(
-            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-            byte,
-            self.registers.pc
-        );
+        panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+               byte,
+               self.registers.pc);
     }
 
     fn cp_n(&mut self, operand: &Operand) {
@@ -194,6 +189,19 @@ impl Cpu {
         self.registers.flags.zero = self.registers.c == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+    }
+
+    fn jp_imm16(&mut self, operand: &Operand) {
+        let addr = operand.unwrap_imm16();
+        self.registers.set_pc(addr);
+    }
+
+    fn jr_nz_imm8(&mut self, operand: &Operand, interconnect: &Interconnect) {
+        let offset = operand.unwrap_imm8();
+
+        if self.registers.flags.zero == false {
+            self.relative_jump(offset);
+        }
     }
 
     fn ld_a_b(&mut self) {
@@ -272,17 +280,13 @@ impl Cpu {
         self.registers.sp = addr as usize;
     }
 
-    fn jp_imm16(&mut self, operand: &Operand) {
-        let addr = operand.unwrap_imm16();
-        self.registers.set_pc(addr);
-    }
+    fn or_c(&mut self) {
+        self.registers.a |= self.registers.c;
 
-    fn jr_nz_imm8(&mut self, operand: &Operand, interconnect: &Interconnect) {
-        let offset = operand.unwrap_imm8();
-
-        if self.registers.flags.zero == false {
-            self.relative_jump(offset);
-        }
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
     }
 
     fn xor_a(&mut self) {
