@@ -155,6 +155,7 @@ impl Cpu {
             self.registers.pc += opcode.length;
 
             match opcode.code {
+                0x37 => self.swap_a(),
                 _ => {
                     panic!("Could not match opcode: {:02X} at offset: {:04X}",
                            opcode.code,
@@ -165,7 +166,7 @@ impl Cpu {
             return opcode.cycles;
         }
 
-        panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+        panic!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
                byte,
                self.registers.pc);
     }
@@ -346,6 +347,16 @@ impl Cpu {
         let addr = interconnect.read_u16(self.registers.sp as u16);
         self.registers.sp += 0x02;
         self.registers.pc = addr;
+    }
+
+    fn swap_a(&mut self) {
+        let result = (self.registers.a >> 4) | (self.registers.a << 4);
+
+        self.registers.a = result;
+        self.registers.flags.zero = result == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
     }
 
     fn xor_a(&mut self) {

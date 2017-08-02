@@ -47,7 +47,11 @@ pub struct OpCode {
 
 impl OpCode {
     pub fn from_byte<'opcode>(byte: u8, extended: bool) -> Option<&'opcode OpCode> {
-        OPCODES.iter().find(|opcode| opcode.code == byte && opcode.extended == extended)
+        if extended {
+            EXT_OPCODES.iter().find(|opcode| opcode.code == byte)
+        } else {
+            OPCODES.iter().find(|opcode| opcode.code == byte)
+        }
     }
 
     pub fn from_mnemonic<S>(input: S) -> Option<OpCode>
@@ -60,7 +64,7 @@ impl OpCode {
     }
 }
 
-static OPCODES: [OpCode; 30] = [OpCode {
+static OPCODES: [OpCode; 31] = [OpCode {
                                     code: 0x00,
                                     mnemonic: "NOP",
                                     length: 1,
@@ -229,6 +233,14 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     extended: false,
                                 },
                                 OpCode {
+                                    code: 0xCB,
+                                    mnemonic: "",
+                                    length: 1,
+                                    cycles: 0,
+                                    argument_type: ArgumentType::Implied,
+                                    extended: false,
+                                },
+                                OpCode {
                                     code: 0xCD,
                                     mnemonic: "CALL {imm16}",
                                     length: 3,
@@ -300,3 +312,12 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     argument_type: ArgumentType::Imm8,
                                     extended: false,
                                 }];
+
+static EXT_OPCODES: [OpCode; 1] = [OpCode {
+    code: 0x37,
+    mnemonic: "SWAP A",
+    length: 1,
+    cycles: 8,
+    argument_type: ArgumentType::Implied,
+    extended: true
+}];
