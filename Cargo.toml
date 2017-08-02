@@ -3,6 +3,13 @@ name = "gbrs"
 version = "0.1.0"
 authors = ["simonwhitehead"]
 
+[dependencies]
+gfx_device_gl = "0.14.1"
+piston = "0.32.0"
+piston2d-graphics = "0.21.1"
+piston2d-opengl_graphics = "0.43.1"
+piston_window = "0.66.0"
+
 [dependencies.clap]
 version = "2"
 
