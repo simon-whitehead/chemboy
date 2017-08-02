@@ -107,6 +107,7 @@ impl Cpu {
                 0x20 => self.jr_nz_imm8(&operand, interconnect),
                 0x21 => self.ld_hl_imm16(&operand),
                 0x2A => self.ld_a_hli(interconnect),
+                0x2F => self.cpl(),
                 0x31 => self.ld_sp_imm16(&operand),
                 0x32 => self.ld_hld_a(interconnect),
                 0x36 => self.ld_hl_imm8(&operand, interconnect),
@@ -143,6 +144,12 @@ impl Cpu {
         self.registers.sp -= 0x02;
         interconnect.write_u16(self.registers.sp as u16, self.registers.pc);
         self.registers.pc = addr;
+    }
+
+    fn cpl(&mut self) {
+        self.registers.a = !self.registers.a as u8;
+        self.registers.flags.negative = true;
+        self.registers.flags.half_carry = true;
     }
 
     fn cp_n(&mut self, operand: &Operand) {
