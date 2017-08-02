@@ -73,6 +73,7 @@ impl Interconnect {
             Address::Unused(_) => (),
             Address::Io(a) => {
                 match a {
+                    0x00 => println!("err: write to joypad not supported"),
                     0x01...0x02 => println!("err: write to serial driver not supported"),
                     0x04...0x07 => self.timer.write_u8(a, byte),
                     0x0F => self.irq.request_flag = byte,
@@ -108,6 +109,10 @@ impl Interconnect {
             Address::Unused(_) => 0xFF, // Always return high
             Address::Io(a) => {
                 match a {
+                    0x00 => {
+                        println!("err: read from joypad not supported");
+                        0
+                    }
                     0x01...0x02 => {
                         println!("err: read from serial driver not supported");
                         0
