@@ -116,6 +116,7 @@ impl Cpu {
                 0x47 => self.ld_b_a(),
                 0x4F => self.ld_c_a(),
                 0x78 => self.ld_a_b(),
+                0xA1 => self.and_c(),
                 0xA9 => self.xor_c(),
                 0xAF => self.xor_a(),
                 0xB0 => self.or_b(),
@@ -173,6 +174,16 @@ impl Cpu {
         panic!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
                byte,
                self.registers.pc);
+    }
+
+    fn and_c(&mut self) {
+        let r = self.registers.a & self.registers.c;
+
+        self.registers.a = r;
+        self.registers.flags.zero = r == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = true;
+        self.registers.flags.carry = false;
     }
 
     fn and_imm8(&mut self, operand: &Operand) {
