@@ -106,6 +106,7 @@ impl Cpu {
 
             match opcode.code {
                 0x00 => (),
+                0x01 => self.ld_bc_imm16(&operand),
                 0x05 => self.dec_b(),
                 0x06 => self.ld_b_imm8(&operand),
                 0x0C => self.inc_c(),
@@ -198,6 +199,11 @@ impl Cpu {
     fn ld_a_imm8(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
         self.registers.a = val;
+    }
+
+    fn ld_bc_imm16(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm16();
+        self.registers.set_bc(val);
     }
 
     fn ld_b_imm8(&mut self, operand: &Operand) {
