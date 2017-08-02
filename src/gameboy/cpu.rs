@@ -120,6 +120,7 @@ impl Cpu {
                 0xCD => self.call(operand.unwrap_imm16(), interconnect),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE2 => self.ld_ff00_c_a(interconnect),
+                0xE6 => self.and_imm8(&operand),
                 0xEA => self.ld_imm16_a(&operand, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF3 => self.di(),
@@ -138,6 +139,17 @@ impl Cpu {
         panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
                byte,
                self.registers.pc);
+    }
+
+    fn and_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        let r = self.registers.a & val;
+
+        self.registers.a = r;
+        self.registers.flags.zero = r == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = true;
+        self.registers.flags.carry = false;
     }
 
     fn call(&mut self, addr: u16, interconnect: &mut Interconnect) {
