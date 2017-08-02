@@ -116,6 +116,7 @@ impl Cpu {
                 0x47 => self.ld_b_a(),
                 0x78 => self.ld_a_b(),
                 0xAF => self.xor_a(),
+                0xB0 => self.or_b(),
                 0xB1 => self.or_c(),
                 0xC3 => self.jp_imm16(&operand),
                 0xC9 => self.ret(interconnect),
@@ -337,6 +338,15 @@ impl Cpu {
     fn ld_sp_imm16(&mut self, operand: &Operand) {
         let addr = operand.unwrap_imm16();
         self.registers.sp = addr as usize;
+    }
+
+    fn or_b(&mut self) {
+        self.registers.a |= self.registers.b;
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
     }
 
     fn or_c(&mut self) {
