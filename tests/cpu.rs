@@ -7,6 +7,20 @@ mod tests {
     use gbrs::gameboy::{Cartridge, Cpu, Interconnect};
 
     #[test]
+    fn add_a_a() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x87]);
+
+        cpu.registers.a = 0xAA;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x54, cpu.registers.a);
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+        assert_eq!(true, cpu.registers.flags.carry);
+    }
+
+    #[test]
     fn and_c() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xA1]);
 

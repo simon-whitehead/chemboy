@@ -64,7 +64,7 @@ impl OpCode {
     }
 }
 
-static OPCODES: [OpCode; 37] = [OpCode {
+static OPCODES: [OpCode; 39] = [OpCode {
                                     code: 0x00,
                                     mnemonic: "NOP",
                                     length: 1,
@@ -225,6 +225,14 @@ static OPCODES: [OpCode; 37] = [OpCode {
                                     extended: false,
                                 },
                                 OpCode {
+                                    code: 0x87,
+                                    mnemonic: "AND A, A",
+                                    length: 1,
+                                    cycles: 4,
+                                    argument_type: ArgumentType::Implied,
+                                    extended: false,
+                                },
+                                OpCode {
                                     code: 0xA1,
                                     mnemonic: "AND C",
                                     length: 1,
@@ -327,6 +335,14 @@ static OPCODES: [OpCode; 37] = [OpCode {
                                     cycles: 16,
                                     argument_type: ArgumentType::Imm16,
                                     extended: false,
+                                },
+                                OpCode {
+                                    code: 0xEF,
+                                    mnemonic: "RST 0x28",
+                                    length: 1,
+                                    cycles: 32,
+                                    argument_type: ArgumentType::Implied,
+                                    extended: false
                                 },
                                 OpCode {
                                     code: 0xF0,

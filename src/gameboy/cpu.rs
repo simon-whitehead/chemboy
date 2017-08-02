@@ -117,6 +117,7 @@ impl Cpu {
                 0x4F => self.ld_c_a(),
                 0x78 => self.ld_a_b(),
                 0x79 => self.ld_a_c(),
+                0x87 => self.add_a_a(),
                 0xA1 => self.and_c(),
                 0xA9 => self.xor_c(),
                 0xAF => self.xor_a(),
@@ -132,6 +133,7 @@ impl Cpu {
                 0xE2 => self.ld_ff00_c_a(interconnect),
                 0xE6 => self.and_imm8(&operand),
                 0xEA => self.ld_imm16_a(&operand, interconnect),
+                0xEF => self.call(0x28, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF3 => self.di(),
                 0xFB => self.ei(),
@@ -175,6 +177,18 @@ impl Cpu {
         panic!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
                byte,
                self.registers.pc);
+    }
+
+    fn add_a_a(&mut self) {
+        let a1 = self.registers.a;
+        let a2 = self.registers.a;
+
+        self.registers.a = a1.wrapping_add(a2);
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = ((a1 & 0x0F) + (a2 & 0x0F)) & 0x10 == 0x10;
+        self.registers.flags.carry = (a1 as u16) + (a2 as u16) > 0xFF;
     }
 
     fn and_c(&mut self) {
