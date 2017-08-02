@@ -17,7 +17,7 @@ mod tests {
         cpu.step(&mut interconnect); // step over NOP
         cpu.step(&mut interconnect); // step over CALL 0x000C (jump to byte 12)
         assert_eq!(0x0C, cpu.registers.pc); // program counter should be at byte 12
-        assert_eq!(0x05, interconnect.read_u16(0xFFFD)); // return address on stack should be byte 5 (2 nops + 3 bytes for the call)
+        assert_eq!(0x05, interconnect.read_u16(cpu.registers.sp as u16)); // return address on stack should be byte 5 (2 nops + 3 bytes for the call)
         cpu.step(&mut interconnect); // step over 'INC C'
         assert_eq!(0x3D, cpu.registers.c); // C should be 0x3C + 1
     }
@@ -271,6 +271,15 @@ mod tests {
     }
 
     #[test]
+    fn ld_sp_imm16() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x31 0xCF 0xF7]);
+
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xF7CF, cpu.registers.sp);
+    }
+
+    #[test]
     fn or_c() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xB1]);
 
@@ -282,12 +291,22 @@ mod tests {
     }
 
     #[test]
-    fn ld_sp_imm16() {
-        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x31 0xCF 0xF7]);
+    fn ret() {
+        let (mut cpu, mut interconnect) =
+            create_cpu(gb_asm![0x00 0x00 0xCD 0x0C 0x00 0x0C 0x00 0x00 0x00 0x00 0x00 0x00 0x0C 0xC9]);
+        //                               ^^^^^^^^^ jump to the 'INC C' opcode here --------^^^^
 
-        cpu.step(&mut interconnect);
-
-        assert_eq!(0xF7CF, cpu.registers.sp);
+        cpu.registers.c = 0x3C;
+        cpu.step(&mut interconnect); // step over NOP
+        cpu.step(&mut interconnect); // step over NOP
+        cpu.step(&mut interconnect); // step over CALL 0x000C (jump to byte 12)
+        cpu.step(&mut interconnect); // step over 'INC C'
+        cpu.step(&mut interconnect); // step over 'RET', jumping back to byte 5
+        println!("PC is now: {:04X}", cpu.registers.pc);
+        println!("C is now: {:02X}", cpu.registers.c);
+        cpu.step(&mut interconnect); // step over 'INC C'
+        println!("C is now: {:02X}", cpu.registers.c);
+        assert_eq!(0x3E, cpu.registers.c); // C should be 0x3C + 2
     }
 
     #[test]

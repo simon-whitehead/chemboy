@@ -87,9 +87,8 @@ impl Cpu {
     }
 
     fn call(&mut self, addr: u16, interconnect: &mut Interconnect) {
-        self.registers.sp -= 0x01;
+        self.registers.sp -= 0x02;
         interconnect.write_u16(self.registers.sp as u16, self.registers.pc);
-        self.registers.sp -= 0x01;
         self.registers.pc = addr;
     }
 
@@ -122,6 +121,7 @@ impl Cpu {
                 0xAF => self.xor_a(),
                 0xB1 => self.or_c(),
                 0xC3 => self.jp_imm16(&operand),
+                0xC9 => self.ret(interconnect),
                 0xCD => self.call(operand.unwrap_imm16(), interconnect),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE2 => self.ld_ff00_c_a(interconnect),
@@ -287,6 +287,12 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
         self.registers.flags.carry = false;
+    }
+
+    fn ret(&mut self, interconnect: &mut Interconnect) {
+        let addr = interconnect.read_u16(self.registers.sp as u16);
+        self.registers.sp += 0x02;
+        self.registers.pc = addr;
     }
 
     fn xor_a(&mut self) {
