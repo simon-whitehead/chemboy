@@ -120,6 +120,7 @@ impl Cpu {
                 0x32 => self.ld_hld_a(interconnect),
                 0x36 => self.ld_hl_imm8(&operand, interconnect),
                 0x3E => self.ld_a_imm8(&operand),
+                0x78 => self.ld_a_b(),
                 0xAF => self.xor_a(),
                 0xC3 => self.jp_imm16(&operand),
                 0xCD => self.call(operand.unwrap_imm16(), interconnect),
@@ -193,6 +194,10 @@ impl Cpu {
         self.registers.flags.zero = self.registers.c == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+    }
+
+    fn ld_a_b(&mut self) {
+        self.registers.a = self.registers.b;
     }
 
     fn ld_a_hli(&mut self, interconnect: &mut Interconnect) {
