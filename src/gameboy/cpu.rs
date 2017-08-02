@@ -109,6 +109,7 @@ impl Cpu {
                 0x01 => self.ld_bc_imm16(&operand),
                 0x05 => self.dec_b(),
                 0x06 => self.ld_b_imm8(&operand),
+                0x0B => self.dec_bc(),
                 0x0C => self.inc_c(),
                 0x0D => self.dec_c(),
                 0x0E => self.ld_c_imm8(&operand),
@@ -165,6 +166,11 @@ impl Cpu {
         self.registers.flags.zero = self.registers.b == 0x00;
         self.registers.flags.negative = true;
         self.registers.flags.half_carry = (r & 0x0F) == 0x00;
+    }
+
+    fn dec_bc(&mut self) {
+        let val = self.registers.get_bc().wrapping_sub(0x01);
+        self.registers.set_bc(val);
     }
 
     fn dec_c(&mut self) {

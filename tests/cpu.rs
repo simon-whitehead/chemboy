@@ -60,6 +60,16 @@ mod tests {
     }
 
     #[test]
+    fn dec_bc() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x0B]);
+
+        cpu.registers.set_bc(0x33);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x32, cpu.registers.get_bc());
+    }
+
+    #[test]
     fn dec_c() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x0D]);
 
