@@ -104,6 +104,16 @@ mod tests {
     }
 
     #[test]
+    fn ei() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xFB]);
+
+        cpu.registers.flags.ime = false;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(true, cpu.registers.flags.ime);
+    }
+
+    #[test]
     fn inc_c() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x0C]);
 

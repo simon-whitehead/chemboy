@@ -86,12 +86,6 @@ impl Cpu {
         }
     }
 
-    fn call(&mut self, addr: u16, interconnect: &mut Interconnect) {
-        self.registers.sp -= 0x02;
-        interconnect.write_u16(self.registers.sp as u16, self.registers.pc);
-        self.registers.pc = addr;
-    }
-
     pub fn step(&mut self, interconnect: &mut Interconnect) -> u8 {
         let byte = interconnect.read_u8(self.registers.pc);
 
@@ -128,6 +122,7 @@ impl Cpu {
                 0xEA => self.ld_imm16_a(&operand, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF3 => self.di(),
+                0xFB => self.ei(),
                 0xFE => self.cp_n(&operand),
                 _ => {
                     panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
@@ -142,6 +137,12 @@ impl Cpu {
         panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
                byte,
                self.registers.pc);
+    }
+
+    fn call(&mut self, addr: u16, interconnect: &mut Interconnect) {
+        self.registers.sp -= 0x02;
+        interconnect.write_u16(self.registers.sp as u16, self.registers.pc);
+        self.registers.pc = addr;
     }
 
     fn cp_n(&mut self, operand: &Operand) {
@@ -180,6 +181,10 @@ impl Cpu {
 
     fn di(&mut self) {
         self.registers.flags.ime = false;
+    }
+
+    fn ei(&mut self) {
+        self.registers.flags.ime = true;
     }
 
     fn inc_c(&mut self) {
