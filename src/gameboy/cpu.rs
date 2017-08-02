@@ -89,7 +89,8 @@ impl Cpu {
     pub fn step(&mut self, interconnect: &mut Interconnect) -> u8 {
         let byte = interconnect.read_u8(self.registers.pc);
 
-        if let Some(opcode) = OpCode::from_byte(byte) {
+        if let Some(opcode) = OpCode::from_byte(byte, false) {
+            let mut cycles = opcode.cycles;
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
             // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
@@ -117,6 +118,9 @@ impl Cpu {
                 0xB1 => self.or_c(),
                 0xC3 => self.jp_imm16(&operand),
                 0xC9 => self.ret(interconnect),
+                0xCB => {
+                    cycles = self.handle_extended_opcode(interconnect);
+                }
                 0xCD => self.call(operand.unwrap_imm16(), interconnect),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE2 => self.ld_ff00_c_a(interconnect),
@@ -127,7 +131,32 @@ impl Cpu {
                 0xFB => self.ei(),
                 0xFE => self.cp_n(&operand),
                 _ => {
-                    panic!("Could not match opcode mnemonic: 0x{:02X} at offset: 0x{:04X}",
+                    panic!("Could not match opcode: {:02X} at offset: {:04X}",
+                           opcode.code,
+                           self.registers.pc)
+                }
+            }
+
+            return cycles;
+        }
+
+        panic!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+               byte,
+               self.registers.pc);
+    }
+
+    pub fn handle_extended_opcode(&mut self, interconnect: &mut Interconnect) -> u8 {
+        let byte = interconnect.read_u8(self.registers.pc);
+
+        if let Some(opcode) = OpCode::from_byte(byte, true) {
+            let operand = self.get_operand_from_opcode(interconnect, &opcode);
+
+            // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
+            self.registers.pc += opcode.length;
+
+            match opcode.code {
+                _ => {
+                    panic!("Could not match opcode: {:02X} at offset: {:04X}",
                            opcode.code,
                            self.registers.pc)
                 }

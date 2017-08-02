@@ -42,11 +42,12 @@ pub struct OpCode {
     pub length: u16,
     pub cycles: u8,
     pub argument_type: ArgumentType,
+    pub extended: bool,
 }
 
 impl OpCode {
-    pub fn from_byte<'opcode>(byte: u8) -> Option<&'opcode OpCode> {
-        OPCODES.iter().find(|opcode| opcode.code == byte)
+    pub fn from_byte<'opcode>(byte: u8, extended: bool) -> Option<&'opcode OpCode> {
+        OPCODES.iter().find(|opcode| opcode.code == byte && opcode.extended == extended)
     }
 
     pub fn from_mnemonic<S>(input: S) -> Option<OpCode>
@@ -65,6 +66,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 4,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x01,
@@ -72,6 +74,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 3,
                                     cycles: 12,
                                     argument_type: ArgumentType::Imm16,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x05,
@@ -79,6 +82,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 4,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x06,
@@ -86,6 +90,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 2,
                                     cycles: 8,
                                     argument_type: ArgumentType::Imm8,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x0B,
@@ -93,6 +98,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 8,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x0C,
@@ -100,6 +106,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 4,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x0D,
@@ -107,6 +114,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 4,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x0E,
@@ -114,6 +122,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 2,
                                     cycles: 8,
                                     argument_type: ArgumentType::Imm8,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x20,
@@ -121,6 +130,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 2,
                                     cycles: 8,
                                     argument_type: ArgumentType::Imm8,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x21,
@@ -128,6 +138,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 3,
                                     cycles: 12,
                                     argument_type: ArgumentType::Imm16,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x2A,
@@ -135,6 +146,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 8,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x2F,
@@ -142,6 +154,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 4,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x31,
@@ -149,6 +162,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 3,
                                     cycles: 12,
                                     argument_type: ArgumentType::Imm16,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x32,
@@ -156,6 +170,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 8,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x36,
@@ -163,6 +178,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 2,
                                     cycles: 12,
                                     argument_type: ArgumentType::Imm8,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x3E,
@@ -170,6 +186,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 2,
                                     cycles: 8,
                                     argument_type: ArgumentType::Imm8,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0x78,
@@ -177,6 +194,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 4,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xAF,
@@ -184,6 +202,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 4,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xB1,
@@ -191,6 +210,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 4,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xC3,
@@ -198,6 +218,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 3,
                                     cycles: 12,
                                     argument_type: ArgumentType::Imm16,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xC9,
@@ -205,6 +226,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 8,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xCD,
@@ -212,6 +234,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 3,
                                     cycles: 12,
                                     argument_type: ArgumentType::Imm16,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xE0,
@@ -219,6 +242,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 2,
                                     cycles: 12,
                                     argument_type: ArgumentType::Imm8,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xE2,
@@ -226,6 +250,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 8,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xE6,
@@ -233,6 +258,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 2,
                                     cycles: 8,
                                     argument_type: ArgumentType::Imm8,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xEA,
@@ -240,6 +266,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 3,
                                     cycles: 16,
                                     argument_type: ArgumentType::Imm16,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xF0,
@@ -247,6 +274,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 2,
                                     cycles: 12,
                                     argument_type: ArgumentType::Imm8,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xF3,
@@ -254,6 +282,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 4,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xFB,
@@ -261,6 +290,7 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 1,
                                     cycles: 4,
                                     argument_type: ArgumentType::Implied,
+                                    extended: false,
                                 },
                                 OpCode {
                                     code: 0xFE,
@@ -268,4 +298,5 @@ static OPCODES: [OpCode; 30] = [OpCode {
                                     length: 2,
                                     cycles: 8,
                                     argument_type: ArgumentType::Imm8,
+                                    extended: false,
                                 }];
