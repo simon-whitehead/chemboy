@@ -142,6 +142,7 @@ impl Cpu {
                 0xE1 => self.pop_hl(interconnect),
                 0xE2 => self.ld_ff00_c_a(interconnect),
                 0xE6 => self.and_imm8(&operand),
+                0xE9 => self.jp_hl(),
                 0xEA => self.ld_imm16_a(&operand, interconnect),
                 0xEF => self.call(0x28, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
@@ -307,6 +308,10 @@ impl Cpu {
     fn inc_hl(&mut self) {
         let val = self.registers.get_hl();
         self.registers.set_hl(val + 0x01);
+    }
+
+    fn jp_hl(&mut self) {
+        self.registers.pc = self.registers.get_hl();
     }
 
     fn jp_imm16(&mut self, operand: &Operand) {
