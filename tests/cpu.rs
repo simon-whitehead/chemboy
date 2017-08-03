@@ -675,6 +675,22 @@ mod tests {
     }
 
     #[test]
+    fn ret_z() {
+        let (mut cpu, mut interconnect) =
+            create_cpu(gb_asm![0x00 0x00 0xCD 0x0C 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x0C 0xC8]);
+        //                               ^^^^^^^^^ jump to the 'INC C' opcode here --------^^^^
+
+        cpu.registers.c = 0xFF;
+        cpu.step(&mut interconnect); // step over NOP
+        cpu.step(&mut interconnect); // step over NOP
+        cpu.step(&mut interconnect); // step over CALL 0x000C (jump to byte 12)
+        cpu.step(&mut interconnect); // step over 'INC C'
+        cpu.step(&mut interconnect); // step over 'RET NZ', jumping back to byte 5 because C will make f.zero == true
+        assert_eq!(0x00, cpu.registers.c); 
+        assert_eq!(0x05, cpu.registers.pc); 
+    }
+
+    #[test]
     fn swap_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x37]);
 

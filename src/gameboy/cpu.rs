@@ -152,6 +152,7 @@ impl Cpu {
                 0xC0 => self.ret_nz(interconnect),
                 0xC3 => self.jp_imm16(&operand),
                 0xC5 => self.push_bc(interconnect),
+                0xC8 => self.ret_z(interconnect),
                 0xC9 => self.ret(interconnect),
                 0xCB => {
                     cycles = self.handle_extended_opcode(interconnect);
@@ -583,6 +584,14 @@ impl Cpu {
 
     fn ret_nz(&mut self, interconnect: &mut Interconnect) {
         if self.registers.flags.zero == false {
+            let addr = interconnect.read_u16(self.registers.sp as u16);
+            self.registers.sp += 0x02;
+            self.registers.pc = addr;
+        }
+    }
+
+    fn ret_z(&mut self, interconnect: &mut Interconnect) {
+        if self.registers.flags.zero {
             let addr = interconnect.read_u16(self.registers.sp as u16);
             self.registers.sp += 0x02;
             self.registers.pc = addr;
