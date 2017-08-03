@@ -519,6 +519,16 @@ mod tests {
     }
 
     #[test]
+    fn push_hl() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xE5]);
+
+        cpu.registers.set_hl(0xCFA5);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xCFA5, interconnect.read_u16(cpu.registers.sp as u16));
+    }
+
+    #[test]
     fn res_0_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x87]);
 

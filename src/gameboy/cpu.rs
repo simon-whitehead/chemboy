@@ -144,6 +144,7 @@ impl Cpu {
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE1 => self.pop_hl(interconnect),
                 0xE2 => self.ld_ff00_c_a(interconnect),
+                0xE5 => self.push_hl(interconnect),
                 0xE6 => self.and_imm8(&operand),
                 0xE9 => self.jp_hl(),
                 0xEA => self.ld_imm16_a(&operand, interconnect),
@@ -482,6 +483,12 @@ impl Cpu {
 
     fn push_de(&mut self, interconnect: &mut Interconnect) {
         let val = self.registers.get_de();
+        self.registers.sp -= 0x02;
+        interconnect.write_u16(self.registers.sp as u16, val);
+    }
+
+    fn push_hl(&mut self, interconnect: &mut Interconnect) {
+        let val = self.registers.get_hl();
         self.registers.sp -= 0x02;
         interconnect.write_u16(self.registers.sp as u16, val);
     }
