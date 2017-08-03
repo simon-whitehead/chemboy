@@ -6,3 +6,6 @@ Gameboy:
 
 Emulator:
     ☐ Add metadata about ROM view
+
+OpCodes that need double checking:
+    ☐ 0x19 - ADD HL, DE - make sure the half carry is legit @high 

@@ -108,6 +108,7 @@ impl Cpu {
                 0x0D => self.dec_c(),
                 0x0E => self.ld_c_imm8(&operand),
                 0x16 => self.ld_d_imm8(&operand),
+                0x19 => self.add_hl_de(),
                 0x20 => self.jr_nz_imm8(&operand, interconnect),
                 0x21 => self.ld_hl_imm16(&operand),
                 0x2A => self.ld_a_hli(interconnect),
@@ -202,6 +203,18 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = ((a1 & 0x0F) + (a2 & 0x0F)) & 0x10 == 0x10;
         self.registers.flags.carry = (a1 as u16) + (a2 as u16) > 0xFF;
+    }
+
+    fn add_hl_de(&mut self) {
+        let hl = self.registers.get_hl();
+        let de = self.registers.get_de();
+
+        let r = hl.wrapping_add(de);
+
+        self.registers.set_hl(r);
+        self.registers.flags.half_carry = ((hl & 0x0FFF) + (de & 0x0FFF)) & 0x1000 == 0x1000;
+        self.registers.flags.negative = false;
+        self.registers.flags.carry = r > 0xFFFF;
     }
 
     fn and_c(&mut self) {
