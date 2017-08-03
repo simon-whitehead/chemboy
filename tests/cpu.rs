@@ -520,6 +520,19 @@ mod tests {
     }
 
     #[test]
+    fn pop_de() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xD1]);
+
+        interconnect.write_u16(0xFFFC, 0xCF91);
+        cpu.registers.sp = 0xFFFC;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xCF, cpu.registers.d);
+        assert_eq!(0x91, cpu.registers.e);
+        assert_eq!(0xFFFE, cpu.registers.sp);
+    }
+
+    #[test]
     fn pop_hl() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xE1]);
 
