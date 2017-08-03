@@ -34,6 +34,20 @@ mod tests {
     }
 
     #[test]
+    fn and_a() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xA7]);
+
+        cpu.registers.a = 0x5A;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x5A, cpu.registers.a);
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+        assert_eq!(false, cpu.registers.flags.carry);
+    }
+
+    #[test]
     fn and_c() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xA1]);
 
