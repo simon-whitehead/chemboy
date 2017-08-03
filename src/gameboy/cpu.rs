@@ -170,6 +170,7 @@ impl Cpu {
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF3 => self.di(),
                 0xF5 => self.push_af(interconnect),
+                0xFA => self.ld_a_imm16(&operand, interconnect),
                 0xFB => self.ei(),
                 0xFE => self.cp_n(&operand),
                 _ => {
@@ -408,6 +409,12 @@ impl Cpu {
 
     fn ld_a_imm8(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
+        self.registers.a = val;
+    }
+
+    fn ld_a_imm16(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
+        let addr = operand.unwrap_imm16();
+        let val = interconnect.read_u8(addr);
         self.registers.a = val;
     }
 
