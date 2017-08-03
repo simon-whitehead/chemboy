@@ -117,6 +117,7 @@ impl Cpu {
                 0x3E => self.ld_a_imm8(&operand),
                 0x47 => self.ld_b_a(),
                 0x4F => self.ld_c_a(),
+                0x5F => self.ld_e_a(),
                 0x78 => self.ld_a_b(),
                 0x79 => self.ld_a_c(),
                 0x87 => self.add_a_a(),
@@ -307,6 +308,12 @@ impl Cpu {
         self.registers.a = self.registers.c;
     }
 
+    fn ld_a_ff00_imm8(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
+        let offset = operand.unwrap_imm8();
+        let addr = 0xFF00 as u16 + offset as u16;
+        self.registers.a = interconnect.read_u8(addr);
+    }
+
     fn ld_a_hli(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         let val = interconnect.read_u8(addr);
@@ -342,10 +349,8 @@ impl Cpu {
         self.registers.c = val;
     }
 
-    fn ld_a_ff00_imm8(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
-        let offset = operand.unwrap_imm8();
-        let addr = 0xFF00 as u16 + offset as u16;
-        self.registers.a = interconnect.read_u8(addr);
+    fn ld_e_a(&mut self) {
+        self.registers.e = self.registers.a;
     }
 
     fn ld_ff00_imm8_a(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
