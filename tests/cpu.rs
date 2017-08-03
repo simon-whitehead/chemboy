@@ -643,11 +643,24 @@ mod tests {
         cpu.step(&mut interconnect); // step over CALL 0x000C (jump to byte 12)
         cpu.step(&mut interconnect); // step over 'INC C'
         cpu.step(&mut interconnect); // step over 'RET', jumping back to byte 5
-        println!("PC is now: {:04X}", cpu.registers.pc);
-        println!("C is now: {:02X}", cpu.registers.c);
         cpu.step(&mut interconnect); // step over 'INC C'
-        println!("C is now: {:02X}", cpu.registers.c);
         assert_eq!(0x3E, cpu.registers.c); // C should be 0x3C + 2
+    }
+
+    #[test]
+    fn ret_nz() {
+        let (mut cpu, mut interconnect) =
+            create_cpu(gb_asm![0x00 0x00 0xCD 0x0C 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x0C 0xC0]);
+        //                               ^^^^^^^^^ jump to the 'INC C' opcode here --------^^^^
+
+        cpu.registers.c = 0x00;
+        cpu.step(&mut interconnect); // step over NOP
+        cpu.step(&mut interconnect); // step over NOP
+        cpu.step(&mut interconnect); // step over CALL 0x000C (jump to byte 12)
+        cpu.step(&mut interconnect); // step over 'INC C'
+        cpu.step(&mut interconnect); // step over 'RET NZ', jumping back to byte 5 because C will make f.zero == false
+        assert_eq!(0x01, cpu.registers.c); 
+        assert_eq!(0x05, cpu.registers.pc); 
     }
 
     #[test]

@@ -149,6 +149,7 @@ impl Cpu {
                 0xAF => self.xor_a(),
                 0xB0 => self.or_b(),
                 0xB1 => self.or_c(),
+                0xC0 => self.ret_nz(interconnect),
                 0xC3 => self.jp_imm16(&operand),
                 0xC5 => self.push_bc(interconnect),
                 0xC9 => self.ret(interconnect),
@@ -571,6 +572,14 @@ impl Cpu {
         let addr = interconnect.read_u16(self.registers.sp as u16);
         self.registers.sp += 0x02;
         self.registers.pc = addr;
+    }
+
+    fn ret_nz(&mut self, interconnect: &mut Interconnect) {
+        if self.registers.flags.zero == false {
+            let addr = interconnect.read_u16(self.registers.sp as u16);
+            self.registers.sp += 0x02;
+            self.registers.pc = addr;
+        }
     }
 
     fn swap_a(&mut self) {
