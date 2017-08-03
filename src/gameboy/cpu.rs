@@ -82,9 +82,19 @@ impl Cpu {
     }
 
     pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) {
-        if interconnect.irq.enabled(Interrupt::Timer) {
-            interconnect.irq.disable(Interrupt::Timer);
+        if interconnect.irq.requested(Interrupt::Timer) {
+            interconnect.irq.unrequest(Interrupt::Timer);
             self.call(0x50, interconnect);
+        }
+
+        if interconnect.irq.requested(Interrupt::Vblank) {
+            interconnect.irq.unrequest(Interrupt::Vblank);
+            self.call(0x40, interconnect);
+        }
+
+        if interconnect.irq.requested(Interrupt::Lcd) {
+            interconnect.irq.unrequest(Interrupt::Lcd);
+            self.call(0x48, interconnect);
         }
     }
 
