@@ -67,6 +67,7 @@ impl Gpu {
 
     pub fn step(&mut self, irq: &mut Irq, cycles: usize) {
         let cycles = cycles as isize;
+        self.enabled = self.control_register & 0x80 == 0x80;
 
         if !self.enabled {
             return;
