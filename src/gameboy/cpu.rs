@@ -137,6 +137,7 @@ impl Cpu {
                     cycles = self.handle_extended_opcode(interconnect);
                 }
                 0xCD => self.call(operand.unwrap_imm16(), interconnect),
+                0xD5 => self.push_de(interconnect),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE1 => self.pop_hl(interconnect),
                 0xE2 => self.ld_ff00_c_a(interconnect),
@@ -452,6 +453,12 @@ impl Cpu {
         let addr = interconnect.read_u16(self.registers.sp as u16);
         self.registers.sp += 0x02;
         self.registers.set_hl(addr);
+    }
+
+    fn push_de(&mut self, interconnect: &mut Interconnect) {
+        let val = self.registers.get_de();
+        self.registers.sp -= 0x02;
+        interconnect.write_u16(self.registers.sp as u16, val);
     }
 
     fn ret(&mut self, interconnect: &mut Interconnect) {
