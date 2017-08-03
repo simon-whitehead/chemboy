@@ -453,10 +453,18 @@ static OPCODES: [OpCode; 48] = [
     },
 ];
 
-static EXT_OPCODES: [OpCode; 1] = [
+static EXT_OPCODES: [OpCode; 2] = [
     OpCode {
         code: 0x37,
         mnemonic: "SWAP A",
+        length: 1,
+        cycles: 8,
+        argument_type: ArgumentType::Implied,
+        extended: true,
+    },
+    OpCode {
+        code: 0x87,
+        mnemonic: "RES 0, A",
         length: 1,
         cycles: 8,
         argument_type: ArgumentType::Implied,

@@ -179,6 +179,7 @@ impl Cpu {
 
             match opcode.code {
                 0x37 => self.swap_a(),
+                0x87 => self.res_0_a(),
                 _ => {
                     panic!(
                         "Could not match opcode: {:02X} at offset: {:04X}",
@@ -464,6 +465,10 @@ impl Cpu {
         let val = self.registers.get_de();
         self.registers.sp -= 0x02;
         interconnect.write_u16(self.registers.sp as u16, val);
+    }
+
+    fn res_0_a(&mut self) {
+        self.registers.a &= !0x01;
     }
 
     fn ret(&mut self, interconnect: &mut Interconnect) {
