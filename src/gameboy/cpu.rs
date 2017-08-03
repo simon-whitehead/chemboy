@@ -80,19 +80,19 @@ impl Cpu {
     }
 
     pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) {
-        if interconnect.irq.requested(Interrupt::Timer) && self.registers.flags.ime {
+        if interconnect.irq.should_handle(Interrupt::Timer) && self.registers.flags.ime {
             interconnect.irq.unrequest(Interrupt::Timer);
             self.call(0x50, interconnect);
             self.registers.flags.ime = false;
         }
 
-        if interconnect.irq.requested(Interrupt::Vblank) && self.registers.flags.ime {
+        if interconnect.irq.should_handle(Interrupt::Vblank) && self.registers.flags.ime {
             interconnect.irq.unrequest(Interrupt::Vblank);
             self.call(0x40, interconnect);
             self.registers.flags.ime = false;
         }
 
-        if interconnect.irq.requested(Interrupt::Lcd) && self.registers.flags.ime {
+        if interconnect.irq.should_handle(Interrupt::Lcd) && self.registers.flags.ime {
             interconnect.irq.unrequest(Interrupt::Lcd);
             self.call(0x48, interconnect);
             self.registers.flags.ime = false;
@@ -106,7 +106,7 @@ impl Cpu {
             let mut cycles = opcode.cycles;
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
+            println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
             self.registers.pc += opcode.length;
 
             match opcode.code {

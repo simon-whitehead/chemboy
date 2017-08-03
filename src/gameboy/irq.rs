@@ -12,6 +12,10 @@ impl Irq {
         }
     }
 
+    pub fn should_handle(&self, int: Interrupt) -> bool {
+        self.requested(&int) && self.enabled(&int)
+    }
+
     pub fn request(&mut self, int: Interrupt) {
         use self::Interrupt::*;
 
@@ -36,10 +40,10 @@ impl Irq {
         }
     }
 
-    pub fn requested(&mut self, int: Interrupt) -> bool {
+    pub fn requested(&self, int: &Interrupt) -> bool {
         use self::Interrupt::*;
 
-        match int {
+        match *int {
             Vblank => self.request_flag & 0x01 == 0x01,
             Lcd => self.request_flag & 0x02 == 0x02,
             Timer => self.request_flag & 0x04 == 0x04,
@@ -72,10 +76,10 @@ impl Irq {
         }
     }
 
-    pub fn enabled(&mut self, int: Interrupt) -> bool {
+    pub fn enabled(&self, int: &Interrupt) -> bool {
         use self::Interrupt::*;
 
-        match int {
+        match *int {
             Vblank => self.enable_flag & 0x01 == 0x01,
             Lcd => self.enable_flag & 0x02 == 0x02,
             Timer => self.enable_flag & 0x04 == 0x04,
