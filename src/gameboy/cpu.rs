@@ -123,10 +123,11 @@ impl Cpu {
                 0x16 => self.ld_d_imm8(&operand),
                 0x19 => self.add_hl_de(),
                 0x1A => self.ld_a_de(interconnect),
-                0x20 => self.jr_nz_imm8(&operand, interconnect),
+                0x20 => self.jr_nz_imm8(&operand),
                 0x21 => self.ld_hl_imm16(&operand),
                 0x22 => self.ld_hli_a(interconnect),
                 0x23 => self.inc_hl(),
+                0x28 => self.jr_z_imm8(&operand),
                 0x2A => self.ld_a_hli(interconnect),
                 0x2F => self.cpl(),
                 0x31 => self.ld_sp_imm16(&operand),
@@ -357,10 +358,18 @@ impl Cpu {
         self.registers.set_pc(addr);
     }
 
-    fn jr_nz_imm8(&mut self, operand: &Operand, interconnect: &Interconnect) {
+    fn jr_nz_imm8(&mut self, operand: &Operand) {
         let offset = operand.unwrap_imm8();
 
         if self.registers.flags.zero == false {
+            self.relative_jump(offset);
+        }
+    }
+
+    fn jr_z_imm8(&mut self, operand: &Operand) {
+        let offset = operand.unwrap_imm8();
+
+        if self.registers.flags.zero {
             self.relative_jump(offset);
         }
     }

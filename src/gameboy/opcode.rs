@@ -66,7 +66,7 @@ impl OpCode {
     }
 }
 
-static OPCODES: [OpCode; 59] = [
+static OPCODES: [OpCode; 60] = [
     OpCode {
         code: 0x00,
         mnemonic: "NOP",
@@ -209,6 +209,14 @@ static OPCODES: [OpCode; 59] = [
         length: 1,
         cycles: 8,
         argument_type: ArgumentType::Implied,
+        extended: false,
+    },
+    OpCode {
+        code: 0x28,
+        mnemonic: "JR Z, {imm8}",
+        length: 2,
+        cycles: 8,
+        argument_type: ArgumentType::Imm8,
         extended: false,
     },
     OpCode {
