@@ -146,7 +146,7 @@ impl Interconnect {
             Address::CartRomOtherBank(_) => cart.rom.read_bytes(r),
             Address::Gfx(_) => self.gpu.ram.read_bytes(r),
             Address::CartRam(_) => cart.ram.read_bytes(r),
-            Address::ZRam(_) => self.zram.read_bytes(r),
+            Address::ZRam(a) => self.zram.read_bytes(r),
             Address::Io(a) => self.mmap_io.read_bytes(r),
             _ => panic!("Unable to read address range: {:?}", r),
         }

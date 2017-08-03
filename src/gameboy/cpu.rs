@@ -100,12 +100,17 @@ impl Cpu {
 
     pub fn step(&mut self, interconnect: &mut Interconnect) -> u8 {
         let byte = interconnect.read_u8(self.registers.pc);
+        if self.registers.pc == 0xFFb6 {
+            // Dump the stack to see whats up
+            let stack = interconnect.read_bytes(0xFFb6..0xFFFE);
+            println!("Stack: {:?}", stack);
+        }
 
         if let Some(opcode) = OpCode::from_byte(byte, false) {
             let mut cycles = opcode.cycles;
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
+            println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
             self.registers.pc += opcode.length;
 
             match opcode.code {
