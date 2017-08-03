@@ -108,6 +108,7 @@ impl Cpu {
                 0x0D => self.dec_c(),
                 0x0E => self.ld_c_imm8(&operand),
                 0x11 => self.ld_de_imm16(&operand),
+                0x12 => self.ld_de_a(interconnect),
                 0x16 => self.ld_d_imm8(&operand),
                 0x19 => self.add_hl_de(),
                 0x20 => self.jr_nz_imm8(&operand, interconnect),
@@ -387,6 +388,11 @@ impl Cpu {
     fn ld_d_imm8(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
         self.registers.d = val;
+    }
+
+    fn ld_de_a(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_de();
+        interconnect.write_u8(addr, self.registers.a);
     }
 
     fn ld_de_imm16(&mut self, operand: &Operand) {
