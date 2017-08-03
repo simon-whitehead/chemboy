@@ -195,6 +195,16 @@ mod tests {
     }
 
     #[test]
+    fn inc_de() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x13]);
+
+        cpu.registers.set_de(0xCFFE);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xCFFF, cpu.registers.get_de());
+    }
+
+    #[test]
     fn inc_hl() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x23]);
 

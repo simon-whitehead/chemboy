@@ -109,6 +109,7 @@ impl Cpu {
                 0x0E => self.ld_c_imm8(&operand),
                 0x11 => self.ld_de_imm16(&operand),
                 0x12 => self.ld_de_a(interconnect),
+                0x13 => self.inc_de(),
                 0x16 => self.ld_d_imm8(&operand),
                 0x19 => self.add_hl_de(),
                 0x20 => self.jr_nz_imm8(&operand, interconnect),
@@ -308,6 +309,12 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
     }
+
+    fn inc_de(&mut self) {
+        let val = self.registers.get_de();
+        self.registers.set_de(val + 0x01);
+    }
+
     fn inc_hl(&mut self) {
         let val = self.registers.get_hl();
         self.registers.set_hl(val + 0x01);
