@@ -165,6 +165,7 @@ impl Cpu {
                 0xEF => self.call(0x28, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF3 => self.di(),
+                0xF5 => self.push_af(interconnect),
                 0xFB => self.ei(),
                 0xFE => self.cp_n(&operand),
                 _ => {
@@ -515,6 +516,12 @@ impl Cpu {
         let addr = interconnect.read_u16(self.registers.sp as u16);
         self.registers.sp += 0x02;
         self.registers.set_hl(addr);
+    }
+
+    fn push_af(&mut self, interconnect: &mut Interconnect) {
+        let val = self.registers.get_af();
+        self.registers.sp -= 0x02;
+        interconnect.write_u16(self.registers.sp as u16, val);
     }
 
     fn push_de(&mut self, interconnect: &mut Interconnect) {
