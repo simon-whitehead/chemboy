@@ -151,6 +151,7 @@ impl Cpu {
                 0xB0 => self.or_b(),
                 0xB1 => self.or_c(),
                 0xC0 => self.ret_nz(interconnect),
+                0xC1 => self.pop_bc(interconnect),
                 0xC3 => self.jp_imm16(&operand),
                 0xC5 => self.push_bc(interconnect),
                 0xC8 => self.ret_z(interconnect),
@@ -527,6 +528,12 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
         self.registers.flags.carry = false;
+    }
+
+    fn pop_bc(&mut self, interconnect: &mut Interconnect) {
+        let addr = interconnect.read_u16(self.registers.sp as u16);
+        self.registers.sp += 0x02;
+        self.registers.set_bc(addr);
     }
 
     fn pop_de(&mut self, interconnect: &mut Interconnect) {

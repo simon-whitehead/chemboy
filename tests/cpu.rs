@@ -567,6 +567,19 @@ mod tests {
     }
 
     #[test]
+    fn pop_bc() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xC1]);
+
+        interconnect.write_u16(0xFFFC, 0xCF91);
+        cpu.registers.sp = 0xFFFC;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xCF, cpu.registers.b);
+        assert_eq!(0x91, cpu.registers.c);
+        assert_eq!(0xFFFE, cpu.registers.sp);
+    }
+
+    #[test]
     fn pop_de() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xD1]);
 
@@ -670,8 +683,8 @@ mod tests {
         cpu.step(&mut interconnect); // step over CALL 0x000C (jump to byte 12)
         cpu.step(&mut interconnect); // step over 'INC C'
         cpu.step(&mut interconnect); // step over 'RET NZ', jumping back to byte 5 because C will make f.zero == false
-        assert_eq!(0x01, cpu.registers.c); 
-        assert_eq!(0x05, cpu.registers.pc); 
+        assert_eq!(0x01, cpu.registers.c);
+        assert_eq!(0x05, cpu.registers.pc);
     }
 
     #[test]
@@ -686,8 +699,8 @@ mod tests {
         cpu.step(&mut interconnect); // step over CALL 0x000C (jump to byte 12)
         cpu.step(&mut interconnect); // step over 'INC C'
         cpu.step(&mut interconnect); // step over 'RET NZ', jumping back to byte 5 because C will make f.zero == true
-        assert_eq!(0x00, cpu.registers.c); 
-        assert_eq!(0x05, cpu.registers.pc); 
+        assert_eq!(0x00, cpu.registers.c);
+        assert_eq!(0x05, cpu.registers.pc);
     }
 
     #[test]
