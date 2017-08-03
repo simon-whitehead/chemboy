@@ -148,6 +148,7 @@ impl Cpu {
                 0xB0 => self.or_b(),
                 0xB1 => self.or_c(),
                 0xC3 => self.jp_imm16(&operand),
+                0xC5 => self.push_bc(interconnect),
                 0xC9 => self.ret(interconnect),
                 0xCB => {
                     cycles = self.handle_extended_opcode(interconnect);
@@ -520,6 +521,12 @@ impl Cpu {
 
     fn push_af(&mut self, interconnect: &mut Interconnect) {
         let val = self.registers.get_af();
+        self.registers.sp -= 0x02;
+        interconnect.write_u16(self.registers.sp as u16, val);
+    }
+
+    fn push_bc(&mut self, interconnect: &mut Interconnect) {
+        let val = self.registers.get_bc();
         self.registers.sp -= 0x02;
         interconnect.write_u16(self.registers.sp as u16, val);
     }
