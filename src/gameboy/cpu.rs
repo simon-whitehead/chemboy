@@ -107,6 +107,7 @@ impl Cpu {
                 0x0C => self.inc_c(),
                 0x0D => self.dec_c(),
                 0x0E => self.ld_c_imm8(&operand),
+                0x16 => self.ld_d_imm8(&operand),
                 0x20 => self.jr_nz_imm8(&operand, interconnect),
                 0x21 => self.ld_hl_imm16(&operand),
                 0x2A => self.ld_a_hli(interconnect),
@@ -347,6 +348,11 @@ impl Cpu {
     fn ld_c_imm8(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
         self.registers.c = val;
+    }
+
+    fn ld_d_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        self.registers.d = val;
     }
 
     fn ld_e_a(&mut self) {

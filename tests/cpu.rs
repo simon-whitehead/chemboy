@@ -303,6 +303,16 @@ mod tests {
     }
 
     #[test]
+    fn ld_d_imm8() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x16 0xA4]);
+
+        cpu.registers.d = 0x00;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xA4, cpu.registers.d);
+    }
+
+    #[test]
     fn ld_e_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x5F]);
 
