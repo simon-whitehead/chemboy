@@ -130,6 +130,7 @@ impl Cpu {
                 0x5F => self.ld_e_a(),
                 0x78 => self.ld_a_b(),
                 0x79 => self.ld_a_c(),
+                0x7C => self.ld_a_h(),
                 0x87 => self.add_a_a(),
                 0xA1 => self.and_c(),
                 0xA9 => self.xor_c(),
@@ -359,6 +360,10 @@ impl Cpu {
         let offset = operand.unwrap_imm8();
         let addr = 0xFF00 as u16 + offset as u16;
         self.registers.a = interconnect.read_u8(addr);
+    }
+
+    fn ld_a_h(&mut self) {
+        self.registers.a = self.registers.h;
     }
 
     fn ld_a_hli(&mut self, interconnect: &mut Interconnect) {
