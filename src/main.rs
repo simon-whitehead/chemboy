@@ -7,7 +7,7 @@ extern crate piston_window;
 extern crate rand;
 
 use clap::{App, Arg, SubCommand};
-use image::ImageBuffer;
+use image::{ImageBuffer, RgbaImage};
 use gfx_core::Resources;
 use gfx_device_gl::Factory;
 use piston_window::*;
@@ -15,6 +15,7 @@ use piston_window::*;
 use std::fs::File;
 use std::io::Read;
 use std::time::{Duration, Instant};
+use std::panic;
 
 pub mod gameboy;
 
@@ -25,15 +26,13 @@ fn main() {
         .version("0.0.0.1")
         .author("Simon Whitehead")
         .about("A GameBoy and GameBoy Colour emulator written in Rust")
-        .arg(
-            Arg::with_name("rom")
-                .short("r")
-                .long("rom")
-                .value_name("ROM_PATH")
-                .required(true)
-                .help("Path to a Gameboy or Gameboy Color ROM")
-                .takes_value(true),
-        )
+        .arg(Arg::with_name("rom")
+            .short("r")
+            .long("rom")
+            .value_name("ROM_PATH")
+            .required(true)
+            .help("Path to a Gameboy or Gameboy Color ROM")
+            .takes_value(true))
         .get_matches();
 
     let rom = matches.value_of("rom").unwrap();
@@ -44,26 +43,32 @@ fn main() {
     let mut now = Instant::now();
 
     let opengl = OpenGL::V3_2;
-    let mut window: PistonWindow = WindowSettings::new(
-        format!("gbrs: {}", gameboy.cart_details().game_title),
-        [160, 144],
-    ).exit_on_esc(true)
+    let mut window: PistonWindow = WindowSettings::new(format!("gbrs: {}",
+                                                               gameboy.cart_details().game_title),
+                                                       [160, 144])
+        .exit_on_esc(true)
         .opengl(opengl)
         .build()
         .unwrap();
 
     window.set_max_fps(60);
     let mut n = 0;
-    while let Some(e) = window.next() {
+    'start: while let Some(e) = window.next() {
         let mut factory = window.factory.clone();
         window.draw_2d(&e, |c, g| {
-            let texture = {
+            let img = {
                 let frame = gameboy.request_frame();
-                build_texture_from_frame(&mut factory, frame)
+                build_frame(&mut factory, frame)
             };
+            let texture = Texture::from_image(&mut factory, &img, &TextureSettings::new()).unwrap();
             clear([1.0; 4], g);
             image(&texture, c.transform, g);
-            gameboy.run()
+            if let Err(msg) = gameboy.run() {
+                // Dump the last texture we had
+                img.save("/Users/Simon/last_frame.png").unwrap();
+                panic!(msg);
+            }
+            Some(())
         });
     }
 
@@ -88,10 +93,7 @@ fn load_rom(fname: &str) -> std::io::Result<Vec<u8>> {
     Ok(contents)
 }
 
-fn build_texture_from_frame(
-    factory: &mut Factory,
-    frame: &Frame,
-) -> Texture<gfx_device_gl::Resources> {
+fn build_frame(factory: &mut Factory, frame: &Frame) -> RgbaImage {
     let mut img = ImageBuffer::new(160, 144);
     for x in 0..160 {
         for y in 0..144 {
@@ -101,5 +103,6 @@ fn build_texture_from_frame(
         }
     }
 
-    Texture::from_image(factory, &img, &TextureSettings::new()).unwrap()
+    // Texture::from_image(factory, &img, &TextureSettings::new()).unwrap()
+    img
 }

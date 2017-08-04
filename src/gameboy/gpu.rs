@@ -4,6 +4,28 @@ use gameboy::frame::{Color, Frame};
 const VRAM_SIZE: usize = 0x4000;
 const SPRITE_DATA_SIZE: usize = 0xA0;
 
+pub enum GpuMode {
+    HBlank,
+    VBlank,
+    SearchingRam,
+    TransferringData,
+}
+impl GpuMode {
+    fn cycles(&self, scroll_x: u8) -> isize {
+        let scroll_adjust = match scroll_x % 0x08 {
+            5...7 => 2,
+            1...4 => 1,
+            _ => 0,
+        };
+        match *self {
+            GpuMode::SearchingRam => 21,
+            GpuMode::TransferringData => 43 + scroll_adjust,
+            GpuMode::HBlank => 50 - scroll_adjust,
+            GpuMode::VBlank => 114,
+        }
+    }
+}
+
 pub struct Gpu {
     pub enabled: bool,
     pub ram: Memory,
@@ -23,6 +45,7 @@ pub struct Gpu {
     cycles: isize,
 
     pub frame: Frame,
+    mode: GpuMode,
 }
 
 impl Gpu {
@@ -44,37 +67,56 @@ impl Gpu {
             palette1: 0x00,
             cycles: 0x00,
             frame: Frame::new(),
+            mode: GpuMode::HBlank,
         }
     }
 
-    pub fn step(&mut self, irq: &mut Irq, cycles: usize) {
+    pub fn step(&mut self, irq: &mut Irq, cycles: usize) -> Result<(), String> {
         let cycles = cycles as isize;
         self.enabled = self.control_register & 0x80 == 0x80;
 
         if !self.enabled {
-            return;
+            return Ok(());
         }
 
-        self.cycles -= cycles;
+        self.cycles -= 1;
         if self.cycles < 0 {
             self.cycles = 0x1C8; // it takes 456 CPU clock cycles to draw 1 LCD scanline
-            self.ly = (self.ly + 0x01) % 0x9A; // LY can only be within 0...153
-            if self.ly >= 0x90 {
-                // V-Blank
-                irq.request(Interrupt::Vblank);
-            }
-            self.check_coincidence();
-            if self.get_coincidence_flag() && self.coincidence_interrupt_enabled() {
-                irq.request(Interrupt::Lcd);
+            match self.mode {
+                GpuMode::HBlank => {
+                    self.ly = (self.ly + 0x01) % 0x1C8;
+                    if self.ly >= 0x90 {
+                        self.switch_mode(GpuMode::VBlank, irq);
+                    } else {
+                        self.switch_mode(GpuMode::SearchingRam, irq);
+                    }
+                    self.check_coincidence();
+                    if self.get_coincidence_flag() && self.coincidence_interrupt_enabled() {
+                        irq.request(Interrupt::Lcd);
+                    }
+                }
+                GpuMode::TransferringData => {
+                    self.render_background();
+                    self.switch_mode(GpuMode::HBlank, irq);
+                }
+                GpuMode::SearchingRam => {
+                    self.switch_mode(GpuMode::TransferringData, irq);
+                }
+                GpuMode::VBlank => {
+                    self.ly += 0x01;
+                    if self.ly >= 0x99 {
+                        self.ly = 0;
+                        self.switch_mode(GpuMode::SearchingRam, irq);
+                    }
+                    self.check_coincidence();
+                    if self.get_coincidence_flag() && self.coincidence_interrupt_enabled() {
+                        irq.request(Interrupt::Lcd);
+                    }
+                }
             }
         }
-    }
 
-    pub fn render_frame(&mut self) {
-        if !self.enabled || self.ly >= 144 {
-            return;
-        }
-        self.render_background();
+        Ok(())
     }
 
     fn render_background(&mut self) {
@@ -85,33 +127,38 @@ impl Gpu {
         for i in 0..160 {
             let x = (i as u8).wrapping_add(self.scroll_x);
             let bg_map_col = (x / 8) as usize;
-            let raw_tile_number =
-                self.ram[background_map_base_address + (bg_map_row * 0x20 + bg_map_col)];
+            let raw_tile_number = self.ram[background_map_base_address +
+                                           (bg_map_row * 0x20 + bg_map_col)];
             let t = if tile_base_address == 0x0000 {
                 raw_tile_number as usize
             } else {
                 128 + ((raw_tile_number as i8 as i16) + 128) as usize
             };
+
             let line = (line % 0x08) << 0x01;
-            let tile_data_start = tile_base_address; // + (t * 0x10) + line;
+            let tile_data_start = tile_base_address + (t * 0x10) + line;
             let x_shift = (x % 8).wrapping_sub(7).wrapping_mul(0xFF);
-            let tile_data1 = self.ram[tile_data_start] >> x_shift;
-            let tile_data2 = self.ram[tile_data_start + 0x01] >> x_shift;
-            let total_row_data = (tile_data1 << 1) | tile_data2;
-            let color_value = total_row_data & 0x03;
-            if color_value > 3 {
-                println!("Gonna panic. X: {}, total_row_data: {:b}, shifted: {:b}, color_value: {:b}", x, total_row_data, (total_row_data >> (15 - x)), (total_row_data >> (15 - x)) & 0x03);
+            let tile_data1 = (self.ram[tile_data_start] >> x_shift) & 0x01;
+            let tile_data2 = (self.ram[tile_data_start + 0x01] >> x_shift) & 0x01;
+            let total_row_data = (tile_data2 << 1) | tile_data1;
+            if self.ram[0x04] > 0x00 {
+                panic!("DBG: {:?}",
+                       &self.ram[tile_data_start..tile_data_start + 0x20]);
+                panic!("d1: {:b}, d2: {:b}, total: {:b}",
+                       tile_data1,
+                       tile_data2,
+                       total_row_data);
             }
-            //let color_value = (t1 as u16).wrapping_mul((0x0E as u16).wrapping_sub(x as u16 * 2));
+            let color_value = total_row_data;
+            // let color_value = (t1 as u16).wrapping_mul((0x0E as u16).wrapping_sub(x as u16 * 2));
             let c = Color::from_dmg_byte(color_value as u8);
-            //println!("Writing pixel to: {}", self.ly as usize * 160 + i as usize);
+            // println!("Writing pixel to: {}", self.ly as usize * 160 + i as usize);
             self.frame.pixels[self.ly as usize * 160 + i as usize] = c;
         }
     }
 
     fn get_base_tile_address(&self) -> u16 {
         if self.control_register & 0x10 == 0x10 {
-            println!("base tile address 0x8000");
             0x0000
         } else {
             0x0800
@@ -151,7 +198,10 @@ impl Gpu {
             0x43 => self.scroll_x = val,
             0x4A => self.window_y = val,
             0x4B => self.window_x = val,
-            0x44 => self.ly = val,
+            0x44 => {
+                self.ly = val;
+                println!("WRITING TO LY");
+            }
             0x45 => {
                 self.lyc = val;
                 self.check_coincidence();
@@ -194,5 +244,20 @@ impl Gpu {
 
     fn coincidence_interrupt_enabled(&self) -> bool {
         self.stat & 0x20 == 0x20
+    }
+
+    fn switch_mode(&mut self, mode: GpuMode, irq: &mut Irq) {
+        self.cycles += mode.cycles(self.scroll_x);
+        match mode {
+            GpuMode::VBlank => {
+                println!("Requested a vblank: {:b}", irq.enable_flag);
+                irq.request(Interrupt::Vblank);
+            }
+            GpuMode::SearchingRam => {
+                irq.request(Interrupt::Lcd);
+            }
+            _ => (),
+        }
+        self.mode = mode;
     }
 }

@@ -49,19 +49,17 @@ impl Interconnect {
         }
     }
 
-    pub fn step(&mut self, cycles: usize) {
-        self.gpu.step(&mut self.irq, cycles);
-        self.timer.step(&mut self.irq, cycles);
+    pub fn step(&mut self, cycles: usize) -> Result<(), String> {
+        self.gpu.step(&mut self.irq, cycles)?;
+        self.timer.step(&mut self.irq, cycles)?;
+
+        Ok(())
     }
 
     pub fn cart_details(&self) -> CartridgeDetails {
         let cart = self.cart.as_ref().expect("Cartridge is empty");
 
         cart.details(&self)
-    }
-
-    pub fn render_frame(&mut self) {
-        self.gpu.render_frame();
     }
 
     pub fn request_frame(&self) -> &Frame {

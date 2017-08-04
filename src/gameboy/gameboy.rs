@@ -18,10 +18,8 @@ impl GameBoy {
         gb
     }
 
-    pub fn run(&mut self) -> bool {
-        self.cpu.cycle(&mut self.interconnect);
-
-        return true;
+    pub fn run(&mut self) -> Result<(), String> {
+        self.cpu.cycle(&mut self.interconnect)
     }
 
     pub fn reset(&mut self) {

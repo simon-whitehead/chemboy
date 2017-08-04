@@ -17,12 +17,14 @@ impl Timer {
         }
     }
 
-    pub fn step(&mut self, irq: &mut Irq, cycles: usize) {
+    pub fn step(&mut self, irq: &mut Irq, cycles: usize) -> Result<(), String> {
         if !self.enabled() {
-            return;
+            return Ok(());
         }
         self.inc_div_register(cycles);
         self.inc_tima_register(irq, cycles);
+
+        Ok(())
     }
 
     pub fn read_u8(&self, addr: u16) -> u8 {
