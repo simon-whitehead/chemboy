@@ -4,6 +4,7 @@ use byteorder::{ByteOrder, LittleEndian};
 
 use gameboy::{CPU_FREQUENCY, MAX_CPU_CYCLES, MAX_DIV_REG_CYCLES, Gpu, Irq, Memory, Timer};
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
+use gameboy::frame::Frame;
 use super::memory_map::{self, Address};
 
 const MAIN_MEM_SIZE: usize = 0x2000;
@@ -57,6 +58,14 @@ impl Interconnect {
         let cart = self.cart.as_ref().expect("Cartridge is empty");
 
         cart.details(&self)
+    }
+
+    pub fn render_frame(&mut self) {
+        self.gpu.render_frame();
+    }
+
+    pub fn request_frame(&self) -> &Frame {
+        &self.gpu.frame
     }
 
     pub fn write_u8(&mut self, addr: u16, byte: u8) {

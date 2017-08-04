@@ -1,5 +1,6 @@
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
 use gameboy::cpu;
+use gameboy::frame::Frame;
 use gameboy::interconnect::Interconnect;
 
 pub struct GameBoy {
@@ -29,5 +30,9 @@ impl GameBoy {
 
     pub fn cart_details(&self) -> CartridgeDetails {
         self.interconnect.cart_details()
+    }
+
+    pub fn request_frame(&self) -> &Frame {
+        self.interconnect.request_frame()
     }
 }

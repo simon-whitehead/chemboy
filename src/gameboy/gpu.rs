@@ -1,29 +1,8 @@
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
+use gameboy::frame::Frame;
 
 const VRAM_SIZE: usize = 0x4000;
 const SPRITE_DATA_SIZE: usize = 0xA0;
-
-struct Color {
-    r: u8,
-    g: u8,
-    b: u8,
-}
-
-impl Color {
-    pub fn new(r: u8, g: u8, b: u8) -> Color {
-        Color { r: r, g: g, b: b }
-    }
-
-    pub fn from_byte(b: u8) -> Color {
-        match b {
-            0x00 => Color::new(0xFF, 0xFF, 0xFF),
-            0x01 => Color::new(0x66, 0x66, 0x66),
-            0x02 => Color::new(0x33, 0x33, 0x33),
-            0x03 => Color::new(0x00, 0x00, 0x00),
-            _ => panic!("invalid pallete entry"),
-        }
-    }
-}
 
 pub struct Gpu {
     pub enabled: bool,
@@ -42,6 +21,8 @@ pub struct Gpu {
     palette1: u8,
 
     cycles: isize,
+
+    pub frame: Frame,
 }
 
 impl Gpu {
@@ -62,6 +43,7 @@ impl Gpu {
             palette0: 0x00,
             palette1: 0x00,
             cycles: 0x00,
+            frame: Frame::new(),
         }
     }
 
@@ -87,6 +69,8 @@ impl Gpu {
             }
         }
     }
+
+    pub fn render_frame(&mut self) {}
 
     pub fn read_u8(&self, addr: u16) -> u8 {
         match addr {

@@ -4,7 +4,9 @@ version = "0.1.0"
 dependencies = [
  "byteorder 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.9.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gfx_core 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gfx_device_gl 0.14.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "image 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston2d-graphics 0.21.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston2d-opengl_graphics 0.43.1 (registry+https://github.com/rust-lang/crates.io-index)",

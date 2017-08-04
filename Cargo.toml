@@ -4,6 +4,8 @@ version = "0.1.0"
 authors = ["simonwhitehead"]
 
 [dependencies]
+image = "*"
+gfx_core = "*"
 gfx_device_gl = "0.14.1"
 piston = "0.32.0"
 piston2d-graphics = "0.21.1"

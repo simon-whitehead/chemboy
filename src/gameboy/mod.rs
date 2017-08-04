@@ -2,6 +2,7 @@
 mod macros;
 
 mod cpu;
+mod frame;
 mod gameboy;
 mod gpu;
 mod interconnect;
@@ -16,6 +17,7 @@ pub mod opcode;
 
 pub use self::cartridge::{Cartridge, CartridgeDetails};
 pub use self::cpu::Cpu;
+pub use self::frame::Frame;
 pub use self::gameboy::GameBoy;
 pub use self::gpu::Gpu;
 pub use self::memory::Memory;
