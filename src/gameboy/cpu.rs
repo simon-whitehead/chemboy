@@ -78,6 +78,7 @@ impl Cpu {
             cycles += c as usize;
             interconnect.step(cycles);
             self.handle_interrupts(interconnect);
+            interconnect.render_frame();
         }
     }
 
@@ -90,7 +91,6 @@ impl Cpu {
 
         if interconnect.irq.should_handle(Interrupt::Vblank) && self.registers.flags.ime {
             interconnect.irq.unrequest(Interrupt::Vblank);
-            interconnect.render_frame();
             self.call(0x40, interconnect);
             self.registers.flags.ime = false;
         }

@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["simonwhitehead"]
 
 [dependencies]
+rand = "*"
 image = "*"
 gfx_core = "*"
 gfx_device_gl = "0.14.1"

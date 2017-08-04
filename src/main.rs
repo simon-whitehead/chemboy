@@ -4,6 +4,7 @@ extern crate gfx_core;
 extern crate gfx_device_gl;
 extern crate image;
 extern crate piston_window;
+extern crate rand;
 
 use clap::{App, Arg, SubCommand};
 use image::ImageBuffer;

@@ -1,5 +1,5 @@
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
-use gameboy::frame::Frame;
+use gameboy::frame::{Color, Frame};
 
 const VRAM_SIZE: usize = 0x4000;
 const SPRITE_DATA_SIZE: usize = 0xA0;
@@ -70,7 +70,61 @@ impl Gpu {
         }
     }
 
-    pub fn render_frame(&mut self) {}
+    pub fn render_frame(&mut self) {
+        if !self.enabled || self.ly >= 144 {
+            return;
+        }
+        self.render_background();
+    }
+
+    fn render_background(&mut self) {
+        let background_map_base_address = self.get_base_background_map_address() as usize;
+        let tile_base_address = self.get_base_tile_address() as usize;
+        let line = self.ly.wrapping_add(self.scroll_y) as usize;
+        let bg_map_row = (line / 0x08) as usize;
+        for i in 0..160 {
+            let x = (i as u8).wrapping_add(self.scroll_x);
+            let bg_map_col = (x / 8) as usize;
+            let raw_tile_number =
+                self.ram[background_map_base_address + (bg_map_row * 0x20 + bg_map_col)];
+            let t = if tile_base_address == 0x0000 {
+                raw_tile_number as usize
+            } else {
+                128 + ((raw_tile_number as i8 as i16) + 128) as usize
+            };
+            let line = (line % 0x08) << 0x01;
+            let tile_data_start = tile_base_address; // + (t * 0x10) + line;
+            let x_shift = (x % 8).wrapping_sub(7).wrapping_mul(0xFF);
+            let tile_data1 = self.ram[tile_data_start] >> x_shift;
+            let tile_data2 = self.ram[tile_data_start + 0x01] >> x_shift;
+            let total_row_data = (tile_data1 << 1) | tile_data2;
+            let color_value = total_row_data & 0x03;
+            if color_value > 3 {
+                println!("Gonna panic. X: {}, total_row_data: {:b}, shifted: {:b}, color_value: {:b}", x, total_row_data, (total_row_data >> (15 - x)), (total_row_data >> (15 - x)) & 0x03);
+            }
+            //let color_value = (t1 as u16).wrapping_mul((0x0E as u16).wrapping_sub(x as u16 * 2));
+            let c = Color::from_dmg_byte(color_value as u8);
+            //println!("Writing pixel to: {}", self.ly as usize * 160 + i as usize);
+            self.frame.pixels[self.ly as usize * 160 + i as usize] = c;
+        }
+    }
+
+    fn get_base_tile_address(&self) -> u16 {
+        if self.control_register & 0x10 == 0x10 {
+            println!("base tile address 0x8000");
+            0x0000
+        } else {
+            0x0800
+        }
+    }
+
+    fn get_base_background_map_address(&self) -> u16 {
+        if self.control_register & 0x08 == 0x08 {
+            0x1C00
+        } else {
+            0x1800
+        }
+    }
 
     pub fn read_u8(&self, addr: u16) -> u8 {
         match addr {

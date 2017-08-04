@@ -23,7 +23,7 @@ impl Color {
             0x01 => Color::new(b, 0x66, 0x66, 0x66),
             0x02 => Color::new(b, 0x33, 0x33, 0x33),
             0x03 => Color::new(b, 0x00, 0x00, 0x00),
-            _ => panic!("invalid pallete entry"),
+            _ => panic!("invalid pallete entry: {}", b),
         }
     }
 }
