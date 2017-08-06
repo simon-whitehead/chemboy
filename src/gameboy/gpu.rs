@@ -103,6 +103,8 @@ pub struct Gpu {
     mode: GpuMode,
 
     counter: u8,
+    tile_base: usize,
+    background_base: usize,
 }
 
 impl Gpu {
@@ -126,6 +128,8 @@ impl Gpu {
             frame: Frame::new(),
             mode: GpuMode::HBlank,
             counter: 0,
+            tile_base: 0x00,
+            background_base: 0xC00,
         }
     }
 
@@ -135,7 +139,6 @@ impl Gpu {
 
     pub fn step(&mut self, irq: &mut Irq, cycles: usize) -> Result<(), String> {
         let cycles = cycles as isize;
-        self.enabled = self.control_register & 0x80 == 0x80;
 
         if !self.enabled {
             println!("LCD Disabled!");
@@ -200,8 +203,8 @@ impl Gpu {
     }
 
     fn render_background(&mut self) {
-        let background_map_base_address = self.get_base_background_map_address() as usize;
-        let tile_base_address = 0x00;// self.get_base_tile_address() as usize;
+        let background_map_base_address = self.background_base;
+        let tile_base_address = self.tile_base;
         let line = self.ly.wrapping_add(self.scroll_y) as usize;
         let bg_map_row = (line / 0x08) as usize;
         for i in 0..160 {
@@ -209,7 +212,7 @@ impl Gpu {
             let bg_map_col = (x / 8) as usize;
             let raw_tile_number = self.ram[background_map_base_address +
                                            (bg_map_row * 0x20 + bg_map_col)];
-            let t = if tile_base_address == 0x0000 {
+            let t = if tile_base_address == 0x00 {
                 raw_tile_number as usize
             } else {
                 128 + ((raw_tile_number as i8 as i16) + 128) as usize
@@ -239,24 +242,6 @@ impl Gpu {
         Color::from_dmg_byte(palette_index as u8)
     }
 
-    fn get_base_tile_address(&self) -> u16 {
-        if self.control_register & 0x10 == 0x10 {
-            println!("Yep base tile address is 0x8000");
-            0x0000
-        } else {
-            println!("Nope, base tile address is 0x8800");
-            0x0800
-        }
-    }
-
-    fn get_base_background_map_address(&self) -> u16 {
-        if self.control_register & 0x08 == 0x08 {
-            0x1C00
-        } else {
-            0x1800
-        }
-    }
-
     pub fn read_u8(&self, addr: u16) -> u8 {
         match addr {
             0x40 => self.control_register,
@@ -276,7 +261,20 @@ impl Gpu {
 
     pub fn write_u8(&mut self, addr: u16, val: u8) {
         match addr {
-            0x40 => self.control_register = val,
+            0x40 => {
+                self.control_register = val;
+                self.enabled = self.control_register & 0x80 == 0x80;
+                self.tile_base = if self.control_register & 0x10 == 0x10 {
+                    0x00
+                } else {
+                    0x800
+                };
+                self.background_base = if self.control_register & 0x08 == 0x08 {
+                    0x1C00
+                } else {
+                    0x1800
+                };
+            }
             0x41 => self.stat = GpuStat::from_u8(val),
             0x42 => self.scroll_y = val,
             0x43 => self.scroll_x = val,
