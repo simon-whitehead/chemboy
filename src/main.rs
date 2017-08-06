@@ -54,6 +54,14 @@ fn main() {
     window.set_max_fps(60);
     let mut n = 0;
     'start: while let Some(e) = window.next() {
+        if let Some(button) = e.press_args() {
+            if let Button::Keyboard(key) = button {
+                match key {
+                    Key::Space => gameboy.reset(),
+                    _ => (),
+                }
+            }
+        }
         let mut factory = window.factory.clone();
         window.draw_2d(&e, |c, g| {
             let img = {

@@ -56,6 +56,12 @@ impl Interconnect {
         Ok(())
     }
 
+    pub fn reset(&mut self) {
+        self.gpu.reset();
+        self.timer.reset();
+        self.irq.reset();
+    }
+
     pub fn cart_details(&self) -> CartridgeDetails {
         let cart = self.cart.as_ref().expect("Cartridge is empty");
 

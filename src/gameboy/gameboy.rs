@@ -23,6 +23,7 @@ impl GameBoy {
     }
 
     pub fn reset(&mut self) {
+        self.interconnect.reset();
         self.cpu.reset(&mut self.interconnect);
     }
 

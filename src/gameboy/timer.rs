@@ -17,6 +17,10 @@ impl Timer {
         }
     }
 
+    pub fn reset(&mut self) {
+        *self = Timer::new();
+    }
+
     pub fn step(&mut self, irq: &mut Irq, cycles: usize) -> Result<(), String> {
         if !self.enabled() {
             return Ok(());

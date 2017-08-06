@@ -129,19 +129,25 @@ impl Gpu {
         }
     }
 
+    pub fn reset(&mut self) {
+        *self = Gpu::new();
+    }
+
     pub fn step(&mut self, irq: &mut Irq, cycles: usize) -> Result<(), String> {
         let cycles = cycles as isize;
         self.enabled = self.control_register & 0x80 == 0x80;
 
         if !self.enabled {
+            println!("LCD Disabled!");
             return Ok(());
         }
 
-        self.cycles -= cycles;
-        if self.cycles < 0 {
-            self.cycles = 0x1C8; // it takes 456 CPU clock cycles to draw 1 LCD scanline
-            match self.mode {
-                GpuMode::HBlank => {
+        self.cycles += cycles;
+        // self.cycles = 0x1C8; // it takes 456 CPU clock cycles to draw 1 LCD scanline
+        match self.mode {
+            GpuMode::HBlank => {
+                if self.cycles >= 0xCC {
+                    self.cycles = 0x00;
                     self.ly = (self.ly + 0x01) % 0x1C8;
                     if self.ly >= 0x90 {
                         self.switch_mode(GpuMode::VBlank, irq);
@@ -150,14 +156,24 @@ impl Gpu {
                     }
                     self.check_coincidence(irq);
                 }
-                GpuMode::TransferringData => {
+            }
+            GpuMode::TransferringData => {
+                if self.cycles >= 0xAC {
                     self.render_scanline();
+
+                    self.cycles = 0x00;
                     self.switch_mode(GpuMode::HBlank, irq);
                 }
-                GpuMode::SearchingRam => {
+            }
+            GpuMode::SearchingRam => {
+                if self.cycles >= 0x50 {
+                    self.cycles = 0x00;
                     self.switch_mode(GpuMode::TransferringData, irq);
                 }
-                GpuMode::VBlank => {
+            }
+            GpuMode::VBlank => {
+                if self.cycles >= 0x1C8 {
+                    self.cycles = 0x00;
                     self.ly += 0x01;
                     if self.ly >= 0x99 {
                         self.ly = 0;
@@ -185,7 +201,7 @@ impl Gpu {
 
     fn render_background(&mut self) {
         let background_map_base_address = self.get_base_background_map_address() as usize;
-        let tile_base_address = 0x00; //self.get_base_tile_address() as usize;
+        let tile_base_address = 0x00;// self.get_base_tile_address() as usize;
         let line = self.ly.wrapping_add(self.scroll_y) as usize;
         let bg_map_row = (line / 0x08) as usize;
         for i in 0..160 {
@@ -225,8 +241,10 @@ impl Gpu {
 
     fn get_base_tile_address(&self) -> u16 {
         if self.control_register & 0x10 == 0x10 {
+            println!("Yep base tile address is 0x8000");
             0x0000
         } else {
+            println!("Nope, base tile address is 0x8800");
             0x0800
         }
     }

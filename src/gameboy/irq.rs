@@ -12,6 +12,10 @@ impl Irq {
         }
     }
 
+    pub fn reset(&mut self) {
+        *self = Irq::new();
+    }
+
     pub fn should_handle(&self, int: Interrupt) -> bool {
         self.requested(&int) && self.enabled(&int)
     }
