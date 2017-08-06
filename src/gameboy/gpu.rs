@@ -201,12 +201,6 @@ impl Gpu {
 
             let line_offset = (line % 0x08) << 0x01;
             let tile_data_start = tile_base_address + (t * 0x10) + line_offset;
-
-            if t == 0x9E {
-                panic!("Raw tile number: {}, tile_data_start: {:04X}",
-                       t,
-                       tile_data_start);
-            }
             let x_shift = (x % 8).wrapping_sub(0x07).wrapping_mul(0xFF);
             let tile_data1 = (self.ram[tile_data_start] >> x_shift) & 0x01;
             let tile_data2 = (self.ram[tile_data_start + 0x01] >> x_shift) & 0x01;
