@@ -181,6 +181,7 @@ impl Cpu {
                 0xEA => self.ld_imm16_a(&operand, interconnect),
                 0xEF => self.call(0x28, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
+                0xF1 => self.pop_af(interconnect),
                 0xF3 => self.di(),
                 0xF5 => self.push_af(interconnect),
                 0xFA => self.ld_a_imm16(&operand, interconnect),
@@ -581,6 +582,12 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
         self.registers.flags.carry = false;
+    }
+
+    fn pop_af(&mut self, interconnect: &mut Interconnect) {
+        let addr = interconnect.read_u16(self.registers.sp as u16);
+        self.registers.sp += 0x02;
+        self.registers.set_af(addr);
     }
 
     fn pop_bc(&mut self, interconnect: &mut Interconnect) {
