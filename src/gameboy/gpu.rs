@@ -101,6 +101,8 @@ pub struct Gpu {
 
     pub frame: Frame,
     mode: GpuMode,
+
+    counter: u8,
 }
 
 impl Gpu {
@@ -123,6 +125,7 @@ impl Gpu {
             cycles: 0x00,
             frame: Frame::new(),
             mode: GpuMode::HBlank,
+            counter: 0,
         }
     }
 
@@ -148,7 +151,7 @@ impl Gpu {
                     self.check_coincidence(irq);
                 }
                 GpuMode::TransferringData => {
-                    self.render_background();
+                    self.render_scanline();
                     self.switch_mode(GpuMode::HBlank, irq);
                 }
                 GpuMode::SearchingRam => {
@@ -168,9 +171,21 @@ impl Gpu {
         Ok(())
     }
 
+    fn render_scanline(&mut self) {
+        self.clear_scanline();
+        self.render_background();
+    }
+
+    fn clear_scanline(&mut self) {
+        let line = self.ly.wrapping_add(self.scroll_y) as usize;
+        for i in 0..160 {
+            self.frame.pixels[line * 160 + i] = Color::new(0, 0xFF, 0xFF, 0xFF);
+        }
+    }
+
     fn render_background(&mut self) {
         let background_map_base_address = self.get_base_background_map_address() as usize;
-        let tile_base_address = self.get_base_tile_address() as usize;
+        let tile_base_address = 0x00; //self.get_base_tile_address() as usize;
         let line = self.ly.wrapping_add(self.scroll_y) as usize;
         let bg_map_row = (line / 0x08) as usize;
         for i in 0..160 {
@@ -184,19 +199,34 @@ impl Gpu {
                 128 + ((raw_tile_number as i8 as i16) + 128) as usize
             };
 
-            let line = (line % 0x08) << 0x01;
-            let tile_data_start = tile_base_address + (t * 0x10) + line;
-            let x_shift = (x % 8).wrapping_sub(7).wrapping_mul(0xFF);
+            let line_offset = (line % 0x08) << 0x01;
+            let tile_data_start = tile_base_address + (t * 0x10) + line_offset;
+
+            if t == 0x9E {
+                panic!("Raw tile number: {}, tile_data_start: {:04X}",
+                       t,
+                       tile_data_start);
+            }
+            let x_shift = (x % 8).wrapping_sub(0x07).wrapping_mul(0xFF);
             let tile_data1 = (self.ram[tile_data_start] >> x_shift) & 0x01;
             let tile_data2 = (self.ram[tile_data_start + 0x01] >> x_shift) & 0x01;
             let total_row_data = (tile_data2 << 1) | tile_data1;
-            // self.ram.dump("/Users/Simon/vram_dump.bin");
             let color_value = total_row_data;
-            // let color_value = (t1 as u16).wrapping_mul((0x0E as u16).wrapping_sub(x as u16 * 2));
-            let c = Color::from_dmg_byte(color_value as u8);
-            // println!("Writing pixel to: {}", self.ly as usize * 160 + i as usize);
+            let c = self.get_background_color_for_byte(color_value as u8);
             self.frame.pixels[self.ly as usize * 160 + i as usize] = c;
         }
+    }
+
+    fn get_background_color_for_byte(&self, b: u8) -> Color {
+        let palette_index = match b {
+            0x00 => self.bg_palette & 0x0003,
+            0x01 => (self.bg_palette & 0x000C) >> 0x02,
+            0x02 => (self.bg_palette & 0x0030) >> 0x04,
+            0x03 => (self.bg_palette & 0x00C0) >> 0x06,
+            _ => panic!("err: invalid pixel color value found"),
+        };
+
+        Color::from_dmg_byte(palette_index as u8)
     }
 
     fn get_base_tile_address(&self) -> u16 {
@@ -238,8 +268,6 @@ impl Gpu {
             0x41 => self.stat = GpuStat::from_u8(val),
             0x42 => self.scroll_y = val,
             0x43 => self.scroll_x = val,
-            0x4A => self.window_y = val,
-            0x4B => self.window_x = val,
             0x44 => {
                 self.ly = val;
                 println!("WRITING TO LY");
@@ -250,6 +278,8 @@ impl Gpu {
             0x47 => self.bg_palette = val,
             0x48 => self.palette0 = val,
             0x49 => self.palette1 = val,
+            0x4A => self.window_y = val,
+            0x4B => self.window_x = val,
             _ => panic!("tried to write GPU memory that is not mapped: {:04}", addr),
         }
     }

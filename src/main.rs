@@ -97,7 +97,8 @@ fn build_frame(factory: &mut Factory, frame: &Frame) -> RgbaImage {
     let mut img = ImageBuffer::new(160, 144);
     for x in 0..160 {
         for y in 0..144 {
-            let frame_pixel = frame.pixels[y * x + x];
+            // let frame_pixel = frame.pixels[y * x + x];
+            let frame_pixel = frame.pixels[160 * y + x];
             let p = image::Rgba([frame_pixel.r, frame_pixel.g, frame_pixel.b, 0xFF]);
             img.put_pixel(x as u32, y as u32, p);
         }

@@ -20,8 +20,8 @@ impl Color {
     pub fn from_dmg_byte(b: u8) -> Color {
         match b {
             0x00 => Color::new(b, 0xFF, 0xFF, 0xFF),
-            0x01 => Color::new(b, 0xCC, 0xCC, 0xCC),
-            0x02 => Color::new(b, 0x77, 0x77, 0x77),
+            0x01 => Color::new(b, 0xC0, 0xC0, 0xC0),
+            0x02 => Color::new(b, 0x60, 0x60, 0x60),
             0x03 => Color::new(b, 0x00, 0x00, 0x00),
             _ => panic!("invalid pallete entry: {}", b),
         }
