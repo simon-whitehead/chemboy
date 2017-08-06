@@ -79,7 +79,7 @@ impl Gpu {
             return Ok(());
         }
 
-        self.cycles -= 1;
+        self.cycles -= cycles;
         if self.cycles < 0 {
             self.cycles = 0x1C8; // it takes 456 CPU clock cycles to draw 1 LCD scanline
             match self.mode {
@@ -141,14 +141,7 @@ impl Gpu {
             let tile_data1 = (self.ram[tile_data_start] >> x_shift) & 0x01;
             let tile_data2 = (self.ram[tile_data_start + 0x01] >> x_shift) & 0x01;
             let total_row_data = (tile_data2 << 1) | tile_data1;
-            if self.ram[0x04] > 0x00 {
-                panic!("DBG: {:?}",
-                       &self.ram[tile_data_start..tile_data_start + 0x20]);
-                panic!("d1: {:b}, d2: {:b}, total: {:b}",
-                       tile_data1,
-                       tile_data2,
-                       total_row_data);
-            }
+            // self.ram.dump("/Users/Simon/vram_dump.bin");
             let color_value = total_row_data;
             // let color_value = (t1 as u16).wrapping_mul((0x0E as u16).wrapping_sub(x as u16 * 2));
             let c = Color::from_dmg_byte(color_value as u8);
