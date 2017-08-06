@@ -4,12 +4,58 @@ use gameboy::frame::{Color, Frame};
 const VRAM_SIZE: usize = 0x4000;
 const SPRITE_DATA_SIZE: usize = 0xA0;
 
+pub struct GpuStat {
+    pub coincidence_interrupt_enabled: bool,
+    pub OAM_interrupt_enabled: bool,
+    pub VBlank_interrupt_enabled: bool,
+    pub HBlank_interrupt_enabled: bool,
+}
+
+impl GpuStat {
+    pub fn new() -> GpuStat {
+        GpuStat {
+            coincidence_interrupt_enabled: false,
+            OAM_interrupt_enabled: false,
+            VBlank_interrupt_enabled: false,
+            HBlank_interrupt_enabled: false,
+        }
+    }
+
+    pub fn from_u8(b: u8) -> GpuStat {
+        GpuStat {
+            coincidence_interrupt_enabled: b & 0x40 == 0x40,
+            OAM_interrupt_enabled: b & 0x20 == 0x20,
+            VBlank_interrupt_enabled: b & 0x10 == 0x10,
+            HBlank_interrupt_enabled: b & 0x08 == 0x08,
+        }
+    }
+
+    pub fn to_u8(&self, gpu: &Gpu) -> u8 {
+        (if self.coincidence_interrupt_enabled {
+            0x40
+        } else {
+            0
+        }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
+        (if self.VBlank_interrupt_enabled {
+            0x10
+        } else {
+            0
+        }) |
+        (if self.HBlank_interrupt_enabled {
+            0x08
+        } else {
+            0
+        }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
+    }
+}
+
 pub enum GpuMode {
     HBlank,
     VBlank,
     SearchingRam,
     TransferringData,
 }
+
 impl GpuMode {
     fn cycles(&self, scroll_x: u8) -> isize {
         let scroll_adjust = match scroll_x % 0x08 {
@@ -24,6 +70,15 @@ impl GpuMode {
             GpuMode::VBlank => 114,
         }
     }
+
+    fn to_u8(&self) -> u8 {
+        match *self {
+            GpuMode::HBlank => 0x00,
+            GpuMode::VBlank => 0x01,
+            GpuMode::SearchingRam => 0x02,
+            GpuMode::TransferringData => 0x03,
+        }
+    }
 }
 
 pub struct Gpu {
@@ -31,7 +86,7 @@ pub struct Gpu {
     pub ram: Memory,
     pub sprite_data: Memory,
     control_register: u8,
-    stat: u8,
+    stat: GpuStat,
     scroll_y: u8,
     scroll_x: u8,
     window_y: u8,
@@ -55,7 +110,7 @@ impl Gpu {
             ram: Memory::new(VRAM_SIZE),
             sprite_data: Memory::new(SPRITE_DATA_SIZE),
             control_register: 0x00,
-            stat: 0x00,
+            stat: GpuStat::new(),
             scroll_y: 0x00,
             scroll_x: 0x00,
             window_y: 0x00,
@@ -90,10 +145,7 @@ impl Gpu {
                     } else {
                         self.switch_mode(GpuMode::SearchingRam, irq);
                     }
-                    self.check_coincidence();
-                    if self.get_coincidence_flag() && self.coincidence_interrupt_enabled() {
-                        irq.request(Interrupt::Lcd);
-                    }
+                    self.check_coincidence(irq);
                 }
                 GpuMode::TransferringData => {
                     self.render_background();
@@ -108,10 +160,7 @@ impl Gpu {
                         self.ly = 0;
                         self.switch_mode(GpuMode::SearchingRam, irq);
                     }
-                    self.check_coincidence();
-                    if self.get_coincidence_flag() && self.coincidence_interrupt_enabled() {
-                        irq.request(Interrupt::Lcd);
-                    }
+                    self.check_coincidence(irq);
                 }
             }
         }
@@ -169,7 +218,7 @@ impl Gpu {
     pub fn read_u8(&self, addr: u16) -> u8 {
         match addr {
             0x40 => self.control_register,
-            0x41 => self.stat,
+            0x41 => self.stat.to_u8(self),
             0x42 => self.scroll_y,
             0x43 => self.scroll_x,
             0x4A => self.window_y,
@@ -186,7 +235,7 @@ impl Gpu {
     pub fn write_u8(&mut self, addr: u16, val: u8) {
         match addr {
             0x40 => self.control_register = val,
-            0x41 => self.stat = val,
+            0x41 => self.stat = GpuStat::from_u8(val),
             0x42 => self.scroll_y = val,
             0x43 => self.scroll_x = val,
             0x4A => self.window_y = val,
@@ -197,7 +246,6 @@ impl Gpu {
             }
             0x45 => {
                 self.lyc = val;
-                self.check_coincidence();
             }
             0x47 => self.bg_palette = val,
             0x48 => self.palette0 = val,
@@ -206,44 +254,17 @@ impl Gpu {
         }
     }
 
-    fn check_coincidence(&mut self) {
+    fn check_coincidence(&mut self, irq: &mut Irq) {
         // If LY == LYC then set the coincidence flag
-        if self.lyc == self.ly {
-            self.set_coincidence_flag(true);
-        } else {
-            self.set_coincidence_flag(false);
+        if self.lyc == self.ly && self.stat.coincidence_interrupt_enabled {
+            irq.request(Interrupt::Lcd);
         }
-    }
-
-    fn set_coincidence_flag(&mut self, set: bool) {
-        if set {
-            self.stat |= 0x04;
-        } else {
-            self.stat &= !0x04;
-        }
-    }
-
-    fn get_coincidence_flag(&self) -> bool {
-        self.stat & 0x04 == 0x04
-    }
-
-    fn set_coincidence_interrupt(&mut self, set: bool) {
-        if set {
-            self.stat |= 0x20;
-        } else {
-            self.stat &= !0x20;
-        }
-    }
-
-    fn coincidence_interrupt_enabled(&self) -> bool {
-        self.stat & 0x20 == 0x20
     }
 
     fn switch_mode(&mut self, mode: GpuMode, irq: &mut Irq) {
         self.cycles += mode.cycles(self.scroll_x);
         match mode {
             GpuMode::VBlank => {
-                println!("Requested a vblank: {:b}", irq.enable_flag);
                 irq.request(Interrupt::Vblank);
             }
             GpuMode::SearchingRam => {
