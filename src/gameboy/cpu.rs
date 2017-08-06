@@ -124,6 +124,7 @@ impl Cpu {
                 0x12 => self.ld_de_a(interconnect),
                 0x13 => self.inc_de(),
                 0x16 => self.ld_d_imm8(&operand),
+                0x18 => self.jp_imm8(&operand),
                 0x19 => self.add_hl_de(),
                 0x1A => self.ld_a_de(interconnect),
                 0x1C => self.inc_e(),
@@ -375,6 +376,11 @@ impl Cpu {
 
     fn jp_hl(&mut self) {
         self.registers.pc = self.registers.get_hl();
+    }
+
+    fn jp_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        self.relative_jump(val);
     }
 
     fn jp_imm16(&mut self, operand: &Operand) {
