@@ -143,6 +143,7 @@ impl Cpu {
                 0x56 => self.ld_d_hl(interconnect),
                 0x5E => self.ld_e_hl(interconnect),
                 0x5F => self.ld_e_a(),
+                0x68 => self.ld_l_b(),
                 0x78 => self.ld_a_b(),
                 0x79 => self.ld_a_c(),
                 0x7C => self.ld_a_h(),
@@ -525,6 +526,10 @@ impl Cpu {
     fn ld_imm16_a(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
         let addr = operand.unwrap_imm16();
         interconnect.write_u8(addr, self.registers.a);
+    }
+
+    fn ld_l_b(&mut self) {
+        self.registers.l = self.registers.b;
     }
 
     fn ld_sp_imm16(&mut self, operand: &Operand) {
