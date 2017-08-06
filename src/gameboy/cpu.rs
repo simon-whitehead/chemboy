@@ -149,6 +149,7 @@ impl Cpu {
                 0x87 => self.add_a_a(),
                 0xA1 => self.and_c(),
                 0xA7 => self.and_a(),
+                0xA8 => self.xor_b(),
                 0xA9 => self.xor_c(),
                 0xAF => self.xor_a(),
                 0xB0 => self.or_b(),
@@ -629,6 +630,14 @@ impl Cpu {
 
     fn xor_a(&mut self) {
         self.registers.a ^= self.registers.a;
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
+    }
+
+    fn xor_b(&mut self) {
+        self.registers.a ^= self.registers.b;
         self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;

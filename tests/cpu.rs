@@ -737,6 +737,17 @@ mod tests {
     }
 
     #[test]
+    fn xor_b() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xA8]);
+
+        cpu.registers.a = 0xFF;
+        cpu.registers.b = 0xFF;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0, cpu.registers.a);
+    }
+
+    #[test]
     fn xor_c() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xA9]);
 
