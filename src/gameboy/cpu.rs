@@ -159,6 +159,7 @@ impl Cpu {
                 0xC5 => self.push_bc(interconnect),
                 0xC8 => self.ret_z(interconnect),
                 0xC9 => self.ret(interconnect),
+                0xCA => self.jp_z_imm16(&operand),
                 0xCB => {
                     cycles = self.handle_extended_opcode(interconnect);
                 }
@@ -365,6 +366,12 @@ impl Cpu {
     fn jp_imm16(&mut self, operand: &Operand) {
         let addr = operand.unwrap_imm16();
         self.registers.set_pc(addr);
+    }
+
+    fn jp_z_imm16(&mut self, operand: &Operand) {
+        if self.registers.flags.zero {
+            self.jp_imm16(operand);
+        }
     }
 
     fn jr_nz_imm8(&mut self, operand: &Operand) {
