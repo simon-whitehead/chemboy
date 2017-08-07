@@ -32,20 +32,20 @@ impl GpuStat {
 
     pub fn to_u8(&self, gpu: &Gpu) -> u8 {
         (if self.coincidence_interrupt_enabled {
-            0x40
-        } else {
-            0
-        }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
-        (if self.VBlank_interrupt_enabled {
-            0x10
-        } else {
-            0
-        }) |
-        (if self.HBlank_interrupt_enabled {
-            0x08
-        } else {
-            0
-        }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
+             0x40
+         } else {
+             0
+         }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
+            (if self.VBlank_interrupt_enabled {
+                 0x10
+             } else {
+                 0
+             }) |
+            (if self.HBlank_interrupt_enabled {
+                 0x08
+             } else {
+                 0
+             }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
     }
 }
 
@@ -141,7 +141,6 @@ impl Gpu {
         let cycles = cycles as isize;
 
         if !self.enabled {
-            println!("LCD Disabled!");
             return Ok(());
         }
 
@@ -151,7 +150,7 @@ impl Gpu {
             GpuMode::HBlank => {
                 if self.cycles >= 0xCC {
                     self.cycles = 0x00;
-                    self.ly = (self.ly + 0x01) % 0x1C8;
+                    self.ly = self.ly + 0x01;
                     if self.ly >= 0x90 {
                         self.switch_mode(GpuMode::VBlank, irq);
                     } else {
@@ -210,8 +209,8 @@ impl Gpu {
         for i in 0..160 {
             let x = (i as u8).wrapping_add(self.scroll_x);
             let bg_map_col = (x / 8) as usize;
-            let raw_tile_number = self.ram[background_map_base_address +
-                                           (bg_map_row * 0x20 + bg_map_col)];
+            let raw_tile_number =
+                self.ram[background_map_base_address + (bg_map_row * 0x20 + bg_map_col)];
             let t = if tile_base_address == 0x00 {
                 raw_tile_number as usize
             } else {
@@ -226,7 +225,7 @@ impl Gpu {
             let total_row_data = (tile_data2 << 1) | tile_data1;
             let color_value = total_row_data;
             let c = self.get_background_color_for_byte(color_value as u8);
-            self.frame.pixels[self.ly as usize * 160 + i as usize] = c;
+            self.frame.pixels[line as usize * 160 + i as usize] = c;
         }
     }
 
@@ -305,10 +304,14 @@ impl Gpu {
         self.cycles += mode.cycles(self.scroll_x);
         match mode {
             GpuMode::VBlank => {
-                irq.request(Interrupt::Vblank);
+                if self.stat.VBlank_interrupt_enabled {
+                    irq.request(Interrupt::Vblank);
+                }
             }
             GpuMode::SearchingRam => {
-                irq.request(Interrupt::Lcd);
+                if self.stat.OAM_interrupt_enabled {
+                    irq.request(Interrupt::Lcd);
+                }
             }
             _ => (),
         }

@@ -82,9 +82,9 @@ impl Interconnect {
             Address::CartRam(a) => cart.ram.write_u8(a, byte),
             Address::CartRom(a) => cart.rom.write_u8(a, byte),
             Address::ZRam(a) => {
-                // if a != 0x00 { <----- This stops the Tetris infinite loops on the Copyright screen (until I can fix it later)
+                if a != 0x00 { 
                 self.zram.write_u8(a, byte);
-                // }
+                }
             }
             Address::Oam(a) => self.gpu.sprite_data.write_u8(a, byte),
             Address::Unused(_) => (),

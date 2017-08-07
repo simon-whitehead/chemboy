@@ -26,13 +26,15 @@ fn main() {
         .version("0.0.0.1")
         .author("Simon Whitehead")
         .about("A GameBoy and GameBoy Colour emulator written in Rust")
-        .arg(Arg::with_name("rom")
-            .short("r")
-            .long("rom")
-            .value_name("ROM_PATH")
-            .required(true)
-            .help("Path to a Gameboy or Gameboy Color ROM")
-            .takes_value(true))
+        .arg(
+            Arg::with_name("rom")
+                .short("r")
+                .long("rom")
+                .value_name("ROM_PATH")
+                .required(true)
+                .help("Path to a Gameboy or Gameboy Color ROM")
+                .takes_value(true),
+        )
         .get_matches();
 
     let rom = matches.value_of("rom").unwrap();
@@ -43,10 +45,10 @@ fn main() {
     let mut now = Instant::now();
 
     let opengl = OpenGL::V3_2;
-    let mut window: PistonWindow = WindowSettings::new(format!("gbrs: {}",
-                                                               gameboy.cart_details().game_title),
-                                                       [160, 144])
-        .exit_on_esc(true)
+    let mut window: PistonWindow = WindowSettings::new(
+        format!("gbrs: {}", gameboy.cart_details().game_title),
+        [160, 144],
+    ).exit_on_esc(true)
         .opengl(opengl)
         .build()
         .unwrap();
@@ -105,13 +107,11 @@ fn build_frame(factory: &mut Factory, frame: &Frame) -> RgbaImage {
     let mut img = ImageBuffer::new(160, 144);
     for x in 0..160 {
         for y in 0..144 {
-            // let frame_pixel = frame.pixels[y * x + x];
             let frame_pixel = frame.pixels[160 * y + x];
             let p = image::Rgba([frame_pixel.r, frame_pixel.g, frame_pixel.b, 0xFF]);
             img.put_pixel(x as u32, y as u32, p);
         }
     }
 
-    // Texture::from_image(factory, &img, &TextureSettings::new()).unwrap()
     img
 }
