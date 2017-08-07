@@ -666,6 +666,17 @@ mod tests {
     }
 
     #[test]
+    fn ld_l_hl() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x6E]);
+
+        cpu.registers.set_hl(0xC000);
+        interconnect.write_u8(0xC000, 0xBC);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xBC, cpu.registers.l);
+    }
+
+    #[test]
     fn ld_sp_imm16() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x31 0xCF 0xF7]);
 
