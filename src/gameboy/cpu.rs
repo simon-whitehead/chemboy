@@ -81,21 +81,21 @@ impl Cpu {
     }
 
     pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) {
-        if interconnect.irq.should_handle(Interrupt::Timer) && self.registers.flags.ime {
-            interconnect.irq.unrequest(Interrupt::Timer);
-            self.call(0x50, interconnect);
-            self.registers.flags.ime = false;
-        }
+        if self.registers.flags.ime {
+            if interconnect.irq.should_handle(Interrupt::Vblank) {
+                self.call(0x40, interconnect);
+                interconnect.irq.unrequest(Interrupt::Vblank);
+            }
 
-        if interconnect.irq.should_handle(Interrupt::Vblank) && self.registers.flags.ime {
-            interconnect.irq.unrequest(Interrupt::Vblank);
-            self.call(0x40, interconnect);
-            self.registers.flags.ime = false;
-        }
+            if interconnect.irq.should_handle(Interrupt::Lcd) {
+                self.call(0x48, interconnect);
+                interconnect.irq.unrequest(Interrupt::Lcd);
+            }
 
-        if interconnect.irq.should_handle(Interrupt::Lcd) && self.registers.flags.ime {
-            interconnect.irq.unrequest(Interrupt::Lcd);
-            self.call(0x48, interconnect);
+            if interconnect.irq.should_handle(Interrupt::Timer) {
+                self.call(0x50, interconnect);
+                interconnect.irq.unrequest(Interrupt::Timer);
+            }
             self.registers.flags.ime = false;
         }
     }

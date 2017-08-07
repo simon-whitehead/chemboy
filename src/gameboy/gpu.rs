@@ -174,6 +174,7 @@ impl Gpu {
                 }
             }
             GpuMode::VBlank => {
+                irq.request(Interrupt::Vblank);
                 if self.cycles >= 0x1C8 {
                     self.cycles = 0x00;
                     self.ly += 0x01;
@@ -304,9 +305,7 @@ impl Gpu {
         self.cycles += mode.cycles(self.scroll_x);
         match mode {
             GpuMode::VBlank => {
-                if self.stat.VBlank_interrupt_enabled {
                     irq.request(Interrupt::Vblank);
-                }
             }
             GpuMode::SearchingRam => {
                 if self.stat.OAM_interrupt_enabled {

@@ -17,7 +17,7 @@ impl Irq {
     }
 
     pub fn should_handle(&self, int: Interrupt) -> bool {
-        self.requested(&int) && self.enabled(&int)
+        self.requested(&int)
     }
 
     pub fn request(&mut self, int: Interrupt) {
@@ -36,10 +36,10 @@ impl Irq {
         use self::Interrupt::*;
 
         match int {
-            Vblank => self.request_flag &= !0x01,
-            Lcd => self.request_flag &= !0x02,
-            Timer => self.request_flag &= !0x04,
-            Serial => self.request_flag &= !0x08,
+            Vblank => self.request_flag -= 0x01,
+            Lcd => self.request_flag -= 0x02,
+            Timer => self.request_flag -= 0x04,
+            Serial => self.request_flag -= 0x08,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -72,10 +72,10 @@ impl Irq {
         use self::Interrupt::*;
 
         match int {
-            Vblank => self.enable_flag &= !0x01,
-            Lcd => self.enable_flag &= !0x02,
-            Timer => self.enable_flag &= !0x04,
-            Serial => self.enable_flag &= !0x08,
+            Vblank => self.enable_flag -= 0x01,
+            Lcd => self.enable_flag -= 0x02,
+            Timer => self.enable_flag -= 0x04,
+            Serial => self.enable_flag -= 0x08,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -93,6 +93,7 @@ impl Irq {
     }
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub enum Interrupt {
     Vblank,
     Lcd,
