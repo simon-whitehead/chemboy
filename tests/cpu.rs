@@ -188,6 +188,20 @@ mod tests {
     }
 
     #[test]
+    fn dec_hl() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x35]);
+
+        cpu.registers.set_hl(0xC003);
+        interconnect.write_u8(0xC003, 0x00);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xFF, interconnect.read_u8(0xC003));
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.half_carry);
+        assert_eq!(true, cpu.registers.flags.negative);
+    }
+
+    #[test]
     fn di() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xF3]);
 
