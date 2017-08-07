@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use gameboy::interconnect::Interconnect;
 use gameboy::Memory;
 
@@ -26,7 +24,6 @@ impl Cartridge {
     pub fn with_rom(rom: Vec<u8>) -> Cartridge {
         let mut r = Memory::new(CART_MEM_SIZE);
         r.write_bytes(0x00, &rom);
-        r.dump("/Users/Simon/rom_dump.bin").expect("failed dumping rom");
 
         Cartridge {
             rom: r,

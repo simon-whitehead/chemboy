@@ -3,7 +3,7 @@ Gameboy:
     ✔ Add support for V-Blank interrupt @done (07/08/2017, 10:35:35 am)
     ✔ Make sure interrupts honour the IME flag AND the IE flag @done (07/08/2017, 10:35:38 am)
     ☐ Check interaction of AF regiter and Flags
-    ☐ Remove the special `0xFF80` sink that is making Tetris work properly
+    ✔ Remove the special `0xFF80` sink that is making Tetris work properly @done (07/08/2017, 11:15:31 am)
 
 Emulator:
     ☐ Add metadata about ROM view

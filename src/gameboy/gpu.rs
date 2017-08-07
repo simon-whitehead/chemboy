@@ -310,7 +310,7 @@ impl Gpu {
             }
             GpuMode::SearchingRam => {
                 if self.stat.OAM_interrupt_enabled {
-                    irq.request(Interrupt::Lcd);
+                    irq.request(Interrupt::OAM);
                 }
             }
             _ => (),

@@ -6,16 +6,14 @@ extern crate image;
 extern crate piston_window;
 extern crate rand;
 
-use clap::{App, Arg, SubCommand};
+use clap::{App, Arg};
 use image::{ImageBuffer, RgbaImage};
-use gfx_core::Resources;
 use gfx_device_gl::Factory;
 use piston_window::*;
 
 use std::fs::File;
 use std::io::Read;
-use std::time::{Duration, Instant};
-use std::panic;
+use std::time::Instant;
 
 pub mod gameboy;
 
@@ -42,7 +40,7 @@ fn main() {
     let cart = Cartridge::with_rom(rom_data);
     let mut gameboy = gameboy::GameBoy::new(false, cart);
     println!("Loading game: {}", gameboy.cart_details().game_title);
-    let mut now = Instant::now();
+    let now = Instant::now();
 
     let opengl = OpenGL::V3_2;
     let mut window: PistonWindow = WindowSettings::new(
@@ -54,7 +52,7 @@ fn main() {
         .unwrap();
 
     window.set_max_fps(60);
-    let mut n = 0;
+    let n = 0;
     'start: while let Some(e) = window.next() {
         if let Some(button) = e.press_args() {
             if let Button::Keyboard(key) = button {
@@ -68,7 +66,7 @@ fn main() {
         window.draw_2d(&e, |c, g| {
             let img = {
                 let frame = gameboy.request_frame();
-                build_frame(&mut factory, frame)
+                build_frame(frame)
             };
             let texture = Texture::from_image(&mut factory, &img, &TextureSettings::new()).unwrap();
             clear([1.0; 4], g);
@@ -103,8 +101,8 @@ fn load_rom(fname: &str) -> std::io::Result<Vec<u8>> {
     Ok(contents)
 }
 
-fn build_frame(factory: &mut Factory, frame: &Frame) -> RgbaImage {
-    let mut img = ImageBuffer::new(160, 144);
+fn build_frame(frame: &Frame) -> RgbaImage {
+    let mut img = ImageBuffer::new(gameboy::SCREEN_WIDTH, gameboy::SCREEN_HEIGHT);
     for x in 0..160 {
         for y in 0..144 {
             let frame_pixel = frame.pixels[160 * y + x];

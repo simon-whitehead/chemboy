@@ -1,6 +1,7 @@
 #[macro_use]
 mod macros;
 
+mod cartridge;
 mod cpu;
 mod frame;
 mod gameboy;
@@ -9,11 +10,10 @@ mod interconnect;
 mod irq;
 mod memory;
 mod memory_map;
+mod opcode;
 mod registers;
 mod timer;
 
-pub mod cartridge;
-pub mod opcode;
 
 pub use self::cartridge::{Cartridge, CartridgeDetails};
 pub use self::cpu::Cpu;
@@ -27,7 +27,9 @@ pub use self::timer::Timer;
 
 pub use self::macros::*;
 
-
 pub const CPU_FREQUENCY: usize = 0x400000; // 4,194,304
 pub const MAX_CPU_CYCLES: usize = CPU_FREQUENCY / 60; // 60hz, our target refresh rate/fps
 pub const MAX_DIV_REG_CYCLES: usize = MAX_CPU_CYCLES / 0x10;
+
+pub const SCREEN_WIDTH: u32 = 0xA0;
+pub const SCREEN_HEIGHT: u32 = 0x90;

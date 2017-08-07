@@ -98,4 +98,5 @@ pub enum Interrupt {
     Lcd,
     Timer,
     Serial,
+    OAM,
 }
