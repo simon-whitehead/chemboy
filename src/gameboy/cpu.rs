@@ -72,34 +72,45 @@ impl Cpu {
             let c = self.step(interconnect)?;
             cycles += c as usize;
             interconnect.step(cycles)?;
-            self.handle_interrupts(interconnect);
+            cycles += self.handle_interrupts(interconnect) as usize;
         }
 
         Ok(())
     }
 
-    pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) {
-        if interconnect.irq.enable_flag > 0x00 {
-            panic!("IRQ enable flag > 0");
+    pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) -> u8 {
+        println!("IME: {}", interconnect.irq.enabled);
+        println!("IE: {:b}", interconnect.irq.enable_flag);
+        println!("IF: {:b}", interconnect.irq.request_flag);
+        if !interconnect.irq.enabled {
+            return 0x0C;
         }
-        if self.registers.flags.ime {
-            if interconnect.irq.should_handle(Interrupt::Vblank) {
-                println!("Vblank happening");
-                self.call(0x40, interconnect);
-                interconnect.irq.unrequest(Interrupt::Vblank);
-            }
 
-            if interconnect.irq.should_handle(Interrupt::Lcd) {
-                self.call(0x48, interconnect);
-                interconnect.irq.unrequest(Interrupt::Lcd);
-            }
+        if interconnect.irq.should_handle(Interrupt::Vblank) {
+            interconnect.irq.enabled = false;
+            self.call(0x40, interconnect);
+            interconnect.irq.unrequest(Interrupt::Vblank);
 
-            if interconnect.irq.should_handle(Interrupt::Timer) {
-                self.call(0x50, interconnect);
-                interconnect.irq.unrequest(Interrupt::Timer);
-            }
-            // self.registers.flags.ime = false;
+            return 0x0C;
         }
+
+        if interconnect.irq.should_handle(Interrupt::Lcd) {
+            interconnect.irq.enabled = false;
+            interconnect.irq.unrequest(Interrupt::Lcd);
+            self.call(0x48, interconnect);
+
+            return 0x0C;
+        }
+
+        if interconnect.irq.should_handle(Interrupt::Timer) {
+            interconnect.irq.enabled = false;
+            interconnect.irq.unrequest(Interrupt::Timer);
+            self.call(0x50, interconnect);
+
+            return 0x0C;
+        }
+
+        0x0C
     }
 
     pub fn step(&mut self, interconnect: &mut Interconnect) -> Result<u8, String> {
@@ -109,7 +120,7 @@ impl Cpu {
             let mut cycles = opcode.cycles;
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
+            // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
             self.registers.pc += opcode.length;
 
             match opcode.code {
@@ -192,10 +203,10 @@ impl Cpu {
                 0xEF => self.call(0x28, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF1 => self.pop_af(interconnect),
-                0xF3 => self.di(),
+                0xF3 => self.di(interconnect),
                 0xF5 => self.push_af(interconnect),
                 0xFA => self.ld_a_imm16(&operand, interconnect),
-                0xFB => self.ei(),
+                0xFB => self.ei(interconnect),
                 0xFE => self.cp_n(&operand),
                 _ => {
                     return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
@@ -359,12 +370,12 @@ impl Cpu {
         self.registers.flags.half_carry = (val & 0x0F) == 0x00;
     }
 
-    fn di(&mut self) {
-        self.registers.flags.ime = false;
+    fn di(&mut self, interconnect: &mut Interconnect) {
+        interconnect.irq.enabled = false;
     }
 
-    fn ei(&mut self) {
-        self.registers.flags.ime = true;
+    fn ei(&mut self, interconnect: &mut Interconnect) {
+        interconnect.irq.enabled = true;
     }
 
     fn inc_a(&mut self) {
@@ -710,7 +721,7 @@ impl Cpu {
         self.registers.sp += 0x02;
         self.registers.pc = addr;
 
-        self.registers.flags.ime = true;
+        interconnect.irq.enabled = true;
     }
 
     fn ret_nz(&mut self, interconnect: &mut Interconnect) {
