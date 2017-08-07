@@ -73,6 +73,11 @@ impl Interconnect {
     }
 
     pub fn write_u8(&mut self, addr: u16, byte: u8) {
+        // Special case - DMA transfer
+        if addr == 0xFF46 {
+            self.dma_transfer(byte);
+            return;
+        }
         let cart = self.cart.as_mut().expect("Cartridge is empty");
 
         match memory_map::map_address(addr) {
@@ -194,5 +199,13 @@ impl Interconnect {
             Address::Io(a) => self.mmap_io.read_u16(a),
             _ => panic!("Unable to read address: {:#X}", addr),
         }
+    }
+
+    fn dma_transfer(&mut self, byte: u8) {
+                        let addr = ((byte as u16) << 0x08); // "The written value specifies the transfer source address divided by 0x100"
+                        for x in 0 .. 0xA0 {
+                            let val = self.read_u8(addr + x);
+                            self.write_u8(0xFE00 + x, val);
+                        }
     }
 }
