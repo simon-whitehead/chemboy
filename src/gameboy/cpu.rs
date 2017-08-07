@@ -10,9 +10,7 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn new(gameboy_color: bool) -> Cpu {
-        Cpu {
-            registers: registers::Registers::new(gameboy_color),
-        }
+        Cpu { registers: registers::Registers::new(gameboy_color) }
     }
 
     pub fn reset(&mut self, interconnect: &mut Interconnect) {
@@ -141,6 +139,7 @@ impl Cpu {
                 0x34 => self.inc_hl_ptr(interconnect),
                 0x35 => self.dec_hl(interconnect),
                 0x36 => self.ld_hl_imm8(&operand, interconnect),
+                0x3C => self.inc_a(),
                 0x3D => self.dec_a(),
                 0x3E => self.ld_a_imm8(&operand),
                 0x47 => self.ld_b_a(),
@@ -192,22 +191,18 @@ impl Cpu {
                 0xFB => self.ei(),
                 0xFE => self.cp_n(&operand),
                 _ => {
-                    return Err(format!(
-                        "Could not match opcode: {:02X} at offset: {:04X}",
-                        opcode.code,
-                        self.registers.pc
-                    ))
+                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
+                                       opcode.code,
+                                       self.registers.pc))
                 }
             }
 
             return Ok(cycles);
         }
 
-        Err(format!(
-            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-            byte,
-            self.registers.pc
-        ))
+        Err(format!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+                    byte,
+                    self.registers.pc))
     }
 
     pub fn handle_extended_opcode(&mut self, interconnect: &mut Interconnect) -> u8 {
@@ -223,22 +218,18 @@ impl Cpu {
                 0x37 => self.swap_a(),
                 0x87 => self.res_0_a(),
                 _ => {
-                    panic!(
-                        "Could not match opcode: {:02X} at offset: {:04X}",
-                        opcode.code,
-                        self.registers.pc
-                    )
+                    panic!("Could not match opcode: {:02X} at offset: {:04X}",
+                           opcode.code,
+                           self.registers.pc)
                 }
             }
 
             return opcode.cycles;
         }
 
-        panic!(
-            "Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
-            byte,
-            self.registers.pc
-        );
+        panic!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
+               byte,
+               self.registers.pc);
     }
 
     fn add_a_a(&mut self) {
@@ -367,6 +358,15 @@ impl Cpu {
 
     fn ei(&mut self) {
         self.registers.flags.ime = true;
+    }
+
+    fn inc_a(&mut self) {
+        let r = self.registers.a;
+        self.registers.a = r.wrapping_add(0x01);
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
     }
 
     fn inc_c(&mut self) {
@@ -716,8 +716,8 @@ impl Cpu {
             .wrapping_sub(self.registers.d)
             .wrapping_sub(carry);
 
-        self.registers.flags.half_carry =
-            (self.registers.a & 0x0F) < (self.registers.d & 0x0F) + carry;
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
+                                          (self.registers.d & 0x0F) + carry;
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.d + carry);
