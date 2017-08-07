@@ -175,6 +175,7 @@ impl Cpu {
                 0xCD => self.call(operand.unwrap_imm16(), interconnect),
                 0xD1 => self.pop_de(interconnect),
                 0xD5 => self.push_de(interconnect),
+                0xD9 => self.reti(interconnect),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE1 => self.pop_hl(interconnect),
                 0xE2 => self.ld_ff00_c_a(interconnect),
@@ -686,6 +687,14 @@ impl Cpu {
         let addr = interconnect.read_u16(self.registers.sp as u16);
         self.registers.sp += 0x02;
         self.registers.pc = addr;
+    }
+
+    fn reti(&mut self, interconnect: &mut Interconnect) {
+        let addr = interconnect.read_u16(self.registers.sp as u16);
+        self.registers.sp += 0x02;
+        self.registers.pc = addr;
+
+        self.registers.flags.ime = true;
     }
 
     fn ret_nz(&mut self, interconnect: &mut Interconnect) {
