@@ -268,6 +268,19 @@ mod tests {
     }
 
     #[test]
+    fn inc_l() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x2C]);
+
+        cpu.registers.l = 0xFF;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x00, cpu.registers.l);
+        assert_eq!(true, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+    }
+
+    #[test]
     fn jr_nz_imm8() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF 0x20 0xFD]);
 
