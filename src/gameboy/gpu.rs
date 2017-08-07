@@ -32,20 +32,20 @@ impl GpuStat {
 
     pub fn to_u8(&self, gpu: &Gpu) -> u8 {
         (if self.coincidence_interrupt_enabled {
-             0x40
-         } else {
-             0
-         }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
-            (if self.VBlank_interrupt_enabled {
-                 0x10
-             } else {
-                 0
-             }) |
-            (if self.HBlank_interrupt_enabled {
-                 0x08
-             } else {
-                 0
-             }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
+            0x40
+        } else {
+            0
+        }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
+        (if self.VBlank_interrupt_enabled {
+            0x10
+        } else {
+            0
+        }) |
+        (if self.HBlank_interrupt_enabled {
+            0x08
+        } else {
+            0
+        }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
     }
 }
 
@@ -210,8 +210,8 @@ impl Gpu {
         for i in 0..160 {
             let x = (i as u8).wrapping_add(self.scroll_x);
             let bg_map_col = (x / 8) as usize;
-            let raw_tile_number =
-                self.ram[background_map_base_address + (bg_map_row * 0x20 + bg_map_col)];
+            let raw_tile_number = self.ram[background_map_base_address +
+                                           (bg_map_row * 0x20 + bg_map_col)];
             let t = if tile_base_address == 0x00 {
                 raw_tile_number as usize
             } else {
@@ -305,7 +305,7 @@ impl Gpu {
         self.cycles += mode.cycles(self.scroll_x);
         match mode {
             GpuMode::VBlank => {
-                    irq.request(Interrupt::Vblank);
+                irq.request(Interrupt::Vblank);
             }
             GpuMode::SearchingRam => {
                 if self.stat.OAM_interrupt_enabled {

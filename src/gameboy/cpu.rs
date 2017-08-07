@@ -79,8 +79,12 @@ impl Cpu {
     }
 
     pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) {
+        if interconnect.irq.enable_flag > 0x00 {
+            panic!("IRQ enable flag > 0");
+        }
         if self.registers.flags.ime {
             if interconnect.irq.should_handle(Interrupt::Vblank) {
+                println!("Vblank happening");
                 self.call(0x40, interconnect);
                 interconnect.irq.unrequest(Interrupt::Vblank);
             }
@@ -94,7 +98,7 @@ impl Cpu {
                 self.call(0x50, interconnect);
                 interconnect.irq.unrequest(Interrupt::Timer);
             }
-            self.registers.flags.ime = false;
+            // self.registers.flags.ime = false;
         }
     }
 
@@ -105,7 +109,7 @@ impl Cpu {
             let mut cycles = opcode.cycles;
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
+            println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
             self.registers.pc += opcode.length;
 
             match opcode.code {
@@ -146,6 +150,7 @@ impl Cpu {
                 0x4F => self.ld_c_a(),
                 0x54 => self.ld_d_h(),
                 0x56 => self.ld_d_hl(interconnect),
+                0x57 => self.ld_d_a(),
                 0x5E => self.ld_e_hl(interconnect),
                 0x5F => self.ld_e_a(),
                 0x68 => self.ld_l_b(),
@@ -527,6 +532,10 @@ impl Cpu {
     fn ld_c_imm8(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
         self.registers.c = val;
+    }
+
+    fn ld_d_a(&mut self) {
+        self.registers.d = self.registers.a;
     }
 
     fn ld_d_h(&mut self) {

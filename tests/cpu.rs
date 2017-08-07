@@ -493,6 +493,17 @@ mod tests {
     }
 
     #[test]
+    fn ld_d_a() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x57]);
+
+        cpu.registers.a = 0x61;
+        cpu.registers.d = 0x00;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x61, cpu.registers.d);
+    }
+
+    #[test]
     fn ld_d_h() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x54]);
 

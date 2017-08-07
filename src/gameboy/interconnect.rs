@@ -87,7 +87,7 @@ impl Interconnect {
             Address::CartRam(a) => cart.ram.write_u8(a, byte),
             Address::CartRom(a) => cart.rom.write_u8(a, byte),
             Address::ZRam(a) => {
-                // if a != 0x00 { 
+                // if a != 0x00 {
                 self.zram.write_u8(a, byte);
                 // }
             }
@@ -108,7 +108,7 @@ impl Interconnect {
                     _ => panic!("write memory mapped I/O in unsupported range: {:04X}", a),
                 }
             }
-            Address::InterruptEnableRegister(a) => self.interrupt = byte,
+            Address::InterruptEnableRegister(a) => self.irq.enable_flag = byte,
             _ => {
                 panic!("Unable to write byte to: {:#X}, invalid memory region.",
                        addr)
@@ -153,7 +153,7 @@ impl Interconnect {
                     _ => panic!("read memory mapped I/O in unsupported range"),
                 }
             }
-            Address::InterruptEnableRegister(a) => self.interrupt,
+            Address::InterruptEnableRegister(a) => self.irq.enable_flag,
             _ => panic!("Unable to read address: {:#X}", addr),
         }
     }
@@ -202,10 +202,10 @@ impl Interconnect {
     }
 
     fn dma_transfer(&mut self, byte: u8) {
-                        let addr = ((byte as u16) << 0x08); // "The written value specifies the transfer source address divided by 0x100"
-                        for x in 0 .. 0xA0 {
-                            let val = self.read_u8(addr + x);
-                            self.write_u8(0xFE00 + x, val);
-                        }
+        let addr = ((byte as u16) << 0x08); // "The written value specifies the transfer source address divided by 0x100"
+        for x in 0..0xA0 {
+            let val = self.read_u8(addr + x);
+            self.write_u8(0xFE00 + x, val);
+        }
     }
 }
