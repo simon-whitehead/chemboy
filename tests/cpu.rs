@@ -268,6 +268,17 @@ mod tests {
     }
 
     #[test]
+    fn inc_hl_ptr() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x34]);
+
+        cpu.registers.set_hl(0xCFFE);
+        interconnect.write_u8(0xCFFE, 0xA1);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xA2, interconnect.read_u8(0xCFFE));
+    }
+
+    #[test]
     fn inc_l() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x2C]);
 

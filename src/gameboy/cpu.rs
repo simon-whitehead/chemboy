@@ -138,6 +138,7 @@ impl Cpu {
                 0x2F => self.cpl(),
                 0x31 => self.ld_sp_imm16(&operand),
                 0x32 => self.ld_hld_a(interconnect),
+                0x34 => self.inc_hl_ptr(interconnect),
                 0x35 => self.dec_hl(interconnect),
                 0x36 => self.ld_hl_imm8(&operand, interconnect),
                 0x3D => self.dec_a(),
@@ -394,6 +395,16 @@ impl Cpu {
     fn inc_hl(&mut self) {
         let val = self.registers.get_hl();
         self.registers.set_hl(val + 0x01);
+    }
+
+    fn inc_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        let result = val.wrapping_add(0x01);
+        interconnect.write_u8(self.registers.get_hl(), result);
+
+        self.registers.flags.zero = result == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = (val & 0x0F) == 0x00;
     }
 
     fn inc_l(&mut self) {
