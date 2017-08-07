@@ -113,6 +113,7 @@ impl Cpu {
             match opcode.code {
                 0x00 => (),
                 0x01 => self.ld_bc_imm16(&operand),
+                0x02 => self.ld_bc_a(interconnect),
                 0x05 => self.dec_b(),
                 0x06 => self.ld_b_imm8(&operand),
                 0x0B => self.dec_bc(),
@@ -473,6 +474,11 @@ impl Cpu {
 
     fn ld_c_a(&mut self) {
         self.registers.c = self.registers.a;
+    }
+
+    fn ld_bc_a(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_bc();
+        interconnect.write_u8(addr, self.registers.a);
     }
 
     fn ld_bc_imm16(&mut self, operand: &Operand) {

@@ -401,6 +401,17 @@ mod tests {
     }
 
     #[test]
+    fn ld_bc_a() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x02]);
+
+        cpu.registers.set_bc(0xC002);
+        cpu.registers.a = 0xFA;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xFA, interconnect.read_u8(0xC002));
+    }
+
+    #[test]
     fn ld_bc_imm16() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x01 0xCF 0xA1]);
 
