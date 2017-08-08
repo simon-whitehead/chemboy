@@ -159,6 +159,7 @@ impl Cpu {
                 0x3C => self.inc_a(),
                 0x3D => self.dec_a(),
                 0x3E => self.ld_a_imm8(&operand),
+                0x40 => (),
                 0x46 => self.ld_b_hl(interconnect),
                 0x47 => self.ld_b_a(),
                 0x4E => self.ld_c_hl(interconnect),
