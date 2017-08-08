@@ -990,6 +990,17 @@ mod tests {
     }
 
     #[test]
+    fn set_7_hl() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0xFE]);
+
+        cpu.registers.set_hl(0xC002);
+        interconnect.write_u8(0xC002, 0x1F);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x9F, interconnect.read_u8(0xC002));
+    }
+
+    #[test]
     fn sla_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x27]);
 

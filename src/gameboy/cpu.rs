@@ -249,6 +249,7 @@ impl Cpu {
                 0x27 => self.sla_a(),
                 0x37 => self.swap_a(),
                 0x87 => self.res_0_a(),
+                0xFE => self.set_7_hl(interconnect),
                 _ => {
                     panic!(
                         "Could not match opcode: {:02X} at offset: {:04X}",
@@ -842,6 +843,13 @@ impl Cpu {
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.d + carry);
 
         self.registers.a = result as u8;
+    }
+
+    fn set_7_hl(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_hl();
+        let val = interconnect.read_u8(addr);
+
+        interconnect.write_u8(addr, val | 0x80);
     }
 
     fn sla_a(&mut self) {

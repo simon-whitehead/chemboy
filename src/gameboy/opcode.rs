@@ -805,7 +805,7 @@ static OPCODES: [OpCode; 92] = [
     },
 ];
 
-static EXT_OPCODES: [OpCode; 3] = [
+static EXT_OPCODES: [OpCode; 4] = [
     OpCode {
         code: 0x27,
         mnemonic: "SLA A",
@@ -827,6 +827,14 @@ static EXT_OPCODES: [OpCode; 3] = [
         mnemonic: "RES 0, A",
         length: 1,
         cycles: 8,
+        argument_type: ArgumentType::Implied,
+        extended: true,
+    },
+    OpCode {
+        code: 0xFE,
+        mnemonic: "SET 7, (HL)",
+        length: 1,
+        cycles: 16,
         argument_type: ArgumentType::Implied,
         extended: true,
     },
