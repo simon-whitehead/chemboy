@@ -134,6 +134,19 @@ mod tests {
     }
 
     #[test]
+    fn bit_3_b() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x58]);
+
+        cpu.registers.b = 0x97;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(true, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+        assert_eq!(false, cpu.registers.flags.carry);
+    }
+
+    #[test]
     fn bit_4_b() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x60]);
 
@@ -141,6 +154,19 @@ mod tests {
         cpu.step(&mut interconnect);
 
         assert_eq!(true, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+        assert_eq!(false, cpu.registers.flags.carry);
+    }
+
+    #[test]
+    fn bit_5_b() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x68]);
+
+        cpu.registers.b = 0x20;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(false, cpu.registers.flags.zero);
         assert_eq!(true, cpu.registers.flags.half_carry);
         assert_eq!(false, cpu.registers.flags.negative);
         assert_eq!(false, cpu.registers.flags.carry);
