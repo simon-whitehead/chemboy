@@ -263,6 +263,7 @@ impl Cpu {
                 0x58 => self.bit_3_b(),
                 0x60 => self.bit_4_b(),
                 0x68 => self.bit_5_b(),
+                0x7E => self.bit_7_hl(interconnect),
                 0x7F => self.bit_7_a(),
                 0x86 => self.res_0_hl(interconnect),
                 0x87 => self.res_0_a(),
@@ -423,6 +424,15 @@ impl Cpu {
         } else {
             0x00
         };
+        self.registers.flags.zero = bit == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = true;
+    }
+
+    fn bit_7_hl(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_hl();
+        let val = interconnect.read_u8(addr);
+        let bit = if val & 0x80 == 0x80 { 0x01 } else { 0x00 };
         self.registers.flags.zero = bit == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = true;
