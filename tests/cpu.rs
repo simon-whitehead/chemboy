@@ -250,6 +250,16 @@ mod tests {
     }
 
     #[test]
+    fn inc_bc() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x03]);
+
+        cpu.registers.set_bc(0xCFFE);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xCFFF, cpu.registers.get_bc());
+    }
+
+    #[test]
     fn inc_c() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x0C]);
 

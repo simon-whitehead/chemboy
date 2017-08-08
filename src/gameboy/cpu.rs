@@ -126,6 +126,7 @@ impl Cpu {
                 0x00 => (),
                 0x01 => self.ld_bc_imm16(&operand),
                 0x02 => self.ld_bc_a(interconnect),
+                0x03 => self.inc_bc(),
                 0x05 => self.dec_b(),
                 0x06 => self.ld_b_imm8(&operand),
                 0x09 => self.add_hl_bc(),
@@ -412,6 +413,11 @@ impl Cpu {
         self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+    }
+
+    fn inc_bc(&mut self) {
+        let val = self.registers.get_bc();
+        self.registers.set_bc(val + 0x01);
     }
 
     fn inc_c(&mut self) {
