@@ -237,6 +237,7 @@ impl Cpu {
             self.registers.pc += opcode.length;
 
             match opcode.code {
+                0x27 => self.sla_a(),
                 0x37 => self.swap_a(),
                 0x87 => self.res_0_a(),
                 _ => {
@@ -772,6 +773,16 @@ impl Cpu {
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.d + carry);
 
         self.registers.a = result as u8;
+    }
+
+    fn sla_a(&mut self) {
+        let carry = self.registers.a & 0x80 == 0x80;
+        self.registers.a <<= 0x01;
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
     }
 
     fn swap_a(&mut self) {
