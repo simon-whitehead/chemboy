@@ -128,6 +128,7 @@ impl Cpu {
                 0x02 => self.ld_bc_a(interconnect),
                 0x05 => self.dec_b(),
                 0x06 => self.ld_b_imm8(&operand),
+                0x09 => self.add_hl_bc(),
                 0x0B => self.dec_bc(),
                 0x0C => self.inc_c(),
                 0x0D => self.dec_c(),
@@ -269,6 +270,18 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = ((a1 & 0x0F) + (a2 & 0x0F)) & 0x10 == 0x10;
         self.registers.flags.carry = (a1 as u16) + (a2 as u16) > 0xFF;
+    }
+
+    fn add_hl_bc(&mut self) {
+        let hl = self.registers.get_hl();
+        let bc = self.registers.get_bc();
+
+        let r = hl.wrapping_add(bc);
+
+        self.registers.set_hl(r);
+        self.registers.flags.half_carry = ((hl & 0x0FFF) + (bc & 0x0FFF)) & 0x1000 == 0x1000;
+        self.registers.flags.negative = false;
+        self.registers.flags.carry = r > 0xFFFF;
     }
 
     fn add_hl_de(&mut self) {
