@@ -6,11 +6,15 @@ use gameboy::opcode::{OpCode, Operand, ArgumentType};
 
 pub struct Cpu {
     pub registers: registers::Registers,
+    pub last_ime_disable: String,
 }
 
 impl Cpu {
     pub fn new(gameboy_color: bool) -> Cpu {
-        Cpu { registers: registers::Registers::new(gameboy_color) }
+        Cpu {
+            registers: registers::Registers::new(gameboy_color),
+            last_ime_disable: "".into(),
+        }
     }
 
     pub fn reset(&mut self, interconnect: &mut Interconnect) {
@@ -79,6 +83,7 @@ impl Cpu {
     }
 
     pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) -> u8 {
+        println!("IME last disabled by: {}", self.last_ime_disable);
         println!("IME: {}", interconnect.irq.enabled);
         println!("IE: {:b}", interconnect.irq.enable_flag);
         println!("IF: {:b}", interconnect.irq.request_flag);
@@ -87,6 +92,7 @@ impl Cpu {
         }
 
         if interconnect.irq.should_handle(Interrupt::Vblank) {
+            self.last_ime_disable = "IRQ Handler: VBlank".into();
             interconnect.irq.enabled = false;
             self.call(0x40, interconnect);
             interconnect.irq.unrequest(Interrupt::Vblank);
@@ -95,6 +101,7 @@ impl Cpu {
         }
 
         if interconnect.irq.should_handle(Interrupt::Lcd) {
+            self.last_ime_disable = "IRQ Handler: LCd".into();
             interconnect.irq.enabled = false;
             interconnect.irq.unrequest(Interrupt::Lcd);
             self.call(0x48, interconnect);
@@ -103,6 +110,7 @@ impl Cpu {
         }
 
         if interconnect.irq.should_handle(Interrupt::Timer) {
+            self.last_ime_disable = "IRQ Handler: Timer".into();
             interconnect.irq.enabled = false;
             interconnect.irq.unrequest(Interrupt::Timer);
             self.call(0x50, interconnect);
@@ -209,18 +217,22 @@ impl Cpu {
                 0xFB => self.ei(interconnect),
                 0xFE => self.cp_n(&operand),
                 _ => {
-                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
-                                       opcode.code,
-                                       self.registers.pc))
+                    return Err(format!(
+                        "Could not match opcode: {:02X} at offset: {:04X}",
+                        opcode.code,
+                        self.registers.pc
+                    ))
                 }
             }
 
             return Ok(cycles);
         }
 
-        Err(format!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-                    byte,
-                    self.registers.pc))
+        Err(format!(
+            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+            byte,
+            self.registers.pc
+        ))
     }
 
     pub fn handle_extended_opcode(&mut self, interconnect: &mut Interconnect) -> u8 {
@@ -236,18 +248,22 @@ impl Cpu {
                 0x37 => self.swap_a(),
                 0x87 => self.res_0_a(),
                 _ => {
-                    panic!("Could not match opcode: {:02X} at offset: {:04X}",
-                           opcode.code,
-                           self.registers.pc)
+                    panic!(
+                        "Could not match opcode: {:02X} at offset: {:04X}",
+                        opcode.code,
+                        self.registers.pc
+                    )
                 }
             }
 
             return opcode.cycles;
         }
 
-        panic!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
-               byte,
-               self.registers.pc);
+        panic!(
+            "Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
+            byte,
+            self.registers.pc
+        );
     }
 
     fn add_a_a(&mut self) {
@@ -371,6 +387,7 @@ impl Cpu {
     }
 
     fn di(&mut self, interconnect: &mut Interconnect) {
+        self.last_ime_disable = format!("DI instruction at: {:04X}", self.registers.pc);
         interconnect.irq.enabled = false;
     }
 
@@ -752,8 +769,8 @@ impl Cpu {
             .wrapping_sub(self.registers.d)
             .wrapping_sub(carry);
 
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
-                                          (self.registers.d & 0x0F) + carry;
+        self.registers.flags.half_carry =
+            (self.registers.a & 0x0F) < (self.registers.d & 0x0F) + carry;
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.d + carry);
