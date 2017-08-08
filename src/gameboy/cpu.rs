@@ -154,6 +154,7 @@ impl Cpu {
                 0x34 => self.inc_hl_ptr(interconnect),
                 0x35 => self.dec_hl(interconnect),
                 0x36 => self.ld_hl_imm8(&operand, interconnect),
+                0x3A => self.ld_a_hld(interconnect),
                 0x3C => self.inc_a(),
                 0x3D => self.dec_a(),
                 0x3E => self.ld_a_imm8(&operand),
@@ -549,6 +550,12 @@ impl Cpu {
         let addr = self.registers.get_hl();
         let val = interconnect.read_u8(addr);
         self.registers.a = val;
+    }
+
+    fn ld_a_hld(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_hl();
+        self.registers.a = interconnect.read_u8(addr);
+        self.registers.set_hl(addr - 0x01);
     }
 
     fn ld_a_hli(&mut self, interconnect: &mut Interconnect) {
