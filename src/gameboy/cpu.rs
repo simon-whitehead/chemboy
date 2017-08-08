@@ -259,6 +259,7 @@ impl Cpu {
             match opcode.code {
                 0x27 => self.sla_a(),
                 0x37 => self.swap_a(),
+                0x50 => self.bit_2_b(),
                 0x7F => self.bit_7_a(),
                 0x86 => self.res_0_hl(interconnect),
                 0x87 => self.res_0_a(),
@@ -367,6 +368,17 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = true;
         self.registers.flags.carry = false;
+    }
+
+    fn bit_2_b(&mut self) {
+        let bit = if self.registers.a & 0x04 == 0x04 {
+            0x01
+        } else {
+            0x00
+        };
+        self.registers.flags.zero = bit == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = true;
     }
 
     fn bit_7_a(&mut self) {
