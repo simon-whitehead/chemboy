@@ -1096,6 +1096,17 @@ mod tests {
     }
 
     #[test]
+    fn res_0_hl() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x86]);
+
+        cpu.registers.set_hl(0xC002);
+        interconnect.write_u8(0xC002, 0x09);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x08, interconnect.read_u8(0xC002));
+    }
+
+    #[test]
     fn ret() {
         let (mut cpu, mut interconnect) =
             create_cpu(gb_asm![0x00 0x00 0xCD 0x0C 0x00 0x0C 0x00 0x00 0x00 0x00 0x00 0x00 0x0C 0xC9]);

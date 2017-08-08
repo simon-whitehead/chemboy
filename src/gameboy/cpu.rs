@@ -257,6 +257,7 @@ impl Cpu {
                 0x27 => self.sla_a(),
                 0x37 => self.swap_a(),
                 0x7F => self.bit_7_a(),
+                0x86 => self.res_0_hl(interconnect),
                 0x87 => self.res_0_a(),
                 0xFE => self.set_7_hl(interconnect),
                 _ => {
@@ -891,6 +892,13 @@ impl Cpu {
 
     fn res_0_a(&mut self) {
         self.registers.a &= !0x01;
+    }
+
+    fn res_0_hl(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_hl();
+        let val = interconnect.read_u8(addr);
+        let r = val & !0x01;
+        interconnect.write_u8(addr, r);
     }
 
     fn ret(&mut self, interconnect: &mut Interconnect) {
