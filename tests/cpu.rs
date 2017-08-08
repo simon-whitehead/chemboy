@@ -982,6 +982,16 @@ mod tests {
     }
 
     #[test]
+    fn or_imm8() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xF6 0xC3]);
+
+        cpu.registers.a = 0x3C;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xFF, cpu.registers.a);
+    }
+
+    #[test]
     fn pop_af() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xF1]);
 

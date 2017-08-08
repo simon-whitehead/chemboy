@@ -225,6 +225,7 @@ impl Cpu {
                 0xF1 => self.pop_af(interconnect),
                 0xF3 => self.di(interconnect),
                 0xF5 => self.push_af(interconnect),
+                0xF6 => self.or_imm8(&operand),
                 0xFA => self.ld_a_imm16(&operand, interconnect),
                 0xFB => self.ei(interconnect),
                 0xFE => self.cp_n(&operand),
@@ -823,6 +824,16 @@ impl Cpu {
 
     fn or_c(&mut self) {
         self.registers.a |= self.registers.c;
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
+    }
+
+    fn or_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        self.registers.a |= val;
 
         self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.negative = false;
