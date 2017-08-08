@@ -730,6 +730,45 @@ mod tests {
     }
 
     #[test]
+    fn ld_hl_b() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x70]);
+
+        cpu.registers.b = 0xE5;
+        cpu.registers.set_hl(0xC000);
+        interconnect.write_u8(0xC000, 0xE3);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xE5, interconnect.read_u8(0xC000));
+        assert_eq!(0xC000, cpu.registers.get_hl());
+    }
+
+    #[test]
+    fn ld_hl_c() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x71]);
+
+        cpu.registers.c = 0xE5;
+        cpu.registers.set_hl(0xC000);
+        interconnect.write_u8(0xC000, 0xE3);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xE5, interconnect.read_u8(0xC000));
+        assert_eq!(0xC000, cpu.registers.get_hl());
+    }
+
+    #[test]
+    fn ld_hl_d() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x72]);
+
+        cpu.registers.d = 0xE5;
+        cpu.registers.set_hl(0xC000);
+        interconnect.write_u8(0xC000, 0xE3);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xE5, interconnect.read_u8(0xC000));
+        assert_eq!(0xC000, cpu.registers.get_hl());
+    }
+
+    #[test]
     fn ld_hl_e() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x73]);
 
