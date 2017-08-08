@@ -940,6 +940,16 @@ mod tests {
     }
 
     #[test]
+    fn ld_l_e() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x6B]);
+
+        cpu.registers.e = 0xCC;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xCC, cpu.registers.l);
+    }
+
+    #[test]
     fn ld_l_hl() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x6E]);
 
