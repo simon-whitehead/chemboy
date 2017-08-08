@@ -205,20 +205,20 @@ mod tests {
     fn di() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xF3]);
 
-        cpu.registers.flags.ime = true;
+        interconnect.irq.enabled = true;
         cpu.step(&mut interconnect);
 
-        assert_eq!(false, cpu.registers.flags.ime);
+        assert_eq!(false, interconnect.irq.enabled);
     }
 
     #[test]
     fn ei() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xFB]);
 
-        cpu.registers.flags.ime = false;
+        interconnect.irq.enabled = false;
         cpu.step(&mut interconnect);
 
-        assert_eq!(true, cpu.registers.flags.ime);
+        assert_eq!(true, interconnect.irq.enabled);
     }
 
     #[test]
@@ -596,6 +596,19 @@ mod tests {
         cpu.step(&mut interconnect);
 
         assert_eq!(0xAF, interconnect.read_u8(0xFF47));
+    }
+
+    #[test]
+    fn ld_hl_a() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x77]);
+
+        cpu.registers.a = 0xE5;
+        cpu.registers.set_hl(0xC000);
+        interconnect.write_u8(0xC000, 0xE3);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xE5, interconnect.read_u8(0xC000));
+        assert_eq!(0xC000, cpu.registers.get_hl());
     }
 
     #[test]
