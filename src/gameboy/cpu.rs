@@ -129,6 +129,7 @@ impl Cpu {
                 0x05 => self.dec_b(),
                 0x06 => self.ld_b_imm8(&operand),
                 0x09 => self.add_hl_bc(),
+                0x0A => self.ld_a_bc(interconnect),
                 0x0B => self.dec_bc(),
                 0x0C => self.inc_c(),
                 0x0D => self.dec_c(),
@@ -498,6 +499,12 @@ impl Cpu {
 
     fn ld_a_b(&mut self) {
         self.registers.a = self.registers.b;
+    }
+
+    fn ld_a_bc(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_bc();
+        let val = interconnect.read_u8(addr);
+        self.registers.a = val;
     }
 
     fn ld_a_c(&mut self) {
