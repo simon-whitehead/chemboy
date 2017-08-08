@@ -405,6 +405,17 @@ mod tests {
     }
 
     #[test]
+    fn ld_a_e() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x7B]);
+
+        cpu.registers.e = 0xE5;
+        cpu.registers.a = 0xFF;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xE5, cpu.registers.a);
+    }
+
+    #[test]
     fn ld_a_de() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x1A]);
 
