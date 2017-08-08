@@ -21,6 +21,21 @@ mod tests {
     }
 
     #[test]
+    fn add_a_l() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x85]);
+
+        cpu.registers.a = 0xAA;
+        cpu.registers.l = 0x02;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xAC, cpu.registers.a);
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(false, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+        assert_eq!(false, cpu.registers.flags.carry);
+    }
+
+    #[test]
     fn add_hl_bc() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x09]);
 
