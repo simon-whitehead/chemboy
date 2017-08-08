@@ -232,6 +232,18 @@ mod tests {
     }
 
     #[test]
+    fn dec_l() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x2D]);
+
+        cpu.registers.l = 0x01;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x00, cpu.registers.l);
+        assert_eq!(true, cpu.registers.flags.zero);
+        assert_eq!(false, cpu.registers.flags.half_carry);
+    }
+
+    #[test]
     fn di() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xF3]);
 
