@@ -21,6 +21,20 @@ mod tests {
     }
 
     #[test]
+    fn add_a_imm8() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xC6 0xFF]);
+
+        cpu.registers.a = 0x3C;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x3B, cpu.registers.a);
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+        assert_eq!(true, cpu.registers.flags.carry);
+    }
+
+    #[test]
     fn add_a_l() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x85]);
 

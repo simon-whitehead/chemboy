@@ -201,6 +201,7 @@ impl Cpu {
                 0xC2 => self.jp_nz_imm16(&operand),
                 0xC3 => self.jp_imm16(&operand),
                 0xC5 => self.push_bc(interconnect),
+                0xC6 => self.add_a_imm8(&operand),
                 0xC8 => self.ret_z(interconnect),
                 0xC9 => self.ret(interconnect),
                 0xCA => self.jp_z_imm16(&operand),
@@ -280,6 +281,18 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = ((a1 & 0x0F) + (a2 & 0x0F)) & 0x10 == 0x10;
         self.registers.flags.carry = (a1 as u16) + (a2 as u16) > 0xFF;
+    }
+
+    fn add_a_imm8(&mut self, operand: &Operand) {
+        let a1 = self.registers.a;
+        let val = operand.unwrap_imm8();
+
+        self.registers.a = a1.wrapping_add(val);
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = ((a1 & 0x0F) + (val & 0x0F)) & 0x10 == 0x10;
+        self.registers.flags.carry = (a1 as u16) + (val as u16) > 0xFF;
     }
 
     fn add_a_l(&mut self) {
