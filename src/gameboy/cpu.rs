@@ -255,6 +255,7 @@ impl Cpu {
             match opcode.code {
                 0x27 => self.sla_a(),
                 0x37 => self.swap_a(),
+                0x7F => self.bit_7_a(),
                 0x87 => self.res_0_a(),
                 0xFE => self.set_7_hl(interconnect),
                 _ => {
@@ -361,6 +362,17 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = true;
         self.registers.flags.carry = false;
+    }
+
+    fn bit_7_a(&mut self) {
+        let bit = if self.registers.a & 0x80 == 0x80 {
+            0x01
+        } else {
+            0x00
+        };
+        self.registers.flags.zero = bit == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = true;
     }
 
     fn call(&mut self, addr: u16, interconnect: &mut Interconnect) {
