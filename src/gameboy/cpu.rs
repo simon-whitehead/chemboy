@@ -6,14 +6,12 @@ use gameboy::opcode::{OpCode, Operand, ArgumentType};
 
 pub struct Cpu {
     pub registers: registers::Registers,
-    pub last_ime_disable: String,
 }
 
 impl Cpu {
     pub fn new(gameboy_color: bool) -> Cpu {
         Cpu {
             registers: registers::Registers::new(gameboy_color),
-            last_ime_disable: "".into(),
         }
     }
 
@@ -83,16 +81,11 @@ impl Cpu {
     }
 
     pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) -> u8 {
-        println!("IME last disabled by: {}", self.last_ime_disable);
-        println!("IME: {}", interconnect.irq.enabled);
-        println!("IE: {:b}", interconnect.irq.enable_flag);
-        println!("IF: {:b}", interconnect.irq.request_flag);
         if !interconnect.irq.enabled {
             return 0x0C;
         }
 
         if interconnect.irq.should_handle(Interrupt::Vblank) {
-            self.last_ime_disable = "IRQ Handler: VBlank".into();
             interconnect.irq.enabled = false;
             self.call(0x40, interconnect);
             interconnect.irq.unrequest(Interrupt::Vblank);
@@ -101,7 +94,6 @@ impl Cpu {
         }
 
         if interconnect.irq.should_handle(Interrupt::Lcd) {
-            self.last_ime_disable = "IRQ Handler: LCd".into();
             interconnect.irq.enabled = false;
             interconnect.irq.unrequest(Interrupt::Lcd);
             self.call(0x48, interconnect);
@@ -110,7 +102,6 @@ impl Cpu {
         }
 
         if interconnect.irq.should_handle(Interrupt::Timer) {
-            self.last_ime_disable = "IRQ Handler: Timer".into();
             interconnect.irq.enabled = false;
             interconnect.irq.unrequest(Interrupt::Timer);
             self.call(0x50, interconnect);
@@ -387,7 +378,6 @@ impl Cpu {
     }
 
     fn di(&mut self, interconnect: &mut Interconnect) {
-        self.last_ime_disable = format!("DI instruction at: {:04X}", self.registers.pc);
         interconnect.irq.enabled = false;
     }
 
