@@ -82,7 +82,7 @@ impl Cpu {
 
     pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) -> u8 {
         if !interconnect.irq.enabled {
-            return 0x0C;
+            return 0x00;
         }
 
         if interconnect.irq.should_handle(Interrupt::Vblank) {
@@ -109,7 +109,7 @@ impl Cpu {
             return 0x0C;
         }
 
-        0x0C
+        0x00
     }
 
     pub fn step(&mut self, interconnect: &mut Interconnect) -> Result<u8, String> {
@@ -119,7 +119,7 @@ impl Cpu {
             let mut cycles = opcode.cycles;
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
+            //println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
             self.registers.pc += opcode.length;
 
             match opcode.code {
@@ -259,7 +259,7 @@ impl Cpu {
                 }
             }
 
-            return opcode.cycles;
+            return opcode.cycles + 0x01;
         }
 
         panic!(
@@ -854,7 +854,7 @@ impl Cpu {
 
     fn sla_a(&mut self) {
         let carry = self.registers.a & 0x80 == 0x80;
-        self.registers.a <<= 0x01;
+        self.registers.a = self.registers.a << 0x01;
 
         self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.negative = false;

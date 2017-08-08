@@ -81,7 +81,7 @@ impl Interconnect {
         let cart = self.cart.as_mut().expect("Cartridge is empty");
 
         match memory_map::map_address(addr) {
-            Address::Ram(a) |
+            Address::Ram(a) => self.ram.write_u8(a, byte),
             Address::RamShadow(a) => self.ram.write_u8(a, byte),
             Address::Gfx(a) => self.gpu.ram.write_u8(a, byte),
             Address::CartRam(a) => cart.ram.write_u8(a, byte),
@@ -119,7 +119,7 @@ impl Interconnect {
         let cart = self.cart.as_ref().expect("Cartridge is empty");
 
         match memory_map::map_address(addr) {
-            Address::Ram(addr) |
+            Address::Ram(addr) => self.ram.read_u8(addr),
             Address::RamShadow(addr) => self.ram.read_u8(addr),
             Address::CartRom(addr) |
             Address::CartRomOtherBank(addr) => cart.rom.read_u8(addr),
@@ -176,7 +176,7 @@ impl Interconnect {
         let cart = self.cart.as_ref().expect("Cartridge is empty");
 
         match memory_map::map_address(addr) {
-            Address::Ram(a) |
+            Address::Ram(a) => self.ram.write_u16(a, val),
             Address::RamShadow(a) => self.ram.write_u16(a, val),
             Address::ZRam(a) => self.zram.write_u16(a, val),
             _ => panic!("Unable to write address: {:#X}", addr),
@@ -187,7 +187,7 @@ impl Interconnect {
         let cart = self.cart.as_ref().expect("Cartridge is empty");
 
         match memory_map::map_address(addr) {
-            Address::Ram(addr) |
+            Address::Ram(addr) => self.ram.read_u16(addr),
             Address::RamShadow(addr) => self.ram.read_u16(addr),
             Address::CartRom(addr) |
             Address::CartRomOtherBank(addr) => cart.rom.read_u16(addr),

@@ -832,7 +832,8 @@ mod tests {
         cpu.step(&mut interconnect);
 
         assert_eq!(0xCF, cpu.registers.a);
-        assert_eq!(0x91, cpu.registers.f);
+        assert_eq!(true, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.carry);
         assert_eq!(0xFFFE, cpu.registers.sp);
     }
 
@@ -840,12 +841,13 @@ mod tests {
     fn pop_bc() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xC1]);
 
-        interconnect.write_u16(0xFFFC, 0xCF91);
+        interconnect.write_u8(0xFFFC, 0x5F);
+        interconnect.write_u8(0xFFFD, 0x3C);
         cpu.registers.sp = 0xFFFC;
         cpu.step(&mut interconnect);
 
-        assert_eq!(0xCF, cpu.registers.b);
-        assert_eq!(0x91, cpu.registers.c);
+        assert_eq!(0x3C, cpu.registers.b);
+        assert_eq!(0x5F, cpu.registers.c);
         assert_eq!(0xFFFE, cpu.registers.sp);
     }
 
@@ -882,7 +884,7 @@ mod tests {
         cpu.registers.set_af(0xCFA5);
         cpu.step(&mut interconnect);
 
-        assert_eq!(0xCFA5, interconnect.read_u16(cpu.registers.sp as u16));
+        assert_eq!(0xCFA0, interconnect.read_u16(cpu.registers.sp as u16));
     }
 
     #[test]
@@ -994,22 +996,22 @@ mod tests {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0xFE]);
 
         cpu.registers.set_hl(0xC002);
-        interconnect.write_u8(0xC002, 0x1F);
+        interconnect.write_u8(0xC002, 0x3B);
         cpu.step(&mut interconnect);
 
-        assert_eq!(0x9F, interconnect.read_u8(0xC002));
+        assert_eq!(0xBB, interconnect.read_u8(0xC002));
     }
 
     #[test]
     fn sla_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x27]);
 
-        cpu.registers.a = 0x80;
+        cpu.registers.a = 0xFF;
         cpu.step(&mut interconnect);
 
-        assert_eq!(0x00, cpu.registers.a);
+        assert_eq!(0xFE, cpu.registers.a);
         assert_eq!(true, cpu.registers.flags.carry);
-        assert_eq!(true, cpu.registers.flags.zero);
+        assert_eq!(false, cpu.registers.flags.zero);
         assert_eq!(false, cpu.registers.flags.half_carry);
         assert_eq!(false, cpu.registers.flags.negative);
     }

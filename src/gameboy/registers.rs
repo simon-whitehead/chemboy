@@ -5,7 +5,6 @@ pub struct Registers {
     pub c: u8,
     pub d: u8,
     pub e: u8,
-    pub f: u8,
     pub h: u8,
     pub l: u8,
 
@@ -27,7 +26,6 @@ impl Registers {
 
         Registers {
             a: a,
-            f: 0xB0,
             b: 0x00,
             c: 0x13,
             d: 0x00,
@@ -49,12 +47,12 @@ impl Registers {
     }
 
     pub fn get_af(&self) -> u16 {
-        ((self.a as u16) << 0x08) | self.f as u16
+        ((self.a as u16) << 0x08) | self.flags.to_byte() as u16
     }
 
     pub fn set_af(&mut self, val: u16) {
         self.a = (val >> 0x08) as u8;
-        self.f = (val & 0xFF) as u8;
+        self.flags = Flags::from_byte((val & 0xF0) as u8);
     }
 
     pub fn get_bc(&self) -> u16 {
@@ -83,6 +81,13 @@ impl Registers {
         self.h = (val >> 0x08) as u8;
         self.l = (val & 0xFF) as u8;
     }
+
+    pub fn dump(&self) {
+        println!("AF: {:02X}", self.get_af());
+        println!("BC: {:02X}", self.get_bc());
+        println!("DE: {:02X}", self.get_de());;
+        println!("HL: {:02X}", self.get_hl());;
+    }
 }
 
 #[derive(Eq, PartialEq)]
@@ -101,5 +106,20 @@ impl Flags {
             half_carry: false,
             carry: false,
         }
+    }
+
+    pub fn from_byte(b: u8) -> Flags {
+        Flags {
+            zero: b & 0x80 == 0x80,
+            negative: b & 0x40 == 0x40,
+            half_carry: b & 0x20 == 0x20,
+            carry: b & 0x10 == 0x10,
+        }
+    }
+
+    pub fn to_byte(&self) -> u8 {
+        0x00 | (if self.zero { 0x80 } else { 0x00 }) | (if self.negative { 0x40 } else { 0x00 }) |
+            (if self.half_carry { 0x20 } else { 0x00 }) |
+            (if self.carry { 0x10 } else { 0x00 })
     }
 }

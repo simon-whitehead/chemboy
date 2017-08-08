@@ -4,8 +4,8 @@ use gameboy::frame::Frame;
 use gameboy::interconnect::Interconnect;
 
 pub struct GameBoy {
-    cpu: cpu::Cpu,
-    interconnect: Interconnect,
+    pub cpu: cpu::Cpu,
+    pub interconnect: Interconnect,
 }
 
 impl GameBoy {
