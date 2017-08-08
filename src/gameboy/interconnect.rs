@@ -100,6 +100,7 @@ impl Interconnect {
                     0x04...0x07 => self.timer.write_u8(a, byte),
                     0x0F => self.irq.request_flag = byte,
                     0x10...0x26 => println!("err: write to sound driver not supported"),
+                    0x30...0x3F => println!("err: write to wave pattern RAM not supported"),
                     0x40...0x45 => self.gpu.write_u8(a, byte),
                     0x47...0x49 => self.gpu.write_u8(a, byte),
                     0x4A...0x4B => self.gpu.write_u8(a, byte),
@@ -142,6 +143,10 @@ impl Interconnect {
                     0x0F => self.irq.request_flag,
                     0x10...0x26 => {
                         println!("err: read from sound driver not supported");
+                        0
+                    }
+                    0x30...0x3F => {
+                        println!("err: write to wave pattern RAM not supported");
                         0
                     }
                     0x40...0x45 => self.gpu.read_u8(a), 
