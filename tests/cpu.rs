@@ -1291,6 +1291,20 @@ mod tests {
     }
 
     #[test]
+    fn srl_a() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x3F]);
+
+        cpu.registers.a = 0xFF;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x7F, cpu.registers.a);
+        assert_eq!(true, cpu.registers.flags.carry);
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(false, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+    }
+
+    #[test]
     fn swap_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x37]);
 

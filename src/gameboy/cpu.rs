@@ -266,6 +266,7 @@ impl Cpu {
             match opcode.code {
                 0x27 => self.sla_a(),
                 0x37 => self.swap_a(),
+                0x3F => self.srl_a(),
                 0x50 => self.bit_2_b(),
                 0x58 => self.bit_3_b(),
                 0x60 => self.bit_4_b(),
@@ -1047,6 +1048,16 @@ impl Cpu {
     fn sla_a(&mut self) {
         let carry = self.registers.a & 0x80 == 0x80;
         self.registers.a = self.registers.a << 0x01;
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
+    }
+
+    fn srl_a(&mut self) {
+        let carry = self.registers.a & 0x01 == 0x01;
+        self.registers.a = self.registers.a >> 0x01;
 
         self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.negative = false;
