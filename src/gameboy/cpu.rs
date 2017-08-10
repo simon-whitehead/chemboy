@@ -149,6 +149,7 @@ impl Cpu {
                 0x21 => self.ld_hl_imm16(&operand),
                 0x22 => self.ld_hli_a(interconnect),
                 0x23 => self.inc_hl(),
+                0x24 => self.inc_h(),
                 0x28 => self.jr_z_imm8(&operand),
                 0x2A => self.ld_a_hli(interconnect),
                 0x2C => self.inc_l(),
@@ -590,6 +591,15 @@ impl Cpu {
         self.registers.e = r.wrapping_add(0x01);
 
         self.registers.flags.zero = self.registers.e == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+    }
+
+    fn inc_h(&mut self) {
+        let r = self.registers.h;
+        self.registers.h = r.wrapping_add(0x01);
+
+        self.registers.flags.zero = self.registers.h == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
     }
