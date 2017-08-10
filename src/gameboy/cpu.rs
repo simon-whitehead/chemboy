@@ -137,6 +137,7 @@ impl Cpu {
                 0x11 => self.ld_de_imm16(&operand),
                 0x12 => self.ld_de_a(interconnect),
                 0x13 => self.inc_de(),
+                0x15 => self.dec_d(),
                 0x16 => self.ld_d_imm8(&operand),
                 0x17 => self.rla(),
                 0x18 => self.jp_imm8(&operand),
@@ -510,6 +511,15 @@ impl Cpu {
         self.registers.c = r.wrapping_sub(0x01);
 
         self.registers.flags.zero = self.registers.c == 0x00;
+        self.registers.flags.negative = true;
+        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
+    }
+
+    fn dec_d(&mut self) {
+        let r = self.registers.d;
+        self.registers.d = r.wrapping_sub(0x01);
+
+        self.registers.flags.zero = self.registers.d == 0x00;
         self.registers.flags.negative = true;
         self.registers.flags.half_carry = (r & 0x0F) == 0x00;
     }
