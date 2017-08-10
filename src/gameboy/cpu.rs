@@ -137,6 +137,7 @@ impl Cpu {
                 0x12 => self.ld_de_a(interconnect),
                 0x13 => self.inc_de(),
                 0x16 => self.ld_d_imm8(&operand),
+                0x17 => self.rla(),
                 0x18 => self.jp_imm8(&operand),
                 0x19 => self.add_hl_de(),
                 0x1A => self.ld_a_de(interconnect),
@@ -1018,6 +1019,21 @@ impl Cpu {
             self.registers.sp += 0x02;
             self.registers.pc = addr;
         }
+    }
+
+    fn rla(&mut self) {
+        let original_carry = if self.registers.flags.carry {
+            0x01
+        } else {
+            0x00
+        };
+        self.registers.flags.carry = self.registers.a & 0x80 == 0x80;
+        self.registers.a = (self.registers.a << 0x01) | original_carry;
+
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = original_carry == 0x01;
+        self.registers.flags.zero = self.registers.a == 0x00;
     }
 
     fn rl_c(&mut self) {
