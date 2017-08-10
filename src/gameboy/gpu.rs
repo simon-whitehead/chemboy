@@ -193,6 +193,7 @@ impl Gpu {
     fn render_scanline(&mut self) {
         self.clear_scanline();
         self.render_background();
+        self.render_sprites();
     }
 
     fn clear_scanline(&mut self) {
@@ -203,6 +204,34 @@ impl Gpu {
     }
 
     fn render_background(&mut self) {
+        let background_map_base_address = self.background_base;
+        let tile_base_address = self.tile_base;
+        let line = self.ly.wrapping_add(self.scroll_y) as usize;
+        let bg_map_row = (line / 0x08) as usize;
+        for i in 0..160 {
+            let x = (i as u8).wrapping_add(self.scroll_x);
+            let bg_map_col = (x / 8) as usize;
+            let raw_tile_number =
+                self.ram[background_map_base_address + (bg_map_row * 0x20 + bg_map_col)];
+            let t = if tile_base_address == 0x00 {
+                raw_tile_number as usize
+            } else {
+                128 + ((raw_tile_number as i8 as i16) + 128) as usize
+            };
+
+            let line_offset = (line % 0x08) << 0x01;
+            let tile_data_start = tile_base_address + (t * 0x10) + line_offset;
+            let x_shift = (x % 8).wrapping_sub(0x07).wrapping_mul(0xFF);
+            let tile_data1 = (self.ram[tile_data_start] >> x_shift) & 0x01;
+            let tile_data2 = (self.ram[tile_data_start + 0x01] >> x_shift) & 0x01;
+            let total_row_data = (tile_data2 << 1) | tile_data1;
+            let color_value = total_row_data;
+            let c = self.get_background_color_for_byte(color_value as u8);
+            self.frame.pixels[line as usize * 160 + i as usize] = c;
+        }
+    }
+
+    fn render_sprites(&mut self) {
         let background_map_base_address = self.background_base;
         let tile_base_address = self.tile_base;
         let line = self.ly.wrapping_add(self.scroll_y) as usize;
