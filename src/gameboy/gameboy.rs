@@ -9,12 +9,17 @@ pub struct GameBoy {
 }
 
 impl GameBoy {
-    pub fn new(gameboy_color: bool, cart: Cartridge) -> GameBoy {
+    pub fn new<PC>(gameboy_color: bool, cart: Cartridge, pc: PC) -> GameBoy
+        where PC: Into<Option<u16>>
+    {
         let mut gb = GameBoy {
             cpu: cpu::Cpu::new(gameboy_color),
             interconnect: Interconnect::with_cart(cart),
         };
         gb.reset();
+        if let Some(pc) = pc.into() {
+            gb.cpu.registers.pc = pc;
+        }
         gb
     }
 

@@ -24,29 +24,34 @@ fn main() {
         .version("0.0.0.1")
         .author("Simon Whitehead")
         .about("A GameBoy and GameBoy Colour emulator written in Rust")
-        .arg(
-            Arg::with_name("rom")
-                .short("r")
-                .long("rom")
-                .value_name("ROM_PATH")
-                .required(true)
-                .help("Path to a Gameboy or Gameboy Color ROM")
-                .takes_value(true),
-        )
+        .arg(Arg::with_name("rom")
+            .short("r")
+            .long("rom")
+            .value_name("ROM_PATH")
+            .required(true)
+            .help("Path to a Gameboy or Gameboy Color ROM")
+            .takes_value(true))
+        .arg(Arg::with_name("pc")
+            .short("pc")
+            .long("pc")
+            .value_name("PC register value")
+            .required(false))
         .get_matches();
 
     let rom = matches.value_of("rom").unwrap();
+    let pc: Option<u16> = matches.value_of("pc").unwrap_or_default().parse().ok();
+    println!("Setting PC to: {:?}", pc);
     let rom_data = load_rom(rom).unwrap();
     let cart = Cartridge::with_rom(rom_data);
-    let mut gameboy = gameboy::GameBoy::new(false, cart);
+    let mut gameboy = gameboy::GameBoy::new(false, cart, pc);
     println!("Loading game: {}", gameboy.cart_details().game_title);
     let now = Instant::now();
 
     let opengl = OpenGL::V3_2;
-    let mut window: PistonWindow = WindowSettings::new(
-        format!("gbrs: {}", gameboy.cart_details().game_title),
-        [160, 144],
-    ).exit_on_esc(true)
+    let mut window: PistonWindow = WindowSettings::new(format!("gbrs: {}",
+                                                               gameboy.cart_details().game_title),
+                                                       [160, 144])
+        .exit_on_esc(true)
         .opengl(opengl)
         .build()
         .unwrap();
