@@ -32,20 +32,20 @@ impl GpuStat {
 
     pub fn to_u8(&self, gpu: &Gpu) -> u8 {
         (if self.coincidence_interrupt_enabled {
-             0x40
-         } else {
-             0
-         }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
-            (if self.VBlank_interrupt_enabled {
-                 0x10
-             } else {
-                 0
-             }) |
-            (if self.HBlank_interrupt_enabled {
-                 0x08
-             } else {
-                 0
-             }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
+            0x40
+        } else {
+            0
+        }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
+        (if self.VBlank_interrupt_enabled {
+            0x10
+        } else {
+            0
+        }) |
+        (if self.HBlank_interrupt_enabled {
+            0x08
+        } else {
+            0
+        }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
     }
 }
 
@@ -191,28 +191,30 @@ impl Gpu {
     }
 
     fn render_scanline(&mut self) {
-        self.clear_scanline();
-        self.render_background();
-        self.render_sprites();
+        let line = self.ly.wrapping_add(self.scroll_y) as usize;
+        if line >= 0x90 {
+            return;
+        }
+        self.clear_scanline(line);
+        self.render_background(line);
+        // self.render_sprites();
     }
 
-    fn clear_scanline(&mut self) {
-        let line = self.ly.wrapping_add(self.scroll_y) as usize;
+    fn clear_scanline(&mut self, line: usize) {
         for i in 0..160 {
             self.frame.pixels[line * 160 + i] = Color::new(0, 0xFF, 0xFF, 0xFF);
         }
     }
 
-    fn render_background(&mut self) {
+    fn render_background(&mut self, line: usize) {
         let background_map_base_address = self.background_base;
         let tile_base_address = self.tile_base;
-        let line = self.ly.wrapping_add(self.scroll_y) as usize;
         let bg_map_row = (line / 0x08) as usize;
         for i in 0..160 {
             let x = (i as u8).wrapping_add(self.scroll_x);
             let bg_map_col = (x / 8) as usize;
-            let raw_tile_number =
-                self.ram[background_map_base_address + (bg_map_row * 0x20 + bg_map_col)];
+            let raw_tile_number = self.ram[background_map_base_address +
+                                           (bg_map_row * 0x20 + bg_map_col)];
             let t = if tile_base_address == 0x00 {
                 raw_tile_number as usize
             } else {
@@ -239,8 +241,8 @@ impl Gpu {
         for i in 0..160 {
             let x = (i as u8).wrapping_add(self.scroll_x);
             let bg_map_col = (x / 8) as usize;
-            let raw_tile_number =
-                self.ram[background_map_base_address + (bg_map_row * 0x20 + bg_map_col)];
+            let raw_tile_number = self.ram[background_map_base_address +
+                                           (bg_map_row * 0x20 + bg_map_col)];
             let t = if tile_base_address == 0x00 {
                 raw_tile_number as usize
             } else {
