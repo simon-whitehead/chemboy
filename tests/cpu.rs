@@ -1263,6 +1263,18 @@ mod tests {
     }
 
     #[test]
+    fn rl_c() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x11]);
+
+        cpu.registers.c = 0x80;
+        cpu.registers.flags.carry = true;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x01, cpu.registers.c);
+        assert_eq!(true, cpu.registers.flags.carry);
+    }
+
+    #[test]
     fn sbc_a_d() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x9A]);
 

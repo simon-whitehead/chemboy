@@ -258,6 +258,7 @@ impl Cpu {
             self.registers.pc += opcode.length;
 
             match opcode.code {
+                0x11 => self.rl_c(),
                 0x27 => self.sla_a(),
                 0x37 => self.swap_a(),
                 0x3F => self.srl_a(),
@@ -1017,6 +1018,21 @@ impl Cpu {
             self.registers.sp += 0x02;
             self.registers.pc = addr;
         }
+    }
+
+    fn rl_c(&mut self) {
+        let original_carry = if self.registers.flags.carry {
+            0x01
+        } else {
+            0x00
+        };
+        self.registers.flags.carry = self.registers.c & 0x80 == 0x80;
+        self.registers.c = (self.registers.c << 0x01) | original_carry;
+
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = original_carry == 0x01;
+        self.registers.flags.zero = self.registers.c == 0x00;
     }
 
     fn sbc_a_d(&mut self) {
