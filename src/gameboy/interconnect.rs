@@ -1,8 +1,6 @@
 use std::ops::Range;
 
-use byteorder::{ByteOrder, LittleEndian};
-
-use gameboy::{CPU_FREQUENCY, MAX_CPU_CYCLES, MAX_DIV_REG_CYCLES, Gpu, Irq, Memory, Timer};
+use gameboy::{Gpu, Irq, Memory, Timer};
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
 use gameboy::frame::Frame;
 use super::memory_map::{self, Address};
