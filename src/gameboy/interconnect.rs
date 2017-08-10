@@ -120,7 +120,7 @@ impl Interconnect {
         match memory_map::map_address(addr) {
             Address::Ram(addr) => self.ram.read_u8(addr),
             Address::RamShadow(addr) => self.ram.read_u8(addr),
-            Address::CartRom(addr) |
+            Address::CartRom(addr) => cart.rom.read_u8(addr),
             Address::CartRomOtherBank(addr) => cart.rom.read_u8(addr),
             Address::Gfx(value) => self.gpu.ram.read_u8(value),
             Address::CartRam(a) => cart.ram.read_u8(a),
@@ -199,6 +199,14 @@ impl Interconnect {
             Address::ZRam(a) => self.zram.read_u16(a),
             Address::Io(a) => self.mmap_io.read_u16(a),
             _ => panic!("Unable to read address: {:#X}", addr),
+        }
+    }
+
+    pub fn write_bytes(&mut self, addr: u16, bytes: &[u8]) {
+        let cart = self.cart.as_mut().expect("Cartridge is empty");
+        match memory_map::map_address(addr) {
+            Address::CartRom(addr) => cart.rom.write_bytes(addr, bytes),
+            _ => panic!("write_bytes not mapped for specified memory region"),
         }
     }
 

@@ -91,7 +91,7 @@ pub struct Gpu {
     scroll_x: u8,
     window_y: u8,
     window_x: u8,
-    ly: u8,
+    pub ly: u8,
     lyc: u8,
     bg_palette: u8,
     palette0: u8,
@@ -145,13 +145,13 @@ impl Gpu {
         }
 
         self.cycles += cycles;
-        // self.cycles = 0x1C8; // it takes 456 CPU clock cycles to draw 1 LCD scanline
+
         match self.mode {
             GpuMode::HBlank => {
-                if self.cycles >= 0xCC {
+                self.ly = self.ly + 0x01;
+                if self.cycles > 0xCC {
                     self.cycles = 0x00;
-                    self.ly = self.ly + 0x01;
-                    if self.ly >= 0x90 {
+                    if self.ly > 0x90 {
                         self.switch_mode(GpuMode::VBlank, irq);
                     } else {
                         self.switch_mode(GpuMode::SearchingRam, irq);
@@ -160,7 +160,7 @@ impl Gpu {
                 }
             }
             GpuMode::TransferringData => {
-                if self.cycles >= 0xAC {
+                if self.cycles > 0xAC {
                     self.render_scanline();
 
                     self.cycles = 0x00;
@@ -168,17 +168,17 @@ impl Gpu {
                 }
             }
             GpuMode::SearchingRam => {
-                if self.cycles >= 0x50 {
+                if self.cycles > 0x50 {
                     self.cycles = 0x00;
                     self.switch_mode(GpuMode::TransferringData, irq);
                 }
             }
             GpuMode::VBlank => {
                 irq.request(Interrupt::Vblank);
-                if self.cycles >= 0x1C8 {
+                self.ly += 0x01;
+                if self.cycles > 0x1C8 {
                     self.cycles = 0x00;
-                    self.ly += 0x01;
-                    if self.ly >= 0x99 {
+                    if self.ly > 0x99 {
                         self.ly = 0;
                         self.switch_mode(GpuMode::SearchingRam, irq);
                     }
@@ -309,10 +309,7 @@ impl Gpu {
             0x41 => self.stat = GpuStat::from_u8(val),
             0x42 => self.scroll_y = val,
             0x43 => self.scroll_x = val,
-            0x44 => {
-                self.ly = val;
-                println!("WRITING TO LY");
-            }
+            0x44 => (),
             0x45 => {
                 self.lyc = val;
             }

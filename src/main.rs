@@ -31,19 +31,13 @@ fn main() {
             .required(true)
             .help("Path to a Gameboy or Gameboy Color ROM")
             .takes_value(true))
-        .arg(Arg::with_name("pc")
-            .short("pc")
-            .long("pc")
-            .value_name("PC register value")
-            .required(false))
         .get_matches();
 
     let rom = matches.value_of("rom").unwrap();
-    let pc: Option<u16> = matches.value_of("pc").unwrap_or_default().parse().ok();
-    println!("Setting PC to: {:?}", pc);
     let rom_data = load_rom(rom).unwrap();
+    let is_bootrom = rom_data.len() < 0x10A;
     let cart = Cartridge::with_rom(rom_data);
-    let mut gameboy = gameboy::GameBoy::new(false, cart, pc);
+    let mut gameboy = gameboy::GameBoy::new(false, cart, is_bootrom);
     println!("Loading game: {}", gameboy.cart_details().game_title);
     let now = Instant::now();
 
