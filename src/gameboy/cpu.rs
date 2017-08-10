@@ -198,6 +198,7 @@ impl Cpu {
                 0x7E => self.ld_a_hl(interconnect),
                 0x85 => self.add_a_l(),
                 0x87 => self.add_a_a(),
+                0x90 => self.sub_b(),
                 0x9A => self.sbc_a_d(),
                 0xA1 => self.and_c(),
                 0xA7 => self.and_a(),
@@ -1133,6 +1134,17 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
         self.registers.flags.carry = carry;
+    }
+
+    fn sub_b(&mut self) {
+        let r = self.registers.a.wrapping_sub(self.registers.b);
+
+        self.registers.flags.zero = r == 0x00;
+        self.registers.flags.negative = true;
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) < (self.registers.b & 0x0F);
+        self.registers.flags.carry = self.registers.a < self.registers.b;
+
+        self.registers.a = r;
     }
 
     fn swap_a(&mut self) {
