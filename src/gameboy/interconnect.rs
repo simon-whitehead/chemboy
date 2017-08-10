@@ -93,12 +93,12 @@ impl Interconnect {
             Address::Unused(_) => (),
             Address::Io(a) => {
                 match a {
-                    0x00 => println!("err: write to joypad not supported"),
-                    0x01...0x02 => println!("err: write to serial driver not supported"),
+                    0x00 => (), //println!("err: write to joypad not supported"),
+                    0x01...0x02 => (), // println!("err: write to serial driver not supported"),
                     0x04...0x07 => self.timer.write_u8(a, byte),
                     0x0F => self.irq.request_flag = byte,
-                    0x10...0x26 => println!("err: write to sound driver not supported"),
-                    0x30...0x3F => println!("err: write to wave pattern RAM not supported"),
+                    0x10...0x26 => (), // println!("err: write to sound driver not supported"),
+                    0x30...0x3F => (), // println!("err: write to wave pattern RAM not supported"),
                     0x40...0x45 => self.gpu.write_u8(a, byte),
                     0x47...0x49 => self.gpu.write_u8(a, byte),
                     0x4A...0x4B => self.gpu.write_u8(a, byte),
@@ -130,21 +130,21 @@ impl Interconnect {
             Address::Io(a) => {
                 match a {
                     0x00 => {
-                        println!("err: read from joypad not supported");
+                        // println!("err: read from joypad not supported");
                         0xFF
                     }
                     0x01...0x02 => {
-                        println!("err: read from serial driver not supported");
+                        // println!("err: read from serial driver not supported");
                         0
                     }
                     0x04...0x07 => self.timer.read_u8(a), 
                     0x0F => self.irq.request_flag,
                     0x10...0x26 => {
-                        println!("err: read from sound driver not supported");
+                        // println!("err: read from sound driver not supported");
                         0
                     }
                     0x30...0x3F => {
-                        println!("err: write to wave pattern RAM not supported");
+                        // println!("err: write to wave pattern RAM not supported");
                         0
                     }
                     0x40...0x45 => self.gpu.read_u8(a), 
@@ -203,7 +203,7 @@ impl Interconnect {
     }
 
     fn dma_transfer(&mut self, byte: u8) {
-        let addr = ((byte as u16) << 0x08); // "The written value specifies the transfer source address divided by 0x100"
+        let addr = (byte as u16) << 0x08; // "The written value specifies the transfer source address divided by 0x100"
         for x in 0..0xA0 {
             let val = self.read_u8(addr + x);
             self.write_u8(0xFE00 + x, val);
