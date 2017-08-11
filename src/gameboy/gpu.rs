@@ -279,7 +279,6 @@ impl Gpu {
     fn render_sprites(&mut self) {
         let background_map_base_address = self.background_base;
         let tile_base_address = self.tile_base;
-        let line = self.ly.wrapping_add(self.scroll_y) as usize;
         let bg_map_row = (line / 0x08) as usize;
         for i in 0..160 {
             let x = (i as u8).wrapping_add(self.scroll_x);
@@ -300,7 +299,7 @@ impl Gpu {
             let total_row_data = (tile_data2 << 1) | tile_data1;
             let color_value = total_row_data;
             let c = self.get_background_color_for_byte(color_value as u8);
-            self.frame.pixels[line as usize * 160 + i as usize] = c;
+            self.backbuffer.pixels[self.ly as usize * 160 + i as usize] = c;
         }
     }
 
