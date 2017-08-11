@@ -73,8 +73,8 @@ impl Cpu {
         while cycles < MAX_CPU_CYCLES {
             let c = self.step(interconnect)?;
             cycles += c as usize;
-            interconnect.step(cycles)?;
-            cycles += self.handle_interrupts(interconnect) as usize;
+            interconnect.step(c as usize)?;
+            self.handle_interrupts(interconnect) as usize;
         }
 
         Ok(())

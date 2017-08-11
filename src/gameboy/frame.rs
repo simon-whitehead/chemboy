@@ -28,17 +28,17 @@ impl Color {
     }
 }
 
-
+#[derive(Clone)]
 pub struct Frame {
-    pub pixels: [Color; 160 * 144],
+    pub pixels: Vec<Color>,
 }
 
 impl Frame {
     pub fn new() -> Frame {
-        Frame { pixels: [Color::new(0, 0xFF, 0xFF, 0xFF); 160 * 144] }
+        Frame { pixels: vec![Color::new(0, 0xFF, 0xFF, 0xFF); 160 * 144] }
     }
 
     pub fn clear(&mut self) {
-        self.pixels = [Color::new(0, 0xFF, 0xFF, 0xFF); 160 * 144];
+        self.pixels = vec![Color::new(0, 0xFF, 0xFF, 0xFF); 160 * 144];
     }
 }
