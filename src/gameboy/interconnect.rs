@@ -18,6 +18,7 @@ pub struct Interconnect {
     pub irq: Irq,
     pub cart: Option<Cartridge>,
     pub interrupt: u8,
+    pub custom_logo: Vec<u8>
 }
 
 impl Interconnect {
@@ -31,6 +32,7 @@ impl Interconnect {
             irq: Irq::new(),
             cart: None,
             interrupt: 0x00,
+            custom_logo: Vec::new(),
         }
     }
 
@@ -44,6 +46,21 @@ impl Interconnect {
             irq: Irq::new(),
             cart: Some(cart),
             interrupt: 0x00,
+            custom_logo: Vec::new(),
+        }
+    }
+
+    pub fn with_cart_custom_logo(cart: Cartridge, logo: Vec<u8>) -> Interconnect {
+        Interconnect {
+            gpu: Gpu::new(),
+            ram: Memory::new(MAIN_MEM_SIZE),
+            zram: Memory::new(ZRAM_SIZE),
+            mmap_io: Memory::new(MMAP_SIZE),
+            timer: Timer::new(),
+            irq: Irq::new(),
+            cart: Some(cart),
+            interrupt: 0x00,
+            custom_logo: logo,
         }
     }
 
