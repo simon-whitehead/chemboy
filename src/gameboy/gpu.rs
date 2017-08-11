@@ -160,29 +160,27 @@ impl Gpu {
                 }
             }
             GpuMode::TransferringData => {
-                if self.cycles > 0xAC {
-                    self.render_scanline();
-
+                if self.cycles > 0xAC && self.ly < 0x90 {
                     self.cycles = 0x00;
                     self.switch_mode(GpuMode::HBlank, irq);
                 }
             }
             GpuMode::SearchingRam => {
-                if self.cycles > 0x50 {
+                if self.cycles > 0x50 && self.ly < 0x90 {
                     self.cycles = 0x00;
                     self.switch_mode(GpuMode::TransferringData, irq);
                 }
             }
             GpuMode::VBlank => {
                 irq.request(Interrupt::Vblank);
-                self.ly += 0x01;
                 if self.cycles > 0x1C8 {
                     self.cycles = 0x00;
+                    self.ly += 0x01;
+                    self.check_coincidence(irq);
                     if self.ly > 0x99 {
                         self.ly = 0;
                         self.switch_mode(GpuMode::SearchingRam, irq);
                     }
-                    self.check_coincidence(irq);
                 }
             }
         }
@@ -192,9 +190,6 @@ impl Gpu {
 
     fn render_scanline(&mut self) {
         let line = self.ly.wrapping_add(self.scroll_y) as usize;
-        if line >= 0x90 {
-            return;
-        }
         self.clear_scanline(line);
         self.render_background(line);
         // self.render_sprites();
@@ -332,6 +327,9 @@ impl Gpu {
     fn switch_mode(&mut self, mode: GpuMode, irq: &mut Irq) {
         self.cycles += mode.cycles(self.scroll_x);
         match mode {
+            GpuMode::HBlank => {
+                self.render_scanline();
+            }
             GpuMode::SearchingRam => {
                 if self.stat.OAM_interrupt_enabled {
                     irq.request(Interrupt::OAM);

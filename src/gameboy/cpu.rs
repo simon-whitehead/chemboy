@@ -210,6 +210,7 @@ impl Cpu {
                 0xAF => self.xor_a(),
                 0xB0 => self.or_b(),
                 0xB1 => self.or_c(),
+                0xBE => self.cp_hl(interconnect),
                 0xC0 => self.ret_nz(interconnect),
                 0xC1 => self.pop_bc(interconnect),
                 0xC2 => self.jp_nz_imm16(&operand),
@@ -480,6 +481,17 @@ impl Cpu {
         self.registers.a = !self.registers.a as u8;
         self.registers.flags.negative = true;
         self.registers.flags.half_carry = true;
+    }
+
+    fn cp_hl(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        let r = self.registers.a;
+        let result = r.wrapping_sub(val);
+
+        self.registers.flags.zero = result == 0x00;
+        self.registers.flags.negative = true;
+        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
+        self.registers.flags.carry = self.registers.a < val;
     }
 
     fn cp_n(&mut self, operand: &Operand) {
