@@ -32,20 +32,20 @@ impl GpuStat {
 
     pub fn to_u8(&self, gpu: &Gpu) -> u8 {
         (if self.coincidence_interrupt_enabled {
-             0x40
-         } else {
-             0
-         }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
-            (if self.VBlank_interrupt_enabled {
-                 0x10
-             } else {
-                 0
-             }) |
-            (if self.HBlank_interrupt_enabled {
-                 0x08
-             } else {
-                 0
-             }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
+            0x40
+        } else {
+            0
+        }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
+        (if self.VBlank_interrupt_enabled {
+            0x10
+        } else {
+            0
+        }) |
+        (if self.HBlank_interrupt_enabled {
+            0x08
+        } else {
+            0
+        }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
     }
 }
 
@@ -192,60 +192,60 @@ impl Gpu {
             }
         }
 
-        /*match self.mode {
-            GpuMode::HBlank => {
-                self.ly += 0x01;
-                if self.cycles >= 0xCC {
-                    self.cycles = 0x00;
-                    if self.ly >= 0x8F {
-                        self.frame = self.backbuffer.clone();
-                        self.switch_mode(GpuMode::VBlank, irq);
-                    } else {
-                        self.switch_mode(GpuMode::SearchingRam, irq);
-                    }
-                    self.render_scanline();
-                }
-            }
-            GpuMode::TransferringData => {
-                if self.cycles > 0xAC {
-                    self.cycles = 0x00;
-                    self.switch_mode(GpuMode::HBlank, irq);
-                }
-            }
-            GpuMode::SearchingRam => {
-                if self.cycles > 0x50 {
-                    self.cycles = 0x00;
-                    self.switch_mode(GpuMode::TransferringData, irq);
-                }
-            }
-            GpuMode::VBlank => {
-                self.ly += 0x01;
-                irq.request(Interrupt::Vblank);
-                if self.cycles >= 0x1C8 {
-                    self.cycles = 0x00;
-                    self.check_coincidence(irq);
-                    if self.ly > 0x99 {
-                        self.ly = 0;
-                        self.switch_mode(GpuMode::SearchingRam, irq);
-                    }
-                }
-            }
-        }*/
+        // match self.mode {
+        // GpuMode::HBlank => {
+        // self.ly += 0x01;
+        // if self.cycles >= 0xCC {
+        // self.cycles = 0x00;
+        // if self.ly >= 0x8F {
+        // self.frame = self.backbuffer.clone();
+        // self.switch_mode(GpuMode::VBlank, irq);
+        // } else {
+        // self.switch_mode(GpuMode::SearchingRam, irq);
+        // }
+        // self.render_scanline();
+        // }
+        // }
+        // GpuMode::TransferringData => {
+        // if self.cycles > 0xAC {
+        // self.cycles = 0x00;
+        // self.switch_mode(GpuMode::HBlank, irq);
+        // }
+        // }
+        // GpuMode::SearchingRam => {
+        // if self.cycles > 0x50 {
+        // self.cycles = 0x00;
+        // self.switch_mode(GpuMode::TransferringData, irq);
+        // }
+        // }
+        // GpuMode::VBlank => {
+        // self.ly += 0x01;
+        // irq.request(Interrupt::Vblank);
+        // if self.cycles >= 0x1C8 {
+        // self.cycles = 0x00;
+        // self.check_coincidence(irq);
+        // if self.ly > 0x99 {
+        // self.ly = 0;
+        // self.switch_mode(GpuMode::SearchingRam, irq);
+        // }
+        // }
+        // }
+        // }
 
         Ok(())
     }
 
     fn render_scanline(&mut self) {
         let line = self.ly.wrapping_add(self.scroll_y) as usize;
-        //self.clear_scanline(line);
+        // self.clear_scanline(line);
         self.render_background(line);
-        // self.render_sprites();
+        self.render_sprites(line);
         self.frame = self.backbuffer.clone();
     }
 
     fn clear_scanline(&mut self, line: usize) {
         for i in 0..160 {
-            self.backbuffer.pixels[line * 160 + i] = Color::new(0, 0xFF, 0xFF, 0xFF);
+            self.backbuffer.pixels[line * 160 + i] = Color::new(0xFF, 0xFF, 0xFF, 0xFF);
         }
     }
 
@@ -256,8 +256,8 @@ impl Gpu {
         for i in 0..160 {
             let x = (i as u8).wrapping_add(self.scroll_x);
             let bg_map_col = (x / 8) as usize;
-            let raw_tile_number =
-                self.ram[background_map_base_address + (bg_map_row * 0x20 + bg_map_col)];
+            let raw_tile_number = self.ram[background_map_base_address +
+                                           (bg_map_row * 0x20 + bg_map_col)];
             let t = if tile_base_address == 0x00 {
                 raw_tile_number as usize
             } else {
@@ -276,30 +276,37 @@ impl Gpu {
         }
     }
 
-    fn render_sprites(&mut self) {
-        let background_map_base_address = self.background_base;
-        let tile_base_address = self.tile_base;
-        let bg_map_row = (line / 0x08) as usize;
-        for i in 0..160 {
-            let x = (i as u8).wrapping_add(self.scroll_x);
-            let bg_map_col = (x / 8) as usize;
-            let raw_tile_number =
-                self.ram[background_map_base_address + (bg_map_row * 0x20 + bg_map_col)];
-            let t = if tile_base_address == 0x00 {
-                raw_tile_number as usize
-            } else {
-                128 + ((raw_tile_number as i8 as i16) + 128) as usize
-            };
+    fn render_sprites(&mut self, line: usize) {
+        for i in 0..40 {
+            let sprite_table_entry_base = i * 0x04;
+            let s_y = self.sprite_data[sprite_table_entry_base] as i16 - 0x10;
+            let s_x = self.sprite_data[sprite_table_entry_base + 0x01] as i16 - 0x08;
+            if line < s_y as usize || line > s_y as usize + 0x08 {
+                // sprite height? 16 or 8?
+                continue;
+            }
+            let tile_number = self.sprite_data[sprite_table_entry_base + 0x02] as i16;
+            let attributes = self.sprite_data[sprite_table_entry_base + 0x03];
 
-            let line_offset = (line % 0x08) << 0x01;
-            let tile_data_start = tile_base_address + (t * 0x10) + line_offset;
-            let x_shift = (x % 8).wrapping_sub(0x07).wrapping_mul(0xFF);
-            let tile_data1 = (self.ram[tile_data_start] >> x_shift) & 0x01;
-            let tile_data2 = (self.ram[tile_data_start + 0x01] >> x_shift) & 0x01;
-            let total_row_data = (tile_data2 << 1) | tile_data1;
-            let color_value = total_row_data;
-            let c = self.get_background_color_for_byte(color_value as u8);
-            self.backbuffer.pixels[self.ly as usize * 160 + i as usize] = c;
+            let sprite_y = (line as i16 - s_y) << 0x01;
+            let tile_data_start = (tile_number * 0x10) + sprite_y;
+            for x in 0..8 {
+                if s_x + x < 0 || s_x + x >= 160 {
+                    continue;
+                }
+                let x_shift = 0x07 - x;
+                let tile_data1 = (self.ram[tile_data_start as usize] >> x_shift) & 0x01;
+                let tile_data2 = (self.ram[tile_data_start as usize + 0x01] >> x_shift) & 0x01;
+                let total_row_data = (tile_data2 << 1) | tile_data1;
+                let color_value = total_row_data;
+                let c = self.get_sprite_color_for_byte(color_value as u8,
+                                                       ((attributes & 0x10) >> 0x04) as u8);
+                // White means transparent for Sprites, so ignore this pixel completely
+                if c.is_white() {
+                    continue;
+                }
+                self.backbuffer.pixels[line as usize * 160 + (s_x as usize + x as usize)] = c;
+            }
         }
     }
 
@@ -309,6 +316,24 @@ impl Gpu {
             0x01 => (self.bg_palette & 0x000C) >> 0x02,
             0x02 => (self.bg_palette & 0x0030) >> 0x04,
             0x03 => (self.bg_palette & 0x00C0) >> 0x06,
+            _ => panic!("err: invalid pixel color value found"),
+        };
+
+        Color::from_dmg_byte(palette_index as u8)
+    }
+
+    fn get_sprite_color_for_byte(&self, b: u8, palette_entry: u8) -> Color {
+        let palette = if palette_entry == 0x00 {
+            self.palette0
+        } else {
+            self.palette1
+        };
+
+        let palette_index = match b {
+            0x00 => palette & 0x0003,
+            0x01 => (palette & 0x000C) >> 0x02,
+            0x02 => (palette & 0x0030) >> 0x04,
+            0x03 => (palette & 0x00C0) >> 0x06,
             _ => panic!("err: invalid pixel color value found"),
         };
 
@@ -372,7 +397,7 @@ impl Gpu {
     }
 
     fn switch_mode(&mut self, mode: GpuMode, irq: &mut Irq) {
-        //self.cycles += mode.cycles(self.scroll_x);
+        // self.cycles += mode.cycles(self.scroll_x);
         match mode {
             _ => (),
         }
