@@ -283,6 +283,7 @@ impl Cpu {
                 0x27 => self.sla_a(),
                 0x37 => self.swap_a(),
                 0x3F => self.srl_a(),
+                0x40 => self.bit_0_b(),
                 0x50 => self.bit_2_b(),
                 0x58 => self.bit_3_b(),
                 0x60 => self.bit_4_b(),
@@ -432,6 +433,17 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = true;
         self.registers.flags.carry = false;
+    }
+
+    fn bit_0_b(&mut self) {
+        let bit = if self.registers.b & 0x01 == 0x01 {
+            0x01
+        } else {
+            0x00
+        };
+        self.registers.flags.zero = bit == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = true;
     }
 
     fn bit_2_b(&mut self) {
