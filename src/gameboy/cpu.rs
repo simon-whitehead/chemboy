@@ -244,6 +244,7 @@ impl Cpu {
                 0xE6 => self.and_imm8(&operand),
                 0xE9 => self.jp_hl(),
                 0xEA => self.ld_imm16_a(&operand, interconnect),
+                0xEE => self.xor_a_imm8(&operand),
                 0xEF => self.call(0x28, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF1 => self.pop_af(interconnect),
@@ -1275,6 +1276,16 @@ impl Cpu {
 
     fn xor_a(&mut self) {
         self.registers.a ^= self.registers.a;
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
+    }
+
+    fn xor_a_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+
+        self.registers.a ^= val;
         self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
