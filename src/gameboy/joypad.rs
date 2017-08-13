@@ -1,4 +1,5 @@
 
+#[derive(Debug)]
 pub enum InputLine {
     None,
     Directional,
@@ -49,6 +50,32 @@ impl Joypad {
         }
     }
 
+    pub fn from_u8(b: u8) -> Joypad {
+        let right_or_a = b & 0x01 == 0x01;
+        let left_or_b = b & 0x02 == 0x02;
+        let up_or_select = b & 0x04 == 0x04;
+        let down_or_start = b & 0x08 == 0x08;
+
+        let directional = b & 0x10 == 0x10;
+        let buttons = b & 0x20 == 0x20;
+
+        Joypad {
+            line: InputLine::None,
+
+            down: directional && down_or_start,
+            start: buttons && down_or_start,
+
+            up: directional && up_or_select,
+            select: buttons && up_or_select,
+
+            left: directional && left_or_b,
+            b: buttons && left_or_b,
+
+            right: directional && right_or_a,
+            a: buttons && right_or_a
+        }
+    }
+
     pub fn as_u8(&self) -> u8 {
         let r = match self.line {
             InputLine::Directional => {
@@ -62,9 +89,18 @@ impl Joypad {
                 (if self.b { 0x00 } else { 0x02 }) |
                 (if self.a { 0x00 } else { 0x01 })
             },
-            InputLine::None => 0x30
+            InputLine::None =>  {
+                0x30 | (if self.down || self.start { 0x00 } else { 0x08 }) | (if self.up || self.select { 0x00 } else { 0x04 }) |
+                (if self.left || self.b { 0x00 } else { 0x02 }) |
+                (if self.right || self.a { 0x00 } else { 0x01 })
+            }
         };
-        println!("Joypad read: {:b}", r);
+        print!("Joypad read for {:?}: ", self.line);
+        for n in 0..8 {
+            let v = (r >> n) & 0x01;
+            print!("{}", v);
+        }
+        println!("");
         r
     }
 

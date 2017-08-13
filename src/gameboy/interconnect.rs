@@ -124,19 +124,7 @@ impl Interconnect {
             Address::Unused(_) => (),
             Address::Io(a) => {
                 match a {
-                    0x00 => {
-                        if byte & 0x10 == 0x10 {
-                            self.joypad.set_input_line(InputLine::Directional);
-                            self.irq.request(Interrupt::Joypad);
-                        }
-                        if byte & 0x20 == 0x20 {
-                            self.joypad.set_input_line(InputLine::Button);
-                            self.irq.request(Interrupt::Joypad);
-                        }
-                        if byte & 0x30 == 0x30 {
-                            self.joypad.set_input_line(InputLine::None);
-                        }
-                    }
+                    0x00 => self.joypad = Joypad::from_u8(byte),
                     0x01...0x02 => (), // println!("err: write to serial driver not supported"),
                     0x04...0x07 => self.timer.write_u8(a, byte),
                     0x0F => self.irq.request_flag = byte,
