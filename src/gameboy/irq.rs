@@ -31,6 +31,7 @@ impl Irq {
             Lcd => self.request_flag |= 0x02,
             Timer => self.request_flag |= 0x04,
             Serial => self.request_flag |= 0x08,
+            Joypad => self.request_flag |= 0x10,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -43,6 +44,7 @@ impl Irq {
             Lcd => self.request_flag &= !0x02,
             Timer => self.request_flag &= !0x04,
             Serial => self.request_flag &= !0x08,
+            Joypad => self.request_flag &= !0x10,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -55,6 +57,7 @@ impl Irq {
             Lcd => self.request_flag & 0x02 == 0x02,
             Timer => self.request_flag & 0x04 == 0x04,
             Serial => self.request_flag & 0x08 == 0x08,
+            Joypad => self.request_flag & 0x10 == 0x10,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -67,6 +70,7 @@ impl Irq {
             Lcd => self.enable_flag |= 0x02,
             Timer => self.enable_flag |= 0x04,
             Serial => self.enable_flag |= 0x08,
+            Joypad => self.enable_flag |= 0x10,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -79,6 +83,7 @@ impl Irq {
             Lcd => self.enable_flag -= 0x02,
             Timer => self.enable_flag -= 0x04,
             Serial => self.enable_flag -= 0x08,
+            Joypad => self.enable_flag -= 0x10,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -91,6 +96,7 @@ impl Irq {
             Lcd => self.enable_flag & 0x02 == 0x02,
             Timer => self.enable_flag & 0x04 == 0x04,
             Serial => self.enable_flag & 0x08 == 0x08,
+            Joypad => self.enable_flag & 0x10 == 0x10,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -103,4 +109,5 @@ pub enum Interrupt {
     Timer,
     Serial,
     OAM,
+    Joypad,
 }

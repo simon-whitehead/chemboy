@@ -10,9 +10,7 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn new(gameboy_color: bool) -> Cpu {
-        Cpu {
-            registers: registers::Registers::new(gameboy_color),
-        }
+        Cpu { registers: registers::Registers::new(gameboy_color) }
     }
 
     pub fn reset(&mut self, interconnect: &mut Interconnect) {
@@ -105,6 +103,14 @@ impl Cpu {
             interconnect.irq.enabled = false;
             interconnect.irq.unrequest(Interrupt::Timer);
             self.call(0x50, interconnect);
+
+            return 0x0C;
+        }
+
+        if interconnect.irq.should_handle(Interrupt::Joypad) {
+            interconnect.irq.enabled = false;
+            interconnect.irq.unrequest(Interrupt::Joypad);
+            self.call(0x60, interconnect);
 
             return 0x0C;
         }
@@ -226,6 +232,7 @@ impl Cpu {
                 0xCD => self.call(operand.unwrap_imm16(), interconnect),
                 0xD1 => self.pop_de(interconnect),
                 0xD5 => self.push_de(interconnect),
+                0xD6 => self.sub_imm8(&operand),
                 0xD9 => self.reti(interconnect),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE1 => self.pop_hl(interconnect),
@@ -244,22 +251,18 @@ impl Cpu {
                 0xFB => self.ei(interconnect),
                 0xFE => self.cp_n(&operand),
                 _ => {
-                    return Err(format!(
-                        "Could not match opcode: {:02X} at offset: {:04X}",
-                        opcode.code,
-                        self.registers.pc
-                    ))
+                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
+                                       opcode.code,
+                                       self.registers.pc))
                 }
             }
 
             return Ok(cycles);
         }
 
-        Err(format!(
-            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-            byte,
-            self.registers.pc
-        ))
+        Err(format!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+                    byte,
+                    self.registers.pc))
     }
 
     pub fn handle_extended_opcode(&mut self, interconnect: &mut Interconnect) -> u8 {
@@ -287,22 +290,18 @@ impl Cpu {
                 0x87 => self.res_0_a(),
                 0xFE => self.set_7_hl(interconnect),
                 _ => {
-                    panic!(
-                        "Could not match opcode: {:02X} at offset: {:04X}",
-                        opcode.code,
-                        self.registers.pc
-                    )
+                    panic!("Could not match opcode: {:02X} at offset: {:04X}",
+                           opcode.code,
+                           self.registers.pc)
                 }
             }
 
             return opcode.cycles + 0x01;
         }
 
-        panic!(
-            "Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
-            byte,
-            self.registers.pc
-        );
+        panic!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
+               byte,
+               self.registers.pc);
     }
 
     fn add_a_a(&mut self) {
@@ -1130,8 +1129,8 @@ impl Cpu {
             .wrapping_sub(self.registers.d)
             .wrapping_sub(carry);
 
-        self.registers.flags.half_carry =
-            (self.registers.a & 0x0F) < (self.registers.d & 0x0F) + carry;
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
+                                          (self.registers.d & 0x0F) + carry;
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.d + carry);
@@ -1173,6 +1172,18 @@ impl Cpu {
         self.registers.flags.negative = true;
         self.registers.flags.half_carry = (self.registers.a & 0x0F) < (self.registers.b & 0x0F);
         self.registers.flags.carry = self.registers.a < self.registers.b;
+
+        self.registers.a = r;
+    }
+
+    fn sub_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        let r = self.registers.a.wrapping_sub(val);
+
+        self.registers.flags.zero = r == 0x00;
+        self.registers.flags.negative = true;
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) < (val & 0x0F);
+        self.registers.flags.carry = self.registers.a < val;
 
         self.registers.a = r;
     }

@@ -3,6 +3,8 @@ use std::ops::Range;
 use gameboy::{Gpu, Irq, Memory, Timer};
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
 use gameboy::frame::Frame;
+use gameboy::irq::Interrupt;
+use gameboy::joypad::{InputLine, Joypad, JoypadButton};
 use super::memory_map::{self, Address};
 
 const MAIN_MEM_SIZE: usize = 0x2000;
@@ -18,7 +20,8 @@ pub struct Interconnect {
     pub irq: Irq,
     pub cart: Option<Cartridge>,
     pub interrupt: u8,
-    pub custom_logo: Vec<u8>
+    pub custom_logo: Vec<u8>,
+    pub joypad: Joypad,
 }
 
 impl Interconnect {
@@ -33,6 +36,7 @@ impl Interconnect {
             cart: None,
             interrupt: 0x00,
             custom_logo: Vec::new(),
+            joypad: Joypad::new(),
         }
     }
 
@@ -47,6 +51,7 @@ impl Interconnect {
             cart: Some(cart),
             interrupt: 0x00,
             custom_logo: Vec::new(),
+            joypad: Joypad::new(),
         }
     }
 
@@ -61,6 +66,7 @@ impl Interconnect {
             cart: Some(cart),
             interrupt: 0x00,
             custom_logo: logo,
+            joypad: Joypad::new(),
         }
     }
 
@@ -87,6 +93,14 @@ impl Interconnect {
         &self.gpu.frame
     }
 
+    pub fn press(&mut self, button: JoypadButton) {
+        self.joypad.press(button);
+    }
+
+    pub fn unpress(&mut self, button: JoypadButton) {
+        self.joypad.unpress(button);
+    }
+
     pub fn write_u8(&mut self, addr: u16, byte: u8) {
         // Special case - DMA transfer
         if addr == 0xFF46 {
@@ -110,7 +124,19 @@ impl Interconnect {
             Address::Unused(_) => (),
             Address::Io(a) => {
                 match a {
-                    0x00 => (), //println!("err: write to joypad not supported"),
+                    0x00 => {
+                        if byte & 0x10 == 0x10 {
+                            self.joypad.set_input_line(InputLine::Directional);
+                            self.irq.request(Interrupt::Joypad);
+                        }
+                        if byte & 0x20 == 0x20 {
+                            self.joypad.set_input_line(InputLine::Button);
+                            self.irq.request(Interrupt::Joypad);
+                        }
+                        if byte & 0x30 == 0x30 {
+                            self.joypad.set_input_line(InputLine::None);
+                        }
+                    }
                     0x01...0x02 => (), // println!("err: write to serial driver not supported"),
                     0x04...0x07 => self.timer.write_u8(a, byte),
                     0x0F => self.irq.request_flag = byte,
@@ -146,10 +172,7 @@ impl Interconnect {
             Address::Unused(_) => 0xFF, // Always return high
             Address::Io(a) => {
                 match a {
-                    0x00 => {
-                        // println!("err: read from joypad not supported");
-                        0xFF
-                    }
+                    0x00 => self.joypad.as_u8(),
                     0x01...0x02 => {
                         // println!("err: read from serial driver not supported");
                         0
