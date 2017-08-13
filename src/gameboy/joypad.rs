@@ -52,12 +52,12 @@ impl Joypad {
     pub fn as_u8(&self) -> u8 {
         let r = match self.line {
             InputLine::Directional => {
-                0x10 | (if self.down { 0x00 } else { 0x08 }) | (if self.up { 0x00 } else { 0x04 }) |
+                (if self.down { 0x00 } else { 0x08 }) | (if self.up { 0x00 } else { 0x04 }) |
                 (if self.left { 0x00 } else { 0x02 }) |
                 (if self.right { 0x00 } else { 0x01 })
             }
             InputLine::Button => {
-                0x20 | (if self.start { 0x00 } else { 0x08 }) |
+                (if self.start { 0x00 } else { 0x08 }) |
                 (if self.select { 0x00 } else { 0x04 }) |
                 (if self.b { 0x00 } else { 0x02 }) |
                 (if self.a { 0x00 } else { 0x01 })

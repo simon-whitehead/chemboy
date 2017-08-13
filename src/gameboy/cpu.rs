@@ -230,7 +230,7 @@ impl Cpu {
                 0xC9 => self.ret(interconnect),
                 0xCA => self.jp_z_imm16(&operand),
                 0xCB => {
-                    cycles = self.handle_extended_opcode(interconnect);
+                    cycles = self.handle_extended_opcode(interconnect)?;
                 }
                 0xCD => self.call(operand.unwrap_imm16(), interconnect),
                 0xD1 => self.pop_de(interconnect),
@@ -269,7 +269,9 @@ impl Cpu {
                     self.registers.pc))
     }
 
-    pub fn handle_extended_opcode(&mut self, interconnect: &mut Interconnect) -> u8 {
+    pub fn handle_extended_opcode(&mut self,
+                                  interconnect: &mut Interconnect)
+                                  -> Result<u8, String> {
         let byte = interconnect.read_u8(self.registers.pc);
 
         if let Some(opcode) = OpCode::from_byte(byte, true) {
@@ -297,18 +299,18 @@ impl Cpu {
                 0x87 => self.res_0_a(),
                 0xFE => self.set_7_hl(interconnect),
                 _ => {
-                    panic!("Could not match opcode: {:02X} at offset: {:04X}",
-                           opcode.code,
-                           self.registers.pc)
+                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
+                                       opcode.code,
+                                       self.registers.pc))
                 }
             }
 
-            return opcode.cycles + 0x01;
+            return Ok(opcode.cycles + 0x01);
         }
 
-        panic!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
-               byte,
-               self.registers.pc);
+        Err(format!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
+                    byte,
+                    self.registers.pc))
     }
 
     fn adc_a_c(&mut self) {
