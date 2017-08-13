@@ -190,6 +190,19 @@ mod tests {
     }
 
     #[test]
+    fn bit_5_a() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x6F]);
+
+        cpu.registers.a = 0x20;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+        assert_eq!(false, cpu.registers.flags.carry);
+    }
+
+    #[test]
     fn bit_5_b() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x68]);
 
