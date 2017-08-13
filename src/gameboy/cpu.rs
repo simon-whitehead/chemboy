@@ -136,6 +136,7 @@ impl Cpu {
                 0x04 => self.inc_b(),
                 0x05 => self.dec_b(),
                 0x06 => self.ld_b_imm8(&operand),
+                0x07 => self.rlca(),
                 0x09 => self.add_hl_bc(),
                 0x0A => self.ld_a_bc(interconnect),
                 0x0B => self.dec_bc(),
@@ -1046,6 +1047,21 @@ impl Cpu {
         let val = self.registers.get_hl();
         self.registers.sp -= 0x02;
         interconnect.write_u16(self.registers.sp as u16, val);
+    }
+
+    fn rlca(&mut self) {
+        let carry = if self.registers.a & 0x80 == 0x80 {
+            0x01
+        } else {
+            0x00
+        };
+
+        self.registers.flags.carry = carry == 0x01;
+        self.registers.a = (self.registers.a << 0x01) | carry;
+
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.zero = self.registers.a == 0x00;
     }
 
     fn res_0_a(&mut self) {

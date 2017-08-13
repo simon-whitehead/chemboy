@@ -1278,6 +1278,20 @@ mod tests {
     }
 
     #[test]
+    fn rlca() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x07]);
+
+        cpu.registers.a = 0x85;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x0B, cpu.registers.a);
+        assert_eq!(true, cpu.registers.flags.carry);
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(false, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+    }
+
+    #[test]
     fn rla() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x17]);
 
