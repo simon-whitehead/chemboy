@@ -209,6 +209,7 @@ impl Cpu {
                 0x80 => self.add_a_b(),
                 0x85 => self.add_a_l(),
                 0x87 => self.add_a_a(),
+                0x89 => self.adc_a_c(),
                 0x90 => self.sub_b(),
                 0x9A => self.sbc_a_d(),
                 0xA1 => self.and_c(),
@@ -305,6 +306,27 @@ impl Cpu {
         panic!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
                byte,
                self.registers.pc);
+    }
+
+    fn adc_a_c(&mut self) {
+        let carry = if self.registers.flags.carry {
+            0x01
+        } else {
+            0x00
+        };
+
+        let result = self.registers
+            .a
+            .wrapping_add(self.registers.c)
+            .wrapping_add(carry);
+
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
+                                          (self.registers.c & 0x0F) + carry;
+        self.registers.flags.negative = true;
+        self.registers.flags.zero = result & 0xFF == 0x00;
+        self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.c + carry);
+
+        self.registers.a = result as u8;
     }
 
     fn add_a_a(&mut self) {
