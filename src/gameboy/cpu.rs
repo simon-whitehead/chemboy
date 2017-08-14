@@ -1,4 +1,4 @@
-// Simon Whitehead, 2016
+// Simon Whitehead, 2017
 
 use gameboy::registers;
 use gameboy::{MAX_CPU_CYCLES, Interconnect, Interrupt};
