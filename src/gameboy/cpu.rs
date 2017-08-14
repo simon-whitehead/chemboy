@@ -172,6 +172,7 @@ impl Cpu {
                 0x34 => self.inc_hl_ptr(interconnect),
                 0x35 => self.dec_hl(interconnect),
                 0x36 => self.ld_hl_imm8(&operand, interconnect),
+                0x38 => self.jr_c_imm8(&operand),
                 0x3A => self.ld_a_hld(interconnect),
                 0x3C => self.inc_a(),
                 0x3D => self.dec_a(),
@@ -808,6 +809,14 @@ impl Cpu {
     fn jp_z_imm16(&mut self, operand: &Operand) {
         if self.registers.flags.zero {
             self.jp_imm16(operand);
+        }
+    }
+
+    fn jr_c_imm8(&mut self, operand: &Operand) {
+        let offset = operand.unwrap_imm8();
+
+        if self.registers.flags.carry {
+            self.relative_jump(offset);
         }
     }
 

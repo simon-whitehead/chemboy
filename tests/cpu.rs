@@ -1,10 +1,10 @@
 #[macro_use]
-extern crate gbrs;
+extern crate chemboy;
 
 #[cfg(test)]
 mod tests {
 
-    use gbrs::gameboy::{Cartridge, Cpu, Interconnect};
+    use chemboy::gameboy::{Cartridge, Cpu, Interconnect};
 
     #[test]
     fn adc_a_c() {
