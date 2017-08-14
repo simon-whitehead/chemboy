@@ -1,6 +1,6 @@
 [package]
-name = "gbrs"
-version = "0.1.0"
+name = "chemboy"
+version = "0.0.1"
 authors = ["simonwhitehead"]
 
 [dependencies]
