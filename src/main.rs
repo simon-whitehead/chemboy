@@ -24,13 +24,15 @@ fn main() {
         .version("0.0.0.1")
         .author("Simon Whitehead")
         .about("A GameBoy and GameBoy Colour emulator written in Rust")
-        .arg(Arg::with_name("rom")
-            .short("r")
-            .long("rom")
-            .value_name("ROM_PATH")
-            .required(true)
-            .help("Path to a Gameboy or Gameboy Color ROM")
-            .takes_value(true))
+        .arg(
+            Arg::with_name("rom")
+                .short("r")
+                .long("rom")
+                .value_name("ROM_PATH")
+                .required(true)
+                .help("Path to a Gameboy or Gameboy Color ROM")
+                .takes_value(true),
+        )
         .get_matches();
 
     let rom = matches.value_of("rom").unwrap();
@@ -42,10 +44,10 @@ fn main() {
     let now = Instant::now();
 
     let opengl = OpenGL::V3_2;
-    let mut window: PistonWindow = WindowSettings::new(format!("gbrs: {}",
-                                                               gameboy.cart_details().game_title),
-                                                       [160, 144])
-        .exit_on_esc(true)
+    let mut window: PistonWindow = WindowSettings::new(
+        format!("gbrs: {}", gameboy.cart_details().game_title),
+        [160, 144],
+    ).exit_on_esc(true)
         .opengl(opengl)
         .build()
         .unwrap();
@@ -56,6 +58,7 @@ fn main() {
         if let Some(button) = e.press_args() {
             if let Button::Keyboard(key) = button {
                 match key {
+                    Key::Return => gameboy.press(JoypadButton::Start),
                     Key::Left => gameboy.press(JoypadButton::Left),
                     Key::Right => gameboy.press(JoypadButton::Right),
                     Key::Space => gameboy.reset(),
@@ -66,6 +69,7 @@ fn main() {
         if let Some(button) = e.release_args() {
             if let Button::Keyboard(key) = button {
                 match key {
+                    Key::Return => gameboy.unpress(JoypadButton::Start),
                     Key::Left => gameboy.unpress(JoypadButton::Left),
                     Key::Right => gameboy.unpress(JoypadButton::Right),
                     _ => (),
