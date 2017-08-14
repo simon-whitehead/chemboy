@@ -305,6 +305,7 @@ impl Cpu {
                 0x7F => self.bit_7_a(),
                 0x86 => self.res_0_hl(interconnect),
                 0x87 => self.res_0_a(),
+                0xBE => self.res_7_hl(interconnect),
                 0xFE => self.set_7_hl(interconnect),
                 _ => {
                     return Err(format!(
@@ -1158,6 +1159,13 @@ impl Cpu {
         let addr = self.registers.get_hl();
         let val = interconnect.read_u8(addr);
         let r = val & !0x01;
+        interconnect.write_u8(addr, r);
+    }
+
+    fn res_7_hl(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_hl();
+        let val = interconnect.read_u8(addr);
+        let r = val & !0x80;
         interconnect.write_u8(addr, r);
     }
 
