@@ -294,6 +294,7 @@ impl Cpu {
                 0x37 => self.swap_a(),
                 0x3F => self.srl_a(),
                 0x40 => self.bit_0_b(),
+                0x46 => self.bit_0_hl(interconnect),
                 0x50 => self.bit_2_b(),
                 0x58 => self.bit_3_b(),
                 0x60 => self.bit_4_b(),
@@ -456,6 +457,15 @@ impl Cpu {
         } else {
             0x00
         };
+        self.registers.flags.zero = bit == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = true;
+    }
+
+    fn bit_0_hl(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_hl();
+        let val = interconnect.read_u8(addr);
+        let bit = if val & 0x01 == 0x01 { 0x01 } else { 0x00 };
         self.registers.flags.zero = bit == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = true;
