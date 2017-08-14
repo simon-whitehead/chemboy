@@ -4,7 +4,7 @@ use gameboy::{Gpu, Irq, Memory, Timer};
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
 use gameboy::frame::Frame;
 use gameboy::irq::Interrupt;
-use gameboy::joypad::{InputLine, Joypad, JoypadButton};
+use gameboy::joypad::{Joypad, JoypadButton};
 use super::memory_map::{self, Address};
 
 const MAIN_MEM_SIZE: usize = 0x2000;
@@ -73,6 +73,7 @@ impl Interconnect {
     pub fn step(&mut self, cycles: usize) -> Result<(), String> {
         self.gpu.step(&mut self.irq, cycles)?;
         self.timer.step(&mut self.irq, cycles)?;
+        self.joypad.step(&mut self.irq, cycles)?;
 
         Ok(())
     }
@@ -124,7 +125,7 @@ impl Interconnect {
             Address::Unused(_) => (),
             Address::Io(a) => {
                 match a {
-                    0x00 => self.joypad = Joypad::from_u8(byte),
+                    0x00 => self.joypad.from_u8(byte, &mut self.irq),
                     0x01...0x02 => (), // println!("err: write to serial driver not supported"),
                     0x04...0x07 => self.timer.write_u8(a, byte),
                     0x0F => self.irq.request_flag = byte,
@@ -160,7 +161,7 @@ impl Interconnect {
             Address::Unused(_) => 0xFF, // Always return high
             Address::Io(a) => {
                 match a {
-                    0x00 => self.joypad.as_u8(),
+                    0x00 => self.joypad.data,
                     0x01...0x02 => {
                         // println!("err: read from serial driver not supported");
                         0

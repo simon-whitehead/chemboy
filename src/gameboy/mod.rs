@@ -21,7 +21,7 @@ pub use self::cpu::Cpu;
 pub use self::frame::Frame;
 pub use self::gameboy::GameBoy;
 pub use self::gpu::Gpu;
-pub use self::joypad::{InputLine, Joypad, JoypadButton};
+pub use self::joypad::{Joypad, JoypadButton};
 pub use self::memory::Memory;
 pub use self::interconnect::Interconnect;
 pub use self::irq::{Irq, Interrupt};
