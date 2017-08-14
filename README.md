@@ -9,7 +9,7 @@ A GameBoy (and hopefully in future, GameBoy Colour) emulator written in Rust.
 
 Here is the latest progress GIF. Currently, we can render Tetris and make it to the point where we actually want to start a game of Tetris.
 
-![Progress GIF](https://user-images.githubusercontent.com/2499070/29275851-e3439688-814f-11e7-8120-37298e224e7b.gif)
+![Progress GIF](https://user-images.githubusercontent.com/2499070/29277305-9e34a5aa-8154-11e7-8612-a0d0421069b5.gif)
 
 ### Project goals
 
