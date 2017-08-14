@@ -42,7 +42,7 @@ fn main() {
     let now = Instant::now();
 
     let opengl = OpenGL::V3_2;
-    let mut window: PistonWindow = WindowSettings::new(format!("gbrs: {}",
+    let mut window: PistonWindow = WindowSettings::new(format!("chemboy: {}",
                                                                gameboy.cart_details().game_title),
                                                        [160, 144])
         .exit_on_esc(true)
