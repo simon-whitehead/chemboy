@@ -3,7 +3,7 @@
 
 A GameBoy (and hopefully in future, GameBoy Colour) emulator written in Rust.
 
-This is very much a work in progress and can only render non-Gameboy Colour games. It can only render Tetris up to the main menu and slightly beyond before crashing. If you're looking for a proper working emulator, you've come to the wrong place :)
+**This is very much a work in progress** and can only render non-Gameboy Colour games. It can only render Tetris up to the main menu and slightly beyond before crashing. If you're looking for a proper working emulator, you've come to the wrong place :)
 
 ### Progress GIF
 
