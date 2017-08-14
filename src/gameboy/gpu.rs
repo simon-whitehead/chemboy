@@ -58,20 +58,6 @@ pub enum GpuMode {
 }
 
 impl GpuMode {
-    fn cycles(&self, scroll_x: u8) -> isize {
-        let scroll_adjust = match scroll_x % 0x08 {
-            5...7 => 2,
-            1...4 => 1,
-            _ => 0,
-        };
-        match *self {
-            GpuMode::SearchingRam => 21,
-            GpuMode::TransferringData => 43 + scroll_adjust,
-            GpuMode::HBlank => 50 - scroll_adjust,
-            GpuMode::VBlank => 114,
-        }
-    }
-
     fn to_u8(&self) -> u8 {
         match *self {
             GpuMode::HBlank => 0x00,
@@ -150,14 +136,14 @@ impl Gpu {
         let current_mode = self.mode.clone();
 
         if self.ly >= 0x90 {
-            self.switch_mode(GpuMode::VBlank, irq);
+            self.mode = GpuMode::VBlank;
         } else {
             if self.cycles >= 0x178 {
-                self.switch_mode(GpuMode::SearchingRam, irq);
+                self.mode = GpuMode::SearchingRam;
             } else if self.cycles >= 0xCC {
-                self.switch_mode(GpuMode::TransferringData, irq);
+                self.mode = GpuMode::TransferringData;
             } else {
-                self.switch_mode(GpuMode::HBlank, irq);
+                self.mode = GpuMode::HBlank;
             }
         }
 
@@ -191,46 +177,6 @@ impl Gpu {
                 self.render_scanline();
             }
         }
-
-        // match self.mode {
-        // GpuMode::HBlank => {
-        // self.ly += 0x01;
-        // if self.cycles >= 0xCC {
-        // self.cycles = 0x00;
-        // if self.ly >= 0x8F {
-        // self.frame = self.backbuffer.clone();
-        // self.switch_mode(GpuMode::VBlank, irq);
-        // } else {
-        // self.switch_mode(GpuMode::SearchingRam, irq);
-        // }
-        // self.render_scanline();
-        // }
-        // }
-        // GpuMode::TransferringData => {
-        // if self.cycles > 0xAC {
-        // self.cycles = 0x00;
-        // self.switch_mode(GpuMode::HBlank, irq);
-        // }
-        // }
-        // GpuMode::SearchingRam => {
-        // if self.cycles > 0x50 {
-        // self.cycles = 0x00;
-        // self.switch_mode(GpuMode::TransferringData, irq);
-        // }
-        // }
-        // GpuMode::VBlank => {
-        // self.ly += 0x01;
-        // irq.request(Interrupt::Vblank);
-        // if self.cycles >= 0x1C8 {
-        // self.cycles = 0x00;
-        // self.check_coincidence(irq);
-        // if self.ly > 0x99 {
-        // self.ly = 0;
-        // self.switch_mode(GpuMode::SearchingRam, irq);
-        // }
-        // }
-        // }
-        // }
 
         Ok(())
     }
@@ -394,13 +340,5 @@ impl Gpu {
         if self.lyc == self.ly && self.stat.coincidence_interrupt_enabled {
             irq.request(Interrupt::Lcd);
         }
-    }
-
-    fn switch_mode(&mut self, mode: GpuMode, irq: &mut Irq) {
-        // self.cycles += mode.cycles(self.scroll_x);
-        match mode {
-            _ => (),
-        }
-        self.mode = mode;
     }
 }
