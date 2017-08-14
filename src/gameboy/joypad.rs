@@ -34,7 +34,6 @@ impl Joypad {
             // 64hz
             self.cycles = 0x00;
             self.update(irq);
-            println!("Joypad: {:b}", self.data);
         }
 
 
