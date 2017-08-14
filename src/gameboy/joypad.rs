@@ -1,5 +1,6 @@
 use gameboy::irq::{Interrupt, Irq};
 
+#[derive(Debug)]
 pub enum JoypadButton {
     Down,
     Start,
@@ -33,6 +34,7 @@ impl Joypad {
             // 64hz
             self.cycles = 0x00;
             self.update(irq);
+            println!("Joypad: {:b}", self.data);
         }
 
 
@@ -44,10 +46,12 @@ impl Joypad {
 
         if d & 0x30 == 0x10 {
             // Directional buttons
-            d |= self.state & 0x0F;
+            let v = (self.state >> 0x04) & 0x0F;
+            d |= v;
         } else if d & 0x30 == 0x20 {
             // Non-directional buttons
-            d |= self.state & 0x0F;
+            let v = self.state & 0x0F;
+            d |= v;
         } else if d & 0x30 == 0x30 {
             // Both ...
             d |= 0x0F;
@@ -65,21 +69,29 @@ impl Joypad {
         self.update(irq);
     }
 
-    pub fn press(&mut self, b: JoypadButton) {
+    pub fn unpress(&mut self, b: JoypadButton) {
         match b {
-            JoypadButton::Down | JoypadButton::Start => self.state |= 0x08,
-            JoypadButton::Up | JoypadButton::Select => self.state |= 0x04,
-            JoypadButton::Left | JoypadButton::B => self.state |= 0x02,
-            JoypadButton::Right | JoypadButton::A => self.state |= 0x01,
+            JoypadButton::Down => self.state |= 0x08,
+            JoypadButton::Start => self.state |= 0x80,
+            JoypadButton::Up => self.state |= 0x04,
+            JoypadButton::Select => self.state |= 0x40,
+            JoypadButton::Left => self.state |= 0x02,
+            JoypadButton::B => self.state |= 0x20,
+            JoypadButton::Right => self.state |= 0x01,
+            JoypadButton::A => self.state |= 0x10,
         }
     }
 
-    pub fn unpress(&mut self, b: JoypadButton) {
+    pub fn press(&mut self, b: JoypadButton) {
         match b {
-            JoypadButton::Down | JoypadButton::Start => self.state &= !0x08,
-            JoypadButton::Up | JoypadButton::Select => self.state &= !0x04,
-            JoypadButton::Left | JoypadButton::B => self.state &= !0x02,
-            JoypadButton::Right | JoypadButton::A => self.state &= !0x01,
+            JoypadButton::Down => self.state &= !0x08,
+            JoypadButton::Start => self.state &= !0x80,
+            JoypadButton::Up => self.state &= !0x04,
+            JoypadButton::Select => self.state &= !0x40,
+            JoypadButton::Left => self.state &= !0x02,
+            JoypadButton::B => self.state &= !0x20,
+            JoypadButton::Right => self.state &= !0x01,
+            JoypadButton::A => self.state &= !0x10,
         }
     }
 }
