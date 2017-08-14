@@ -303,6 +303,7 @@ impl Cpu {
                 0x6F => self.bit_5_a(),
                 0x70 => self.bit_6_b(),
                 0x77 => self.bit_6_a(),
+                0x78 => self.bit_7_b(),
                 0x7C => self.bit_7_h(),
                 0x7E => self.bit_7_hl(interconnect),
                 0x7F => self.bit_7_a(),
@@ -563,6 +564,17 @@ impl Cpu {
 
     fn bit_7_a(&mut self) {
         let bit = if self.registers.a & 0x80 == 0x80 {
+            0x01
+        } else {
+            0x00
+        };
+        self.registers.flags.zero = bit == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = true;
+    }
+
+    fn bit_7_b(&mut self) {
+        let bit = if self.registers.b & 0x80 == 0x80 {
             0x01
         } else {
             0x00
