@@ -11,7 +11,7 @@ const MAIN_MEM_SIZE: usize = 0x2000;
 const ZRAM_SIZE: usize = 0x80;
 const MMAP_SIZE: usize = 0x80;
 
-const boot_rom: &'static [u8] = include_bytes!("boot_rom_with_jump.gb");
+const BOOT_ROM: &'static [u8] = include_bytes!("boot_rom.gb");
 
 pub struct Interconnect {
     pub booting: bool,
@@ -61,8 +61,8 @@ impl Interconnect {
     }
 
     fn init_boot_rom() -> Memory {
-        let mut mem = Memory::new(boot_rom.len());
-        mem.write_bytes(0x00, &boot_rom);
+        let mut mem = Memory::new(BOOT_ROM.len());
+        mem.write_bytes(0x00, &BOOT_ROM);
         mem
     }
 
