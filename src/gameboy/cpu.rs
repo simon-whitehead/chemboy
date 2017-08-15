@@ -10,9 +10,7 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn new(gameboy_color: bool) -> Cpu {
-        Cpu {
-            registers: registers::Registers::new(gameboy_color),
-        }
+        Cpu { registers: registers::Registers::new(gameboy_color) }
     }
 
     pub fn reset(&mut self, interconnect: &mut Interconnect) {
@@ -227,6 +225,7 @@ impl Cpu {
                 0x7D => self.ld_a_l(),
                 0x7E => self.ld_a_hl(interconnect),
                 0x80 => self.add_a_b(),
+                0x82 => self.add_a_d(),
                 0x85 => self.add_a_l(),
                 0x87 => self.add_a_a(),
                 0x89 => self.adc_a_c(),
@@ -277,28 +276,23 @@ impl Cpu {
                 0xFB => self.ei(interconnect),
                 0xFE => self.cp_n(&operand),
                 _ => {
-                    return Err(format!(
-                        "Could not match opcode: {:02X} at offset: {:04X}",
-                        opcode.code,
-                        self.registers.pc
-                    ))
+                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
+                                       opcode.code,
+                                       self.registers.pc))
                 }
             }
 
             return Ok(cycles);
         }
 
-        Err(format!(
-            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-            byte,
-            self.registers.pc
-        ))
+        Err(format!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+                    byte,
+                    self.registers.pc))
     }
 
-    pub fn handle_extended_opcode(
-        &mut self,
-        interconnect: &mut Interconnect,
-    ) -> Result<u8, String> {
+    pub fn handle_extended_opcode(&mut self,
+                                  interconnect: &mut Interconnect)
+                                  -> Result<u8, String> {
         let byte = interconnect.read_u8(self.registers.pc);
 
         if let Some(opcode) = OpCode::from_byte(byte, true) {
@@ -332,22 +326,18 @@ impl Cpu {
                 0xBE => self.res_7_hl(interconnect),
                 0xFE => self.set_7_hl(interconnect),
                 _ => {
-                    return Err(format!(
-                        "Could not match opcode: {:02X} at offset: {:04X}",
-                        opcode.code,
-                        self.registers.pc
-                    ))
+                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
+                                       opcode.code,
+                                       self.registers.pc))
                 }
             }
 
             return Ok(opcode.cycles + 0x01);
         }
 
-        Err(format!(
-            "Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
-            byte,
-            self.registers.pc
-        ))
+        Err(format!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
+                    byte,
+                    self.registers.pc))
     }
 
     fn adc_a_c(&mut self) {
@@ -362,8 +352,8 @@ impl Cpu {
             .wrapping_add(self.registers.c)
             .wrapping_add(carry);
 
-        self.registers.flags.half_carry =
-            (self.registers.a & 0x0F) < (self.registers.c & 0x0F) + carry;
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
+                                          (self.registers.c & 0x0F) + carry;
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.c + carry);
@@ -386,6 +376,18 @@ impl Cpu {
     fn add_a_b(&mut self) {
         let a1 = self.registers.a;
         let a2 = self.registers.b;
+
+        self.registers.a = a1.wrapping_add(a2);
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = ((a1 & 0x0F) + (a2 & 0x0F)) & 0x10 == 0x10;
+        self.registers.flags.carry = (a1 as u16) + (a2 as u16) > 0xFF;
+    }
+
+    fn add_a_d(&mut self) {
+        let a1 = self.registers.a;
+        let a2 = self.registers.d;
 
         self.registers.a = a1.wrapping_add(a2);
 
@@ -1334,8 +1336,8 @@ impl Cpu {
             .wrapping_sub(self.registers.d)
             .wrapping_sub(carry);
 
-        self.registers.flags.half_carry =
-            (self.registers.a & 0x0F) < (self.registers.d & 0x0F) + carry;
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
+                                          (self.registers.d & 0x0F) + carry;
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.d + carry);

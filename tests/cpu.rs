@@ -51,6 +51,21 @@ mod tests {
     }
 
     #[test]
+    fn add_a_d() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x82]);
+
+        cpu.registers.a = 0xAA;
+        cpu.registers.d = 0x04;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xAE, cpu.registers.a);
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(false, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+        assert_eq!(false, cpu.registers.flags.carry);
+    }
+
+    #[test]
     fn add_a_imm8() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xC6 0xFF]);
 
@@ -1556,7 +1571,7 @@ mod tests {
         let mut cpu = Cpu::new(false);
         let mut interconnect = Interconnect::with_cart(cart);
 
-        //cpu.set_initial_values(&mut interconnect);
+        // cpu.set_initial_values(&mut interconnect);
         interconnect.booting = false;
 
         (cpu, interconnect)
