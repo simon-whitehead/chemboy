@@ -169,6 +169,7 @@ impl Cpu {
                 0x18 => self.jp_imm8(&operand),
                 0x19 => self.add_hl_de(),
                 0x1A => self.ld_a_de(interconnect),
+                0x1B => self.dec_de(),
                 0x1C => self.inc_e(),
                 0x1D => self.dec_e(),
                 0x1E => self.ld_e_imm8(&operand),
@@ -676,6 +677,11 @@ impl Cpu {
     fn dec_bc(&mut self) {
         let val = self.registers.get_bc().wrapping_sub(0x01);
         self.registers.set_bc(val);
+    }
+
+    fn dec_de(&mut self) {
+        let val = self.registers.get_de().wrapping_sub(0x01);
+        self.registers.set_de(val);
     }
 
     fn dec_c(&mut self) {
