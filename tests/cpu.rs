@@ -419,6 +419,16 @@ mod tests {
 
     #[test]
     fn dec_hl() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x2B]);
+
+        cpu.registers.set_hl(0x33);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x32, cpu.registers.get_hl());
+    }
+
+    #[test]
+    fn dec_hl_ptr() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x35]);
 
         cpu.registers.set_hl(0xC003);
