@@ -1095,7 +1095,7 @@ static OPCODES: [OpCode; 128] = [
 
 // EXTENDED OPCODES (all prefixed with 0xCB)
 
-static EXT_OPCODES: [OpCode; 22] = [
+static EXT_OPCODES: [OpCode; 23] = [
     OpCode {
         code: 0x11,
         mnemonic: "RL C",
@@ -1131,6 +1131,14 @@ static EXT_OPCODES: [OpCode; 22] = [
     OpCode {
         code: 0x40,
         mnemonic: "BIT 0, B",
+        length: 1,
+        cycles: 8,
+        argument_type: ArgumentType::Implied,
+        extended: true,
+    },
+    OpCode {
+        code: 0x41,
+        mnemonic: "BIT 0, C",
         length: 1,
         cycles: 8,
         argument_type: ArgumentType::Implied,
