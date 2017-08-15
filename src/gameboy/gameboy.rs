@@ -43,4 +43,8 @@ impl GameBoy {
     pub fn unpress(&mut self, button: JoypadButton) {
         self.interconnect.unpress(button);
     }
+
+    pub fn set_speed(&mut self, speed: cpu::CpuSpeed) {
+        self.cpu.speed = speed;
+    }
 }

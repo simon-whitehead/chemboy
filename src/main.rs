@@ -17,7 +17,7 @@ use std::time::Instant;
 
 pub mod gameboy;
 
-use gameboy::{Cartridge, Frame, JoypadButton};
+use gameboy::{Cartridge, CpuSpeed, Frame, JoypadButton};
 
 fn main() {
     let matches = App::new("gameboy-rs")
@@ -55,6 +55,7 @@ fn main() {
         if let Some(button) = e.press_args() {
             if let Button::Keyboard(key) = button {
                 match key {
+                    Key::Space => gameboy.set_speed(CpuSpeed::Double),
                     Key::A => gameboy.press(JoypadButton::A),
                     Key::S => gameboy.press(JoypadButton::B),
                     Key::Return => gameboy.press(JoypadButton::Start),
@@ -62,7 +63,7 @@ fn main() {
                     Key::Right => gameboy.press(JoypadButton::Right),
                     Key::Up => gameboy.press(JoypadButton::Up),
                     Key::Down => gameboy.press(JoypadButton::Down),
-                    Key::Space => gameboy.reset(),
+                    Key::Backspace => gameboy.reset(),
                     _ => (),
                 }
             }
@@ -70,6 +71,7 @@ fn main() {
         if let Some(button) = e.release_args() {
             if let Button::Keyboard(key) = button {
                 match key {
+                    Key::Space => gameboy.set_speed(CpuSpeed::Normal),
                     Key::A => gameboy.unpress(JoypadButton::A),
                     Key::S => gameboy.unpress(JoypadButton::B),
                     Key::Return => gameboy.unpress(JoypadButton::Start),

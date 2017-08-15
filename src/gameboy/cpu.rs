@@ -4,13 +4,22 @@ use gameboy::registers;
 use gameboy::{MAX_CPU_CYCLES, Interconnect, Interrupt};
 use gameboy::opcode::{OpCode, Operand, ArgumentType};
 
+pub enum CpuSpeed {
+    Normal,
+    Double,
+}
+
 pub struct Cpu {
     pub registers: registers::Registers,
+    pub speed: CpuSpeed,
 }
 
 impl Cpu {
     pub fn new(gameboy_color: bool) -> Cpu {
-        Cpu { registers: registers::Registers::new(gameboy_color) }
+        Cpu {
+            registers: registers::Registers::new(gameboy_color),
+            speed: CpuSpeed::Normal,
+        }
     }
 
     pub fn reset(&mut self, interconnect: &mut Interconnect) {
@@ -74,7 +83,7 @@ impl Cpu {
     pub fn cycle(&mut self, interconnect: &mut Interconnect) -> Result<(), String> {
         let mut cycles = 0;
 
-        while cycles < MAX_CPU_CYCLES {
+        while cycles < self.get_cycles_for_speed() {
             let c = self.step(interconnect)?;
             cycles += c as usize;
             interconnect.step(c as usize)?;
@@ -84,6 +93,13 @@ impl Cpu {
         }
 
         Ok(())
+    }
+
+    fn get_cycles_for_speed(&self) -> usize {
+        match self.speed {
+            CpuSpeed::Normal => MAX_CPU_CYCLES,
+            CpuSpeed::Double => MAX_CPU_CYCLES << 0x01,
+        }
     }
 
     pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) -> u8 {
