@@ -60,6 +60,8 @@ fn main() {
                     Key::Return => gameboy.press(JoypadButton::Start),
                     Key::Left => gameboy.press(JoypadButton::Left),
                     Key::Right => gameboy.press(JoypadButton::Right),
+                    Key::Up => gameboy.press(JoypadButton::Up),
+                    Key::Down => gameboy.press(JoypadButton::Down),
                     Key::Space => gameboy.reset(),
                     _ => (),
                 }
@@ -73,6 +75,8 @@ fn main() {
                     Key::Return => gameboy.unpress(JoypadButton::Start),
                     Key::Left => gameboy.unpress(JoypadButton::Left),
                     Key::Right => gameboy.unpress(JoypadButton::Right),
+                    Key::Up => gameboy.unpress(JoypadButton::Up),
+                    Key::Down => gameboy.unpress(JoypadButton::Down),
                     _ => (),
                 }
             }
