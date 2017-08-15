@@ -1218,6 +1218,17 @@ mod tests {
     }
 
     #[test]
+    fn or_d() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xB2]);
+
+        cpu.registers.a = 0x36;
+        cpu.registers.d = 0x77;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x77, cpu.registers.a);
+    }
+
+    #[test]
     fn or_imm8() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xF6 0xC3]);
 
