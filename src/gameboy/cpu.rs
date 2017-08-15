@@ -243,6 +243,7 @@ impl Cpu {
                 0xB0 => self.or_b(),
                 0xB1 => self.or_c(),
                 0xB2 => self.or_d(),
+                0xB9 => self.cp_c(),
                 0xBE => self.cp_hl(interconnect),
                 0xC0 => self.ret_nz(interconnect),
                 0xC1 => self.pop_bc(interconnect),
@@ -277,7 +278,7 @@ impl Cpu {
                 0xF6 => self.or_imm8(&operand),
                 0xFA => self.ld_a_imm16(&operand, interconnect),
                 0xFB => self.ei(interconnect),
-                0xFE => self.cp_n(&operand),
+                0xFE => self.cp_imm8(&operand),
                 _ => {
                     return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
                                        opcode.code,
@@ -663,7 +664,17 @@ impl Cpu {
         self.registers.flags.carry = self.registers.a < val;
     }
 
-    fn cp_n(&mut self, operand: &Operand) {
+    fn cp_c(&mut self) {
+        let r = self.registers.a;
+        let result = r.wrapping_sub(self.registers.c);
+
+        self.registers.flags.zero = result == 0x00;
+        self.registers.flags.negative = true;
+        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
+        self.registers.flags.carry = self.registers.a < self.registers.c;
+    }
+
+    fn cp_imm8(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
         let r = self.registers.a;
         let result = r.wrapping_sub(val);

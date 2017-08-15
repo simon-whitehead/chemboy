@@ -340,7 +340,21 @@ mod tests {
     }
 
     #[test]
-    fn cp_n() {
+    fn cp_c() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xB9]);
+
+        cpu.registers.a = 0x3C;
+        cpu.registers.c = 0x3C;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(true, cpu.registers.flags.zero);
+        assert_eq!(false, cpu.registers.flags.half_carry);
+        assert_eq!(true, cpu.registers.flags.negative);
+        assert_eq!(false, cpu.registers.flags.carry);
+    }
+
+    #[test]
+    fn cp_imm8() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xFE 0x3C]);
 
         cpu.registers.a = 0x3C;
