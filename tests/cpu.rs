@@ -1533,6 +1533,12 @@ mod tests {
 
     fn create_cpu(rom: Vec<u8>) -> (Cpu, Interconnect) {
         let cart = Cartridge::with_rom(rom);
-        (Cpu::new(false), Interconnect::with_cart(cart))
+        let mut cpu = Cpu::new(false);
+        let mut interconnect = Interconnect::with_cart(cart);
+
+        //cpu.set_initial_values(&mut interconnect);
+        interconnect.booting = false;
+
+        (cpu, interconnect)
     }
 }
