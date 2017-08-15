@@ -1005,6 +1005,15 @@ mod tests {
     }
 
     #[test]
+    fn ld_h_imm8() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x26 0xA4]);
+
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xA4, cpu.registers.h);
+    }
+
+    #[test]
     fn ld_hl_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x77]);
 
