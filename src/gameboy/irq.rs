@@ -10,7 +10,7 @@ impl Irq {
     pub fn new() -> Irq {
         Irq {
             request_flag: 0x00,
-            enable_flag: 0x00,
+            enable_flag: 0x20,
             enabled: true,
         }
     }
@@ -32,6 +32,7 @@ impl Irq {
             Timer => self.request_flag |= 0x04,
             Serial => self.request_flag |= 0x08,
             Joypad => self.request_flag |= 0x10,
+            LoadGame => self.request_flag |= 0x20,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -45,6 +46,7 @@ impl Irq {
             Timer => self.request_flag &= !0x04,
             Serial => self.request_flag &= !0x08,
             Joypad => self.request_flag &= !0x10,
+            LoadGame => self.request_flag &= !0x20,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -58,6 +60,7 @@ impl Irq {
             Timer => self.request_flag & 0x04 == 0x04,
             Serial => self.request_flag & 0x08 == 0x08,
             Joypad => self.request_flag & 0x10 == 0x10,
+            LoadGame => self.request_flag & 0x20 == 0x20,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -71,6 +74,7 @@ impl Irq {
             Timer => self.enable_flag |= 0x04,
             Serial => self.enable_flag |= 0x08,
             Joypad => self.enable_flag |= 0x10,
+            LoadGame => self.enable_flag |= 0x20,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -84,6 +88,7 @@ impl Irq {
             Timer => self.enable_flag -= 0x04,
             Serial => self.enable_flag -= 0x08,
             Joypad => self.enable_flag -= 0x10,
+            LoadGame => self.enable_flag -= 0x20,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -97,6 +102,7 @@ impl Irq {
             Timer => self.enable_flag & 0x04 == 0x04,
             Serial => self.enable_flag & 0x08 == 0x08,
             Joypad => self.enable_flag & 0x10 == 0x10,
+            LoadGame => self.enable_flag & 0x20 == 0x20,
             _ => panic!("err: unsupported interrupt"),
         }
     }
@@ -110,4 +116,5 @@ pub enum Interrupt {
     Serial,
     OAM,
     Joypad,
+    LoadGame, // This is a custom interrupt for the custom boot rom
 }

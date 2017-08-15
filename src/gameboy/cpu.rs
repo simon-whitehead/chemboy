@@ -14,6 +14,12 @@ impl Cpu {
     }
 
     pub fn reset(&mut self, interconnect: &mut Interconnect) {
+        interconnect.reset();
+        self.set_initial_values(interconnect);
+        self.registers.pc = 0x00;
+    }
+
+    fn set_initial_values(&mut self, interconnect: &mut Interconnect) {
         self.registers.pc = 0x100;
         self.registers.set_af(0x01B0);
         self.registers.set_bc(0x0013);
@@ -72,13 +78,22 @@ impl Cpu {
             let c = self.step(interconnect)?;
             cycles += c as usize;
             interconnect.step(c as usize)?;
-            self.handle_interrupts(interconnect) as usize;
+            if self.handle_interrupts(interconnect) == 0xFF {
+                break;
+            }
         }
 
         Ok(())
     }
 
     pub fn handle_interrupts(&mut self, interconnect: &mut Interconnect) -> u8 {
+        // Always handle a LoadGame interrupt whether its enabled or not
+        if interconnect.irq.requested(&Interrupt::LoadGame) {
+            interconnect.irq.unrequest(Interrupt::LoadGame);
+            self.set_initial_values(interconnect);
+            return 0xFF;
+        }
+
         if !interconnect.irq.enabled {
             return 0x00;
         }
@@ -108,7 +123,6 @@ impl Cpu {
         }
 
         if interconnect.irq.should_handle(Interrupt::Joypad) {
-            println!("Joypad interrupt being handled right now");
             interconnect.irq.enabled = false;
             interconnect.irq.unrequest(Interrupt::Joypad);
             self.call(0x60, interconnect);

@@ -35,9 +35,8 @@ fn main() {
 
     let rom = matches.value_of("rom").unwrap();
     let rom_data = load_rom(rom).unwrap();
-    let is_bootrom = rom_data.len() < 0x10A;
     let cart = Cartridge::with_rom(rom_data);
-    let mut gameboy = gameboy::GameBoy::new(false, cart, is_bootrom);
+    let mut gameboy = gameboy::GameBoy::new(false, cart);
     println!("Loading game: {}", gameboy.cart_details().game_title);
     let now = Instant::now();
 

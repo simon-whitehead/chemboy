@@ -119,7 +119,13 @@ impl Flags {
 
     pub fn to_byte(&self) -> u8 {
         0x00 | (if self.zero { 0x80 } else { 0x00 }) | (if self.negative { 0x40 } else { 0x00 }) |
-            (if self.half_carry { 0x20 } else { 0x00 }) |
-            (if self.carry { 0x10 } else { 0x00 })
+        (if self.half_carry { 0x20 } else { 0x00 }) | (if self.carry { 0x10 } else { 0x00 })
+    }
+
+    pub fn dump(&self) {
+        println!("Z: {}", self.zero);
+        println!("N: {}", self.negative);
+        println!("H: {}", self.half_carry);
+        println!("C: {}", self.carry);
     }
 }

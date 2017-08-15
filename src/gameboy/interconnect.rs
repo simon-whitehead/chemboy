@@ -11,7 +11,11 @@ const MAIN_MEM_SIZE: usize = 0x2000;
 const ZRAM_SIZE: usize = 0x80;
 const MMAP_SIZE: usize = 0x80;
 
+const boot_rom: &'static [u8] = include_bytes!("boot_rom_with_jump.gb");
+
 pub struct Interconnect {
+    pub booting: bool,
+    pub boot_rom: Memory,
     pub gpu: Gpu,
     pub ram: Memory,
     pub zram: Memory,
@@ -20,13 +24,14 @@ pub struct Interconnect {
     pub irq: Irq,
     pub cart: Option<Cartridge>,
     pub interrupt: u8,
-    pub custom_logo: Vec<u8>,
     pub joypad: Joypad,
 }
 
 impl Interconnect {
     pub fn new() -> Interconnect {
         Interconnect {
+            booting: true,
+            boot_rom: Self::init_boot_rom(),
             gpu: Gpu::new(),
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
@@ -35,13 +40,14 @@ impl Interconnect {
             irq: Irq::new(),
             cart: None,
             interrupt: 0x00,
-            custom_logo: Vec::new(),
             joypad: Joypad::new(),
         }
     }
 
     pub fn with_cart(cart: Cartridge) -> Interconnect {
         Interconnect {
+            booting: true,
+            boot_rom: Self::init_boot_rom(),
             gpu: Gpu::new(),
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
@@ -50,24 +56,14 @@ impl Interconnect {
             irq: Irq::new(),
             cart: Some(cart),
             interrupt: 0x00,
-            custom_logo: Vec::new(),
             joypad: Joypad::new(),
         }
     }
 
-    pub fn with_cart_custom_logo(cart: Cartridge, logo: Vec<u8>) -> Interconnect {
-        Interconnect {
-            gpu: Gpu::new(),
-            ram: Memory::new(MAIN_MEM_SIZE),
-            zram: Memory::new(ZRAM_SIZE),
-            mmap_io: Memory::new(MMAP_SIZE),
-            timer: Timer::new(),
-            irq: Irq::new(),
-            cart: Some(cart),
-            interrupt: 0x00,
-            custom_logo: logo,
-            joypad: Joypad::new(),
-        }
+    fn init_boot_rom() -> Memory {
+        let mut mem = Memory::new(boot_rom.len());
+        mem.write_bytes(0x00, &boot_rom);
+        mem
     }
 
     pub fn step(&mut self, cycles: usize) -> Result<(), String> {
@@ -79,6 +75,7 @@ impl Interconnect {
     }
 
     pub fn reset(&mut self) {
+        self.booting = true;
         self.gpu.reset();
         self.timer.reset();
         self.irq.reset();
@@ -133,6 +130,12 @@ impl Interconnect {
                     0x30...0x3F => (), // println!("err: write to wave pattern RAM not supported"),
                     0x40...0x45 => self.gpu.write_u8(a, byte),
                     0x47...0x49 => self.gpu.write_u8(a, byte),
+                    0x50 => {
+                        if self.booting {
+                            self.booting = false;
+                            self.irq.request(Interrupt::LoadGame);
+                        }
+                    }
                     0x4A...0x4B => self.gpu.write_u8(a, byte),
                     0x7F => self.mmap_io.write_u8(a, byte),
                     _ => panic!("write memory mapped I/O in unsupported range: {:04X}", a),
@@ -152,7 +155,13 @@ impl Interconnect {
         match memory_map::map_address(addr) {
             Address::Ram(addr) => self.ram.read_u8(addr),
             Address::RamShadow(addr) => self.ram.read_u8(addr),
-            Address::CartRom(addr) => cart.rom.read_u8(addr),
+            Address::CartRom(addr) => {
+                if self.booting {
+                    self.boot_rom.read_u8(addr)
+                } else {
+                    cart.rom.read_u8(addr)
+                }
+            }
             Address::CartRomOtherBank(addr) => cart.rom.read_u8(addr),
             Address::Gfx(value) => self.gpu.ram.read_u8(value),
             Address::CartRam(a) => cart.ram.read_u8(a),
@@ -194,7 +203,13 @@ impl Interconnect {
         match memory_map::map_address(r.start) {
             Address::Ram(_) |
             Address::RamShadow(_) => self.ram.read_bytes(r),
-            Address::CartRom(_) |
+            Address::CartRom(_) => {
+                if self.booting && r.start < 0xE0 {
+                    self.boot_rom.read_bytes(r)
+                } else {
+                    cart.rom.read_bytes(r)
+                }
+            }
             Address::CartRomOtherBank(_) => cart.rom.read_bytes(r),
             Address::Gfx(_) => self.gpu.ram.read_bytes(r),
             Address::CartRam(_) => cart.ram.read_bytes(r),
@@ -221,7 +236,13 @@ impl Interconnect {
         match memory_map::map_address(addr) {
             Address::Ram(addr) => self.ram.read_u16(addr),
             Address::RamShadow(addr) => self.ram.read_u16(addr),
-            Address::CartRom(addr) |
+            Address::CartRom(addr) => {
+                if self.booting {
+                    self.boot_rom.read_u16(addr)
+                } else {
+                    cart.rom.read_u16(addr)
+                }
+            }
             Address::CartRomOtherBank(addr) => cart.rom.read_u16(addr),
             Address::Gfx(value) => self.gpu.ram.read_u16(value),
             Address::CartRam(a) => cart.ram.read_u16(a),

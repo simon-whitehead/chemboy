@@ -9,6 +9,7 @@ pub struct CartridgeDetails {
 }
 
 pub struct Cartridge {
+    rom_code_size: usize,
     pub rom: Memory,
     pub ram: Memory,
 }
@@ -16,6 +17,7 @@ pub struct Cartridge {
 impl Cartridge {
     pub fn new() -> Cartridge {
         Cartridge {
+            rom_code_size: 0x00,
             rom: Memory::new(CART_MEM_SIZE),
             ram: Memory::new(CART_RAM_SIZE),
         }
@@ -26,14 +28,14 @@ impl Cartridge {
         r.write_bytes(0x00, &rom);
 
         Cartridge {
+            rom_code_size: rom.len(),
             rom: r,
             ram: Memory::new(CART_RAM_SIZE),
         }
     }
 
     pub fn details(&self, interconnect: &Interconnect) -> CartridgeDetails {
-        CartridgeDetails {
-            game_title: String::from_utf8_lossy(interconnect.read_bytes(0x134..0x142)).into(),
-        }
+        let game_title = String::from_utf8_lossy(&self.rom[0x134..0x142]).into();
+        CartridgeDetails { game_title: game_title }
     }
 }
