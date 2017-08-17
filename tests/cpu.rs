@@ -1314,6 +1314,16 @@ mod tests {
     }
 
     #[test]
+    fn or_a() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xB7]);
+
+        cpu.registers.a = 0x36;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x36, cpu.registers.a);
+    }
+
+    #[test]
     fn or_b() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xB0]);
 
