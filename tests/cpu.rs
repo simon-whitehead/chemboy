@@ -1634,6 +1634,20 @@ mod tests {
     }
 
     #[test]
+    fn srl_b() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x38]);
+
+        cpu.registers.b = 0xFF;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x7F, cpu.registers.b);
+        assert_eq!(true, cpu.registers.flags.carry);
+        assert_eq!(false, cpu.registers.flags.zero);
+        assert_eq!(false, cpu.registers.flags.half_carry);
+        assert_eq!(false, cpu.registers.flags.negative);
+    }
+
+    #[test]
     fn sub_b() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x90]);
 

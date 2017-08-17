@@ -333,6 +333,7 @@ impl Cpu {
                 0x27 => self.sla_a(),
                 0x33 => self.swap_e(),
                 0x37 => self.swap_a(),
+                0x38 => self.srl_b(),
                 0x3F => self.srl_a(),
                 0x40 => self.bit_0_b(),
                 0x41 => self.bit_0_c(),
@@ -1537,6 +1538,16 @@ impl Cpu {
         self.registers.a = self.registers.a >> 0x01;
 
         self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
+    }
+
+    fn srl_b(&mut self) {
+        let carry = self.registers.b & 0x01 == 0x01;
+        self.registers.b = self.registers.b >> 0x01;
+
+        self.registers.flags.zero = self.registers.b == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
         self.registers.flags.carry = carry;
