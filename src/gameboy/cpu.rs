@@ -194,6 +194,7 @@ impl Cpu {
                 0x24 => self.inc_h(),
                 0x25 => self.dec_h(),
                 0x26 => self.ld_h_imm8(&operand),
+                0x27 => self.daa(),
                 0x28 => self.jr_z_imm8(&operand),
                 0x2A => self.ld_a_hli(interconnect),
                 0x2B => self.dec_hl(),
@@ -750,6 +751,30 @@ impl Cpu {
         self.registers.flags.negative = true;
         self.registers.flags.half_carry = (r & 0x0F) == 0x00;
         self.registers.flags.carry = self.registers.a < val;
+    }
+
+    fn daa(&mut self) {
+        let mut val = self.registers.a as u16;
+        if val & 0x0F > 0x09 || self.registers.flags.half_carry {
+            if self.registers.flags.negative {
+                val -= 0x06;
+            } else {
+                val += 0x06;
+            }
+        }
+
+        if val > 0x99 || self.registers.flags.carry {
+            if self.registers.flags.negative {
+                val -= 0x60;
+            } else {
+                val += 0x60;
+            }
+        }
+
+        self.registers.a = (val & 0xFF) as u8;
+        self.registers.flags.carry = val & 0x100 == 0x100;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.zero = (val & 0xFF) == 0x00;
     }
 
     fn dec_a(&mut self) {

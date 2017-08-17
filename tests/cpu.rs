@@ -419,6 +419,58 @@ mod tests {
     }
 
     #[test]
+    fn daa_add() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x3E 0x45 0x06 0x38 0x80 0x27]);
+        //                                              LD A,$45 -> LD B, $38, ADD A, B -> DAA
+
+        cpu.step(&mut interconnect);
+        cpu.step(&mut interconnect);
+        cpu.step(&mut interconnect);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x83, cpu.registers.a);
+    }
+
+    #[test]
+    fn daa_1() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x27]);
+
+        cpu.registers.a = 0xF3;
+        cpu.registers.flags.half_carry = true;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x59, cpu.registers.a);
+        assert_eq!(true, cpu.registers.flags.carry);
+    }
+
+    #[test]
+    fn daa_2() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x27]);
+
+        cpu.registers.a = 0x8F;
+        cpu.registers.flags.half_carry = true;
+        cpu.registers.flags.negative = true;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x89, cpu.registers.a);
+        assert_eq!(true, cpu.registers.flags.negative);
+    }
+
+    #[test]
+    fn daa_3() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x27]);
+
+        cpu.registers.a = 0xFF;
+        cpu.registers.flags.carry = true;
+        cpu.registers.flags.half_carry = true;
+        cpu.registers.flags.negative = true;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x99, cpu.registers.a);
+        assert_eq!(true, cpu.registers.flags.negative);
+    }
+
+    #[test]
     fn dec_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x3D]);
 
