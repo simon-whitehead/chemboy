@@ -188,6 +188,7 @@ impl Cpu {
                 0x1C => self.inc_e(),
                 0x1D => self.dec_e(),
                 0x1E => self.ld_e_imm8(&operand),
+                0x1F => self.rra(),
                 0x20 => self.jr_nz_imm8(&operand),
                 0x21 => self.ld_hl_imm16(&operand),
                 0x22 => self.ld_hli_a(interconnect),
@@ -1495,6 +1496,20 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
         self.registers.flags.zero = self.registers.c == 0x00;
+    }
+
+    fn rra(&mut self) {
+        let original_carry = if self.registers.flags.carry {
+            0x80
+        } else {
+            0x00
+        };
+        self.registers.flags.carry = self.registers.a & 0x01 == 0x01;
+        self.registers.a = (self.registers.a >> 0x01) | original_carry;
+
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.zero = self.registers.a == 0x00;
     }
 
     fn rr_c(&mut self) {

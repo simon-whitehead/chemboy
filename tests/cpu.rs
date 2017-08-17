@@ -1579,6 +1579,18 @@ mod tests {
     }
 
     #[test]
+    fn rra() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x1F]);
+
+        cpu.registers.a = 0x81;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x40, cpu.registers.a);
+        assert_eq!(true, cpu.registers.flags.carry);
+        assert_eq!(false, cpu.registers.flags.zero);
+    }
+
+    #[test]
     fn rr_c() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x19]);
 
