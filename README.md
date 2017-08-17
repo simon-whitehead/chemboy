@@ -9,7 +9,7 @@ A GameBoy (and hopefully in future, GameBoy Colour) emulator written in Rust.
 
 Here is the latest progress GIF. Currently, we have a custom boot rom that runs before any ROM. We can also render Tetris and make it to the point where we actually want to start a game of Tetris.
 
-![Progress GIF](https://user-images.githubusercontent.com/2499070/29320733-8e8888ca-821b-11e7-9f7b-5289830e7195.gif)
+![chemboy-progress-17-08-2017](https://user-images.githubusercontent.com/2499070/29411349-d27b52c4-8397-11e7-917b-571ae1925bea.gif)
 
 ### Project goals
 
