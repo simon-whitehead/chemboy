@@ -204,6 +204,7 @@ impl Cpu {
                 0x30 => self.jr_nc_imm8(&operand),
                 0x31 => self.ld_sp_imm16(&operand),
                 0x32 => self.ld_hld_a(interconnect),
+                0x33 => self.inc_sp(),
                 0x34 => self.inc_hl_ptr(interconnect),
                 0x35 => self.dec_hl_ptr(interconnect),
                 0x36 => self.ld_hl_imm8(&operand, interconnect),
@@ -923,6 +924,10 @@ impl Cpu {
         self.registers.flags.zero = self.registers.l == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+    }
+
+    fn inc_sp(&mut self) {
+        self.registers.sp += 0x01;
     }
 
     fn jp_hl(&mut self) {
