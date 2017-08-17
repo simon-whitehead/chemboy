@@ -326,6 +326,7 @@ impl Cpu {
             match opcode.code {
                 0x11 => self.rl_c(),
                 0x27 => self.sla_a(),
+                0x33 => self.swap_e(),
                 0x37 => self.swap_a(),
                 0x3F => self.srl_a(),
                 0x40 => self.bit_0_b(),
@@ -1537,6 +1538,16 @@ impl Cpu {
         let result = (self.registers.a >> 4) | (self.registers.a << 4);
 
         self.registers.a = result;
+        self.registers.flags.zero = result == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
+    }
+
+    fn swap_e(&mut self) {
+        let result = (self.registers.e >> 4) | (self.registers.e << 4);
+
+        self.registers.e = result;
         self.registers.flags.zero = result == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;

@@ -1611,6 +1611,16 @@ mod tests {
     }
 
     #[test]
+    fn swap_e() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0x33]);
+
+        cpu.registers.e = 0xC3;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x3C, cpu.registers.e);
+    }
+
+    #[test]
     fn xor_a() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAF]);
 
