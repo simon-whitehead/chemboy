@@ -340,6 +340,7 @@ impl Cpu {
                 0x58 => self.bit_3_b(),
                 0x5F => self.bit_3_a(),
                 0x60 => self.bit_4_b(),
+                0x61 => self.bit_4_c(),
                 0x68 => self.bit_5_b(),
                 0x6F => self.bit_5_a(),
                 0x70 => self.bit_6_b(),
@@ -595,6 +596,17 @@ impl Cpu {
 
     fn bit_4_b(&mut self) {
         let bit = if self.registers.b & 0x10 == 0x10 {
+            0x01
+        } else {
+            0x00
+        };
+        self.registers.flags.zero = bit == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = true;
+    }
+
+    fn bit_4_c(&mut self) {
+        let bit = if self.registers.c & 0x10 == 0x10 {
             0x01
         } else {
             0x00
