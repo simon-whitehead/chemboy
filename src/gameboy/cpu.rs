@@ -250,6 +250,7 @@ impl Cpu {
                 0x80 => self.add_a_b(),
                 0x82 => self.add_a_d(),
                 0x85 => self.add_a_l(),
+                0x86 => self.add_a_hl_ptr(interconnect),
                 0x87 => self.add_a_a(),
                 0x89 => self.adc_a_c(),
                 0x90 => self.sub_b(),
@@ -424,6 +425,18 @@ impl Cpu {
     fn add_a_d(&mut self) {
         let a1 = self.registers.a;
         let a2 = self.registers.d;
+
+        self.registers.a = a1.wrapping_add(a2);
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = ((a1 & 0x0F) + (a2 & 0x0F)) & 0x10 == 0x10;
+        self.registers.flags.carry = (a1 as u16) + (a2 as u16) > 0xFF;
+    }
+
+    fn add_a_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let a1 = self.registers.a;
+        let a2 = interconnect.read_u8(self.registers.get_hl());
 
         self.registers.a = a1.wrapping_add(a2);
 
