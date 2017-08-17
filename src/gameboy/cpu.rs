@@ -201,6 +201,7 @@ impl Cpu {
                 0x2D => self.dec_l(),
                 0x2E => self.ld_l_imm8(&operand),
                 0x2F => self.cpl(),
+                0x30 => self.jr_nc_imm8(&operand),
                 0x31 => self.ld_sp_imm16(&operand),
                 0x32 => self.ld_hld_a(interconnect),
                 0x34 => self.inc_hl_ptr(interconnect),
@@ -296,28 +297,23 @@ impl Cpu {
                 0xFB => self.ei(interconnect),
                 0xFE => self.cp_imm8(&operand),
                 _ => {
-                    return Err(format!(
-                        "Could not match opcode: {:02X} at offset: {:04X}",
-                        opcode.code,
-                        self.registers.pc
-                    ))
+                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
+                                       opcode.code,
+                                       self.registers.pc))
                 }
             }
 
             return Ok(cycles);
         }
 
-        Err(format!(
-            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-            byte,
-            self.registers.pc
-        ))
+        Err(format!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+                    byte,
+                    self.registers.pc))
     }
 
-    pub fn handle_extended_opcode(
-        &mut self,
-        interconnect: &mut Interconnect,
-    ) -> Result<u8, String> {
+    pub fn handle_extended_opcode(&mut self,
+                                  interconnect: &mut Interconnect)
+                                  -> Result<u8, String> {
         let byte = interconnect.read_u8(self.registers.pc);
 
         if let Some(opcode) = OpCode::from_byte(byte, true) {
@@ -355,22 +351,18 @@ impl Cpu {
                 0xBE => self.res_7_hl(interconnect),
                 0xFE => self.set_7_hl(interconnect),
                 _ => {
-                    return Err(format!(
-                        "Could not match opcode: {:02X} at offset: {:04X}",
-                        opcode.code,
-                        self.registers.pc
-                    ))
+                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
+                                       opcode.code,
+                                       self.registers.pc))
                 }
             }
 
             return Ok(opcode.cycles + 0x01);
         }
 
-        Err(format!(
-            "Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
-            byte,
-            self.registers.pc
-        ))
+        Err(format!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
+                    byte,
+                    self.registers.pc))
     }
 
     fn adc_a_c(&mut self) {
@@ -385,8 +377,8 @@ impl Cpu {
             .wrapping_add(self.registers.c)
             .wrapping_add(carry);
 
-        self.registers.flags.half_carry =
-            (self.registers.a & 0x0F) < (self.registers.c & 0x0F) + carry;
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
+                                          (self.registers.c & 0x0F) + carry;
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.c + carry);
@@ -967,6 +959,14 @@ impl Cpu {
         }
     }
 
+    fn jr_nc_imm8(&mut self, operand: &Operand) {
+        let offset = operand.unwrap_imm8();
+
+        if !self.registers.flags.carry {
+            self.relative_jump(offset);
+        }
+    }
+
     fn jr_nz_imm8(&mut self, operand: &Operand) {
         let offset = operand.unwrap_imm8();
 
@@ -1446,8 +1446,8 @@ impl Cpu {
             .wrapping_sub(self.registers.d)
             .wrapping_sub(carry);
 
-        self.registers.flags.half_carry =
-            (self.registers.a & 0x0F) < (self.registers.d & 0x0F) + carry;
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
+                                          (self.registers.d & 0x0F) + carry;
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.d + carry);
