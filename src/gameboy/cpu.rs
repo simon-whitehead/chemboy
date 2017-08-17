@@ -269,6 +269,7 @@ impl Cpu {
                 0xC1 => self.pop_bc(interconnect),
                 0xC2 => self.jp_nz_imm16(&operand),
                 0xC3 => self.jp_imm16(&operand),
+                0xC4 => self.call_nz_imm16(&operand, interconnect),
                 0xC5 => self.push_bc(interconnect),
                 0xC6 => self.add_a_imm8(&operand),
                 0xC8 => self.ret_z(interconnect),
@@ -714,6 +715,13 @@ impl Cpu {
         self.registers.sp -= 0x02;
         interconnect.write_u16(self.registers.sp as u16, self.registers.pc);
         self.registers.pc = addr;
+    }
+
+    fn call_nz_imm16(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
+        if !self.registers.flags.zero {
+            let addr = operand.unwrap_imm16();
+            self.call(addr, interconnect);
+        }
     }
 
     fn cpl(&mut self) {
