@@ -259,6 +259,7 @@ impl Cpu {
                 0xA7 => self.and_a(),
                 0xA8 => self.xor_b(),
                 0xA9 => self.xor_c(),
+                0xAE => self.xor_hl_ptr(interconnect),
                 0xAF => self.xor_a(),
                 0xB0 => self.or_b(),
                 0xB1 => self.or_c(),
@@ -1635,6 +1636,15 @@ impl Cpu {
 
     fn xor_c(&mut self) {
         self.registers.a ^= self.registers.c;
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
+    }
+
+    fn xor_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.registers.a ^= val;
         self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;

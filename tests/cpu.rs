@@ -1724,6 +1724,18 @@ mod tests {
         assert_eq!(0, cpu.registers.a);
     }
 
+    #[test]
+    fn xor_hl_ptr() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xAE]);
+
+        cpu.registers.a = 0xFF;
+        cpu.registers.set_hl(0xC001);
+        interconnect.write_u8(0xC001, 0x3C);
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xC3, cpu.registers.a);
+    }
+
     fn create_cpu(rom: Vec<u8>) -> (Cpu, Interconnect) {
         let cart = Cartridge::with_rom(rom);
         let mut cpu = Cpu::new(false);
