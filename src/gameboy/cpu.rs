@@ -378,6 +378,7 @@ impl Cpu {
                 0x87 => self.res_0_a(),
                 0xBE => self.res_7_hl(interconnect),
                 0xD8 => self.set_3_b(),
+                0xF8 => self.set_7_b(),
                 0xFE => self.set_7_hl(interconnect),
                 _ => {
                     return Err(format!(
@@ -1612,6 +1613,10 @@ impl Cpu {
 
     fn set_3_b(&mut self) {
         self.registers.b |= 0x08;
+    }
+
+    fn set_7_b(&mut self) {
+        self.registers.b |= 0x80;
     }
 
     fn set_7_hl(&mut self, interconnect: &mut Interconnect) {
