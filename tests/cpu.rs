@@ -7,6 +7,20 @@ mod tests {
     use chemboy::gameboy::{Cartridge, Cpu, Interconnect};
 
     #[test]
+    fn adc_a_imm8() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCE 0x1E]);
+
+        cpu.registers.a = 0xE1;
+        cpu.registers.flags.carry = true;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0x00, cpu.registers.a);
+        assert_eq!(true, cpu.registers.flags.zero);
+        assert_eq!(true, cpu.registers.flags.half_carry);
+        assert_eq!(true, cpu.registers.flags.carry);
+    }
+
+    #[test]
     fn adc_a_c() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0x89]);
 
