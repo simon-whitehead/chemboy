@@ -1632,6 +1632,16 @@ mod tests {
     }
 
     #[test]
+    fn set_3_b() {
+        let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0xD8]);
+
+        cpu.registers.b = 0xF7;
+        cpu.step(&mut interconnect);
+
+        assert_eq!(0xFF, cpu.registers.b);
+    }
+
+    #[test]
     fn set_7_hl() {
         let (mut cpu, mut interconnect) = create_cpu(gb_asm![0xCB 0xFE]);
 
