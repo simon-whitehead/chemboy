@@ -317,6 +317,7 @@ impl Cpu {
                 0xF3 => self.di(interconnect),
                 0xF5 => self.push_af(interconnect),
                 0xF6 => self.or_imm8(&operand),
+                0xF9 => self.ld_sp_hl(),
                 0xFA => self.ld_a_imm16(&operand, interconnect),
                 0xFB => self.ei(interconnect),
                 0xFE => self.cp_imm8(&operand),
@@ -1391,6 +1392,10 @@ impl Cpu {
     fn ld_l_imm8(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
         self.registers.l = val;
+    }
+
+    fn ld_sp_hl(&mut self) {
+        self.registers.sp = self.registers.get_hl() as usize;
     }
 
     fn ld_sp_imm16(&mut self, operand: &Operand) {
