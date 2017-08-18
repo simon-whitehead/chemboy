@@ -305,6 +305,7 @@ impl Cpu {
                 0xD4 => self.call_nc_imm16(&operand, interconnect),
                 0xD5 => self.push_de(interconnect),
                 0xD6 => self.sub_imm8(&operand),
+                0xD8 => self.ret_c(interconnect),
                 0xD9 => self.reti(interconnect),
                 0xDA => self.jp_c_imm16(&operand),
                 0xDC => self.call_c_imm16(&operand, interconnect),
@@ -1590,6 +1591,14 @@ impl Cpu {
         self.registers.pc = addr;
 
         interconnect.irq.enabled = true;
+    }
+
+    fn ret_c(&mut self, interconnect: &mut Interconnect) {
+        if self.registers.flags.carry {
+            let addr = interconnect.read_u16(self.registers.sp as u16);
+            self.registers.sp += 0x02;
+            self.registers.pc = addr;
+        }
     }
 
     fn ret_nc(&mut self, interconnect: &mut Interconnect) {
