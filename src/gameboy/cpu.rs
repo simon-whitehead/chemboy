@@ -306,6 +306,7 @@ impl Cpu {
                 0xD4 => self.call_nc_imm16(&operand, interconnect),
                 0xD5 => self.push_de(interconnect),
                 0xD6 => self.sub_imm8(&operand),
+                0xD7 => self.call(0x10, interconnect),
                 0xD8 => self.ret_c(interconnect),
                 0xD9 => self.reti(interconnect),
                 0xDA => self.jp_c_imm16(&operand),
