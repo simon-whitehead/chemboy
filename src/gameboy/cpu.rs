@@ -304,6 +304,7 @@ impl Cpu {
                 0xD5 => self.push_de(interconnect),
                 0xD6 => self.sub_imm8(&operand),
                 0xD9 => self.reti(interconnect),
+                0xDA => self.jp_c_imm16(&operand),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE1 => self.pop_hl(interconnect),
                 0xE2 => self.ld_ff00_c_a(interconnect),
@@ -1060,6 +1061,12 @@ impl Cpu {
 
     fn inc_sp(&mut self) {
         self.registers.sp += 0x01;
+    }
+
+    fn jp_c_imm16(&mut self, operand: &Operand) {
+        if self.registers.flags.carry {
+            self.jp_imm16(operand);
+        }
     }
 
     fn jp_hl(&mut self) {
