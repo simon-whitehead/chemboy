@@ -1,3 +1,4 @@
+use gameboy;
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
 use gameboy::frame::{Color, Frame};
 
@@ -32,20 +33,20 @@ impl GpuStat {
 
     pub fn to_u8(&self, gpu: &Gpu) -> u8 {
         (if self.coincidence_interrupt_enabled {
-            0x40
-        } else {
-            0
-        }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
-        (if self.VBlank_interrupt_enabled {
-            0x10
-        } else {
-            0
-        }) |
-        (if self.HBlank_interrupt_enabled {
-            0x08
-        } else {
-            0
-        }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
+             0x40
+         } else {
+             0
+         }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
+            (if self.VBlank_interrupt_enabled {
+                 0x10
+             } else {
+                 0
+             }) |
+            (if self.HBlank_interrupt_enabled {
+                 0x08
+             } else {
+                 0
+             }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
     }
 }
 
@@ -196,22 +197,23 @@ impl Gpu {
     }
 
     fn render_background(&mut self, line: usize) {
-        let background_map_base_address = self.background_base;
-        let tile_base_address = self.tile_base;
+        let bg_base = self.background_base;
+        let tile_base = self.tile_base;
         let bg_map_row = (line / 0x08) as usize;
-        for i in 0..160 {
+        for i in 0..gameboy::SCREEN_WIDTH {
             let x = (i as u8).wrapping_add(self.scroll_x);
             let bg_map_col = (x / 8) as usize;
-            let raw_tile_number = self.ram[background_map_base_address +
-                                           (bg_map_row * 0x20 + bg_map_col)];
-            let t = if tile_base_address == 0x00 {
-                raw_tile_number as usize
-            } else {
-                128 + ((raw_tile_number as i8 as i16) + 128) as usize
-            };
+            let raw_tile_number =
+                self.ram[bg_base + (bg_map_row * 0x20 + bg_map_col)] as usize;
 
             let line_offset = (line % 0x08) << 0x01;
-            let tile_data_start = tile_base_address + (t * 0x10) + line_offset;
+
+            let tile_data_start = tile_base + (if tile_base == 0x00 {
+                raw_tile_number 
+            } else {
+                (raw_tile_number as i8 as i16 + 0x80) as usize
+            }) * 0x10 + line_offset;
+
             let x_shift = (x % 8).wrapping_sub(0x07).wrapping_mul(0xFF);
             let tile_data1 = (self.ram[tile_data_start] >> x_shift) & 0x01;
             let tile_data2 = (self.ram[tile_data_start + 0x01] >> x_shift) & 0x01;
@@ -245,8 +247,10 @@ impl Gpu {
                 let tile_data2 = (self.ram[tile_data_start as usize + 0x01] >> x_shift) & 0x01;
                 let total_row_data = (tile_data2 << 1) | tile_data1;
                 let color_value = total_row_data;
-                let c = self.get_sprite_color_for_byte(color_value as u8,
-                                                       ((attributes & 0x10) >> 0x04) as u8);
+                let c = self.get_sprite_color_for_byte(
+                    color_value as u8,
+                    ((attributes & 0x10) >> 0x04) as u8,
+                );
                 // White means transparent for Sprites, so ignore this pixel completely
                 if c.is_white() {
                     continue;
