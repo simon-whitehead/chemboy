@@ -295,6 +295,7 @@ impl Cpu {
                 0xCB => {
                     cycles = self.handle_extended_opcode(interconnect)?;
                 }
+                0xCC => self.call_z_imm16(&operand, interconnect),
                 0xCD => self.call(operand.unwrap_imm16(), interconnect),
                 0xCE => self.adc_a_imm8(&operand),
                 0xCF => self.call(0x08, interconnect),
@@ -803,7 +804,14 @@ impl Cpu {
     }
 
     fn call_nz_imm16(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
-        if !self.registers.flags.zero {
+        if self.registers.flags.zero == false {
+            let addr = operand.unwrap_imm16();
+            self.call(addr, interconnect);
+        }
+    }
+
+    fn call_z_imm16(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
+        if self.registers.flags.zero {
             let addr = operand.unwrap_imm16();
             self.call(addr, interconnect);
         }
