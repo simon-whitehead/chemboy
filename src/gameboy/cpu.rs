@@ -206,6 +206,7 @@ impl Cpu {
                 0x26 => self.ld_h_imm8(&operand),
                 0x27 => self.daa(),
                 0x28 => self.jr_z_imm8(&operand),
+                0x29 => self.add_hl_hl(),
                 0x2A => self.ld_a_hli(interconnect),
                 0x2B => self.dec_hl(),
                 0x2C => self.inc_l(),
@@ -527,6 +528,17 @@ impl Cpu {
 
         self.registers.set_hl(r);
         self.registers.flags.half_carry = ((hl & 0x0FFF) + (de & 0x0FFF)) & 0x1000 == 0x1000;
+        self.registers.flags.negative = false;
+        self.registers.flags.carry = r > 0xFFFF;
+    }
+
+    fn add_hl_hl(&mut self) {
+        let hl = self.registers.get_hl();
+
+        let r = hl.wrapping_add(hl);
+
+        self.registers.set_hl(r);
+        self.registers.flags.half_carry = ((hl & 0x0FFF) + (hl & 0x0FFF)) & 0x1000 == 0x1000;
         self.registers.flags.negative = false;
         self.registers.flags.carry = r > 0xFFFF;
     }
