@@ -64,7 +64,7 @@ impl OpCode {
     }
 }
 
-static OPCODES: [OpCode; 160] = [OpCode {
+static OPCODES: [OpCode; 163] = [OpCode {
                                      code: 0x00,
                                      mnemonic: "NOP",
                                      length: 1,
@@ -1241,6 +1241,14 @@ static OPCODES: [OpCode; 160] = [OpCode {
                                      extended: false,
                                  },
                                  OpCode {
+                                     code: 0xE7,
+                                     mnemonic: "RST 0x20",
+                                     length: 1,
+                                     cycles: 32,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
                                      code: 0xE9,
                                      mnemonic: "JP (HL)",
                                      length: 1,
@@ -1313,6 +1321,14 @@ static OPCODES: [OpCode; 160] = [OpCode {
                                      extended: false,
                                  },
                                  OpCode {
+                                     code: 0xF7,
+                                     mnemonic: "RST 0x30",
+                                     length: 1,
+                                     cycles: 32,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
                                      code: 0xF9,
                                      mnemonic: "LD SP, HL",
                                      length: 1,
@@ -1342,6 +1358,14 @@ static OPCODES: [OpCode; 160] = [OpCode {
                                      length: 2,
                                      cycles: 8,
                                      argument_type: ArgumentType::Imm8,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0xFF,
+                                     mnemonic: "RST 0x38",
+                                     length: 1,
+                                     cycles: 32,
+                                     argument_type: ArgumentType::Implied,
                                      extended: false,
                                  }];
 
