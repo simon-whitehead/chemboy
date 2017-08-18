@@ -348,6 +348,7 @@ impl Cpu {
                 0x11 => self.rl_c(),
                 0x19 => self.rr_c(),
                 0x1A => self.rr_d(),
+                0x1B => self.rr_e(),
                 0x27 => self.sla_a(),
                 0x33 => self.swap_e(),
                 0x37 => self.swap_a(),
@@ -1633,6 +1634,20 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
         self.registers.flags.zero = self.registers.d == 0x00;
+    }
+
+    fn rr_e(&mut self) {
+        let original_carry = if self.registers.flags.carry {
+            0x80
+        } else {
+            0x00
+        };
+        self.registers.flags.carry = self.registers.e & 0x01 == 0x01;
+        self.registers.e = (self.registers.e >> 0x01) | original_carry;
+
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.zero = self.registers.e == 0x00;
     }
 
     fn sbc_a_d(&mut self) {
