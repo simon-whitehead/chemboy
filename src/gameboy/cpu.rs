@@ -12,6 +12,7 @@ pub enum CpuSpeed {
 pub struct Cpu {
     pub registers: registers::Registers,
     pub speed: CpuSpeed,
+    pub halted: bool,
 }
 
 impl Cpu {
@@ -19,6 +20,7 @@ impl Cpu {
         Cpu {
             registers: registers::Registers::new(gameboy_color),
             speed: CpuSpeed::Normal,
+            halted: false,
         }
     }
 
@@ -29,6 +31,7 @@ impl Cpu {
     }
 
     pub fn set_initial_values(&mut self, interconnect: &mut Interconnect) {
+        self.halted = false;
         self.registers.pc = 0x100;
         self.registers.set_af(0x01B0);
         self.registers.set_bc(0x0013);
@@ -87,8 +90,8 @@ impl Cpu {
             let c = self.step(interconnect)?;
             cycles += c as usize;
             interconnect.step(c as usize)?;
-            if self.handle_interrupts(interconnect) == 0xFF {
-                break;
+            if self.handle_interrupts(interconnect) > 0x00 {
+                self.halted = false;
             }
         }
 
@@ -150,6 +153,11 @@ impl Cpu {
     }
 
     pub fn step(&mut self, interconnect: &mut Interconnect) -> Result<u8, String> {
+        // Do nothing if we're halted
+        if self.halted {
+            return Ok(0x01);
+        }
+
         let byte = interconnect.read_u8(self.registers.pc);
 
         if let Some(opcode) = OpCode::from_byte(byte, false) {
@@ -239,6 +247,7 @@ impl Cpu {
                 0x71 => self.ld_hl_c(interconnect),
                 0x72 => self.ld_hl_d(interconnect),
                 0x73 => self.ld_hl_e(interconnect),
+                0x76 => self.halt(),
                 0x77 => self.ld_hl_a(interconnect),
                 0x78 => self.ld_a_b(),
                 0x79 => self.ld_a_c(),
@@ -305,23 +314,28 @@ impl Cpu {
                 0xFB => self.ei(interconnect),
                 0xFE => self.cp_imm8(&operand),
                 _ => {
-                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
-                                       opcode.code,
-                                       self.registers.pc))
+                    return Err(format!(
+                        "Could not match opcode: {:02X} at offset: {:04X}",
+                        opcode.code,
+                        self.registers.pc
+                    ))
                 }
             }
 
             return Ok(cycles);
         }
 
-        Err(format!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-                    byte,
-                    self.registers.pc))
+        Err(format!(
+            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+            byte,
+            self.registers.pc
+        ))
     }
 
-    pub fn handle_extended_opcode(&mut self,
-                                  interconnect: &mut Interconnect)
-                                  -> Result<u8, String> {
+    pub fn handle_extended_opcode(
+        &mut self,
+        interconnect: &mut Interconnect,
+    ) -> Result<u8, String> {
         let byte = interconnect.read_u8(self.registers.pc);
 
         if let Some(opcode) = OpCode::from_byte(byte, true) {
@@ -363,18 +377,22 @@ impl Cpu {
                 0xBE => self.res_7_hl(interconnect),
                 0xFE => self.set_7_hl(interconnect),
                 _ => {
-                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
-                                       opcode.code,
-                                       self.registers.pc))
+                    return Err(format!(
+                        "Could not match opcode: {:02X} at offset: {:04X}",
+                        opcode.code,
+                        self.registers.pc
+                    ))
                 }
             }
 
             return Ok(opcode.cycles + 0x01);
         }
 
-        Err(format!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
-                    byte,
-                    self.registers.pc))
+        Err(format!(
+            "Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
+            byte,
+            self.registers.pc
+        ))
     }
 
     fn adc_a_c(&mut self) {
@@ -389,8 +407,8 @@ impl Cpu {
             .wrapping_add(self.registers.c)
             .wrapping_add(carry);
 
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
-                                          (self.registers.c & 0x0F) + carry;
+        self.registers.flags.half_carry =
+            (self.registers.a & 0x0F) < (self.registers.c & 0x0F) + carry;
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.c + carry);
@@ -899,6 +917,10 @@ impl Cpu {
 
     fn ei(&mut self, interconnect: &mut Interconnect) {
         interconnect.irq.enabled = true;
+    }
+
+    fn halt(&mut self) {
+        self.halted = true;
     }
 
     fn inc_a(&mut self) {
@@ -1565,8 +1587,8 @@ impl Cpu {
             .wrapping_sub(self.registers.d)
             .wrapping_sub(carry);
 
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
-                                          (self.registers.d & 0x0F) + carry;
+        self.registers.flags.half_carry =
+            (self.registers.a & 0x0F) < (self.registers.d & 0x0F) + carry;
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.d + carry);
