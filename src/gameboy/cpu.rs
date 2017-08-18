@@ -307,6 +307,7 @@ impl Cpu {
                 0xD6 => self.sub_imm8(&operand),
                 0xD9 => self.reti(interconnect),
                 0xDA => self.jp_c_imm16(&operand),
+                0xDC => self.call_c_imm16(&operand, interconnect),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE1 => self.pop_hl(interconnect),
                 0xE2 => self.ld_ff00_c_a(interconnect),
@@ -802,6 +803,13 @@ impl Cpu {
         self.registers.sp -= 0x02;
         interconnect.write_u16(self.registers.sp as u16, self.registers.pc);
         self.registers.pc = addr;
+    }
+
+    fn call_c_imm16(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
+        if self.registers.flags.carry {
+            let addr = operand.unwrap_imm16();
+            self.call(addr, interconnect);
+        }
     }
 
     fn call_nc_imm16(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
