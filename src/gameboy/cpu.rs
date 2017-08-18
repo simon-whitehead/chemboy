@@ -311,6 +311,7 @@ impl Cpu {
                 0xD9 => self.reti(interconnect),
                 0xDA => self.jp_c_imm16(&operand),
                 0xDC => self.call_c_imm16(&operand, interconnect),
+                0xDF => self.call(0x18, interconnect),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE1 => self.pop_hl(interconnect),
                 0xE2 => self.ld_ff00_c_a(interconnect),
