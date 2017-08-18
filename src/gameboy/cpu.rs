@@ -292,6 +292,7 @@ impl Cpu {
                     cycles = self.handle_extended_opcode(interconnect)?;
                 }
                 0xCD => self.call(operand.unwrap_imm16(), interconnect),
+                0xCF => self.call(0x08, interconnect),
                 0xD1 => self.pop_de(interconnect),
                 0xD5 => self.push_de(interconnect),
                 0xD6 => self.sub_imm8(&operand),
