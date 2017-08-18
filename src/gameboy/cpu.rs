@@ -176,6 +176,7 @@ impl Cpu {
                 0x05 => self.dec_b(),
                 0x06 => self.ld_b_imm8(&operand),
                 0x07 => self.rlca(),
+                0x08 => self.ld_imm16_ptr_sp(&operand, interconnect),
                 0x09 => self.add_hl_bc(),
                 0x0A => self.ld_a_bc(interconnect),
                 0x0B => self.dec_bc(),
@@ -1356,6 +1357,11 @@ impl Cpu {
     fn ld_imm16_a(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
         let addr = operand.unwrap_imm16();
         interconnect.write_u8(addr, self.registers.a);
+    }
+
+    fn ld_imm16_ptr_sp(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
+        let addr = operand.unwrap_imm16();
+        interconnect.write_u16(addr, self.registers.sp as u16);
     }
 
     fn ld_l_a(&mut self) {
