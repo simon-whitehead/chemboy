@@ -275,6 +275,7 @@ impl Cpu {
                 0xB0 => self.or_b(),
                 0xB1 => self.or_c(),
                 0xB2 => self.or_d(),
+                0xB6 => self.or_hl_ptr(interconnect),
                 0xB7 => self.or_a(),
                 0xB9 => self.cp_c(),
                 0xBE => self.cp_hl(interconnect),
@@ -1406,6 +1407,16 @@ impl Cpu {
 
     fn or_d(&mut self) {
         self.registers.a |= self.registers.d;
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
+    }
+
+    fn or_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.registers.a |= val;
 
         self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.negative = false;
