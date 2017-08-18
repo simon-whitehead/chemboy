@@ -357,6 +357,7 @@ impl Cpu {
                 0x40 => self.bit_0_b(),
                 0x41 => self.bit_0_c(),
                 0x46 => self.bit_0_hl(interconnect),
+                0x47 => self.bit_0_a(),
                 0x48 => self.bit_1_b(),
                 0x50 => self.bit_2_b(),
                 0x57 => self.bit_2_a(),
@@ -542,6 +543,17 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = true;
         self.registers.flags.carry = false;
+    }
+
+    fn bit_0_a(&mut self) {
+        let bit = if self.registers.a & 0x01 == 0x01 {
+            0x01
+        } else {
+            0x00
+        };
+        self.registers.flags.zero = bit == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = true;
     }
 
     fn bit_0_b(&mut self) {
