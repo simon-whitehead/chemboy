@@ -31,12 +31,16 @@ fn main() {
             .required(true)
             .help("Path to a Gameboy or Gameboy Color ROM")
             .takes_value(true))
+        .arg(Arg::with_name("DISABLE_BOOT_ROM")
+            .long("disable-boot-rom")
+            .help("Disables the boot rom"))
         .get_matches();
 
     let rom = matches.value_of("rom").unwrap();
+    let disable_boot_rom = matches.is_present("DISABLE_BOOT_ROM");
     let rom_data = load_rom(rom).unwrap();
     let cart = Cartridge::with_rom(rom_data);
-    let mut gameboy = gameboy::GameBoy::new(false, cart);
+    let mut gameboy = gameboy::GameBoy::new(false, cart, !disable_boot_rom);
     println!("Loading game: {}", gameboy.cart_details().game_title);
     let now = Instant::now();
 

@@ -31,7 +31,7 @@ impl Interconnect {
     pub fn new() -> Interconnect {
         Interconnect {
             booting: true,
-            boot_rom: Self::init_boot_rom(),
+            boot_rom: Self::init_boot_rom(true),
             gpu: Gpu::new(),
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
@@ -44,10 +44,10 @@ impl Interconnect {
         }
     }
 
-    pub fn with_cart(cart: Cartridge) -> Interconnect {
+    pub fn with_cart(cart: Cartridge, boot_rom_enabled: bool) -> Interconnect {
         Interconnect {
             booting: true,
-            boot_rom: Self::init_boot_rom(),
+            boot_rom: Self::init_boot_rom(boot_rom_enabled),
             gpu: Gpu::new(),
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
@@ -60,10 +60,22 @@ impl Interconnect {
         }
     }
 
-    fn init_boot_rom() -> Memory {
-        let mut mem = Memory::new(BOOT_ROM.len());
-        mem.write_bytes(0x00, &BOOT_ROM);
-        mem
+    fn init_boot_rom(boot_rom_enabled: bool) -> Memory {
+        if boot_rom_enabled {
+            let mut mem = Memory::new(BOOT_ROM.len());
+            mem.write_bytes(0x00, &BOOT_ROM);
+            mem
+        } else {
+            // This is:
+            //
+            // LD A, $01
+            // LD ($FF00+$32), A
+            //
+
+            let mut mem = Memory::new(0x04);
+            mem.write_bytes(0x00, &[0x3E, 0x01, 0xE0, 0x50]);
+            mem
+        }
     }
 
     pub fn step(&mut self, cycles: usize) -> Result<(), String> {
@@ -134,6 +146,8 @@ impl Interconnect {
                         if self.booting {
                             self.booting = false;
                             self.irq.request(Interrupt::LoadGame);
+                        } else {
+                            self.mmap_io.write_u8(a, byte);
                         }
                     }
                     0x4A...0x4B => self.gpu.write_u8(a, byte),
