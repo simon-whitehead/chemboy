@@ -38,10 +38,7 @@ impl Timer {
 
     pub fn read_u8(&self, addr: u16) -> u8 {
         match addr {
-            0x04 => {
-                println!("Reading DIV: {:02X}", self.div);
-                self.div
-            }
+            0x04 => self.div,
             0x05 => self.tima,
             0x06 => self.tma,
             0x07 => self.tac,

@@ -264,6 +264,7 @@ impl Cpu {
                 0x86 => self.add_a_hl_ptr(interconnect),
                 0x87 => self.add_a_a(),
                 0x89 => self.adc_a_c(),
+                0x8E => self.adc_a_hl_ptr(interconnect),
                 0x90 => self.sub_b(),
                 0x96 => self.sub_hl(interconnect),
                 0x97 => self.sub_a(),
@@ -427,6 +428,27 @@ impl Cpu {
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.c + carry);
+
+        self.registers.a = result as u8;
+    }
+
+    fn adc_a_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        let carry = if self.registers.flags.carry {
+            0x01
+        } else {
+            0x00
+        };
+
+        let result = self.registers
+            .a
+            .wrapping_add(val)
+            .wrapping_add(carry);
+
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) < (val & 0x0F) + carry;
+        self.registers.flags.negative = true;
+        self.registers.flags.zero = result & 0xFF == 0x00;
+        self.registers.flags.carry = self.registers.a & 0x0F < (val + carry);
 
         self.registers.a = result as u8;
     }
