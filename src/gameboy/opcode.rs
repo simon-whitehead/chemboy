@@ -64,7 +64,7 @@ impl OpCode {
     }
 }
 
-static OPCODES: [OpCode; 166] = [OpCode {
+static OPCODES: [OpCode; 170] = [OpCode {
                                      code: 0x00,
                                      mnemonic: "NOP",
                                      length: 1,
@@ -539,6 +539,38 @@ static OPCODES: [OpCode; 166] = [OpCode {
                                  OpCode {
                                      code: 0x41,
                                      mnemonic: "LD B, C",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x42,
+                                     mnemonic: "LD B, D",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x43,
+                                     mnemonic: "LD B, E",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x44,
+                                     mnemonic: "LD B, H",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x45,
+                                     mnemonic: "LD B, L",
                                      length: 1,
                                      cycles: 4,
                                      argument_type: ArgumentType::Implied,
