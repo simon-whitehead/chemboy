@@ -242,8 +242,13 @@ impl Cpu {
                 0x4D => self.ld_c_l(),
                 0x4E => self.ld_c_hl_ptr(interconnect),
                 0x4F => self.ld_c_a(),
+                0x50 => self.ld_d_b(),
+                0x51 => self.ld_d_c(),
+                0x52 => (),
+                0x53 => self.ld_d_e(),
                 0x54 => self.ld_d_h(),
-                0x56 => self.ld_d_hl(interconnect),
+                0x55 => self.ld_d_l(),
+                0x56 => self.ld_d_hl_ptr(interconnect),
                 0x57 => self.ld_d_a(),
                 0x5D => self.ld_e_l(),
                 0x5E => self.ld_e_hl(interconnect),
@@ -1354,11 +1359,27 @@ impl Cpu {
         self.registers.d = self.registers.a;
     }
 
+    fn ld_d_b(&mut self) {
+        self.registers.d = self.registers.b;
+    }
+
+    fn ld_d_c(&mut self) {
+        self.registers.d = self.registers.c;
+    }
+
+    fn ld_d_e(&mut self) {
+        self.registers.d = self.registers.e;
+    }
+
     fn ld_d_h(&mut self) {
         self.registers.d = self.registers.h;
     }
 
-    fn ld_d_hl(&mut self, interconnect: &mut Interconnect) {
+    fn ld_d_l(&mut self) {
+        self.registers.d = self.registers.l;
+    }
+
+    fn ld_d_hl_ptr(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         let val = interconnect.read_u8(addr);
         self.registers.d = val;
