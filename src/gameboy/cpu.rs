@@ -232,7 +232,7 @@ impl Cpu {
                 0x43 => self.ld_b_e(),
                 0x44 => self.ld_b_h(),
                 0x45 => self.ld_b_l(),
-                0x46 => self.ld_b_hl(interconnect),
+                0x46 => self.ld_b_hl_ptr(interconnect),
                 0x47 => self.ld_b_a(),
                 0x4E => self.ld_c_hl(interconnect),
                 0x4F => self.ld_c_a(),
@@ -1288,7 +1288,7 @@ impl Cpu {
         self.registers.b = self.registers.l;
     }
 
-    fn ld_b_hl(&mut self, interconnect: &mut Interconnect) {
+    fn ld_b_hl_ptr(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         let val = interconnect.read_u8(addr);
         self.registers.b = val;
