@@ -289,6 +289,7 @@ impl Cpu {
                 0x7C => self.ld_a_h(),
                 0x7D => self.ld_a_l(),
                 0x7E => self.ld_a_hl(interconnect),
+                0x7F => (),
                 0x80 => self.add_a_b(),
                 0x82 => self.add_a_d(),
                 0x85 => self.add_a_l(),
