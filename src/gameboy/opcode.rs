@@ -64,7 +64,7 @@ impl OpCode {
     }
 }
 
-static OPCODES: [OpCode; 186] = [OpCode {
+static OPCODES: [OpCode; 190] = [OpCode {
                                      code: 0x00,
                                      mnemonic: "NOP",
                                      length: 1,
@@ -805,6 +805,38 @@ static OPCODES: [OpCode; 186] = [OpCode {
                                      mnemonic: "LD H, D",
                                      length: 1,
                                      cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x63,
+                                     mnemonic: "LD H, E",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x64,
+                                     mnemonic: "LD H, H",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x65,
+                                     mnemonic: "LD H, L",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x66,
+                                     mnemonic: "LD H, (HL)",
+                                     length: 1,
+                                     cycles: 8,
                                      argument_type: ArgumentType::Implied,
                                      extended: false,
                                  },
