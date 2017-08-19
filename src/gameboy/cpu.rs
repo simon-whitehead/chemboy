@@ -344,6 +344,7 @@ impl Cpu {
                 0xD9 => self.reti(interconnect),
                 0xDA => self.jp_c_imm16(&operand),
                 0xDC => self.call_c_imm16(&operand, interconnect),
+                0xDE => self.sbc_a_imm8(&operand),
                 0xDF => self.call(0x18, interconnect),
                 0xE0 => self.ld_ff00_imm8_a(&operand, interconnect),
                 0xE1 => self.pop_hl(interconnect),
@@ -498,10 +499,11 @@ impl Cpu {
             .wrapping_add(val)
             .wrapping_add(carry);
 
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) < (val & 0x0F) + carry;
-        self.registers.flags.negative = true;
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) + (val & 0x0F) + carry > 0x0F;
+        self.registers.flags.negative = false;
         self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = self.registers.a & 0x0F < (val + carry);
+        self.registers.flags.carry = (self.registers.a as u16) + (val as u16) + (carry as u16) >
+                                     0xFF;
 
         self.registers.a = result as u8;
     }
@@ -926,10 +928,10 @@ impl Cpu {
         let r = self.registers.a;
         let result = r.wrapping_sub(val);
 
-        self.registers.flags.zero = result == 0x00;
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) < (val & 0x0F);
         self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
-        self.registers.flags.carry = self.registers.a < val;
+        self.registers.flags.zero = result & 0xFF == 0x00;
+        self.registers.flags.carry = (self.registers.a as u16) < (val as u16);
     }
 
     fn daa(&mut self) {
@@ -1892,6 +1894,27 @@ impl Cpu {
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
         self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.d + carry);
+
+        self.registers.a = result as u8;
+    }
+
+    fn sbc_a_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        let carry = if self.registers.flags.carry {
+            0x01
+        } else {
+            0x00
+        };
+
+        let result = self.registers
+            .a
+            .wrapping_sub(val)
+            .wrapping_sub(carry);
+
+        self.registers.flags.half_carry = (self.registers.a & 0x0F) < (val & 0x0F) + carry;
+        self.registers.flags.negative = true;
+        self.registers.flags.zero = result & 0xFF == 0x00;
+        self.registers.flags.carry = (self.registers.a as u16) < (val as u16) + carry as u16;
 
         self.registers.a = result as u8;
     }
