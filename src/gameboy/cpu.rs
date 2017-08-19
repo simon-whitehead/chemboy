@@ -274,12 +274,14 @@ impl Cpu {
                 0x6D => (),
                 0x6E => self.ld_l_hl(interconnect),
                 0x6F => self.ld_l_a(),
-                0x70 => self.ld_hl_b(interconnect),
-                0x71 => self.ld_hl_c(interconnect),
-                0x72 => self.ld_hl_d(interconnect),
-                0x73 => self.ld_hl_e(interconnect),
+                0x70 => self.ld_hl_ptr_b(interconnect),
+                0x71 => self.ld_hl_ptr_c(interconnect),
+                0x72 => self.ld_hl_ptr_d(interconnect),
+                0x73 => self.ld_hl_ptr_e(interconnect),
+                0x74 => self.ld_hl_ptr_h(interconnect),
+                0x75 => self.ld_hl_ptr_l(interconnect),
                 0x76 => self.halt(),
-                0x77 => self.ld_hl_a(interconnect),
+                0x77 => self.ld_hl_ptr_a(interconnect),
                 0x78 => self.ld_a_b(),
                 0x79 => self.ld_a_c(),
                 0x7A => self.ld_a_d(),
@@ -1491,29 +1493,39 @@ impl Cpu {
         self.registers.h = val;
     }
 
-    fn ld_hl_a(&mut self, interconnect: &mut Interconnect) {
+    fn ld_hl_ptr_a(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         interconnect.write_u8(addr, self.registers.a);
     }
 
-    fn ld_hl_b(&mut self, interconnect: &mut Interconnect) {
+    fn ld_hl_ptr_b(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         interconnect.write_u8(addr, self.registers.b);
     }
 
-    fn ld_hl_c(&mut self, interconnect: &mut Interconnect) {
+    fn ld_hl_ptr_c(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         interconnect.write_u8(addr, self.registers.c);
     }
 
-    fn ld_hl_d(&mut self, interconnect: &mut Interconnect) {
+    fn ld_hl_ptr_d(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         interconnect.write_u8(addr, self.registers.d);
     }
 
-    fn ld_hl_e(&mut self, interconnect: &mut Interconnect) {
+    fn ld_hl_ptr_e(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         interconnect.write_u8(addr, self.registers.e);
+    }
+
+    fn ld_hl_ptr_h(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_hl();
+        interconnect.write_u8(addr, self.registers.h);
+    }
+
+    fn ld_hl_ptr_l(&mut self, interconnect: &mut Interconnect) {
+        let addr = self.registers.get_hl();
+        interconnect.write_u8(addr, self.registers.l);
     }
 
     fn ld_hl_imm8(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
