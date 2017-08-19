@@ -227,6 +227,7 @@ impl Cpu {
                 0x3D => self.dec_a(),
                 0x3E => self.ld_a_imm8(&operand),
                 0x40 => (),
+                0x41 => self.ld_b_c(),
                 0x46 => self.ld_b_hl(interconnect),
                 0x47 => self.ld_b_a(),
                 0x4E => self.ld_c_hl(interconnect),
@@ -1261,6 +1262,10 @@ impl Cpu {
 
     fn ld_b_a(&mut self) {
         self.registers.b = self.registers.a;
+    }
+
+    fn ld_b_c(&mut self) {
+        self.registers.b = self.registers.c;
     }
 
     fn ld_b_hl(&mut self, interconnect: &mut Interconnect) {
