@@ -7,9 +7,11 @@ A GameBoy (and hopefully in future, GameBoy Colour) emulator written in Rust.
 
 ### Progress GIF
 
-Here is the latest progress GIF. We have Tetrominos! Unfortunately the emulator crashes once the Tetromino hits the bottom due to an unknown opcode. Also, it _always_ renders a square Tetromino for the moment. Tetris uses the `TIMA` register as a seed for randomly selecting a Tetromino - so proper testing of that is required.
+Here is the latest progress GIF. We have Tetrominos! We are able to play a game of Tetris until we want to start a new game.
 
-![chemboy-progress-17-08-2017](https://user-images.githubusercontent.com/2499070/29411349-d27b52c4-8397-11e7-917b-571ae1925bea.gif)
+The score seems to be a little bit bugged too the longer a game goes on - so that needs investigating.
+
+![chemboy-progress-19-08-2017](https://user-images.githubusercontent.com/2499070/29483787-32c5c180-84f3-11e7-9305-13dc4827759f.gif)
 
 ### Project goals
 
