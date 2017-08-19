@@ -5,6 +5,7 @@ pub struct Timer {
     tima: u8,
     tma: u8,
     tac: u8,
+    cycles: usize,
 }
 
 impl Timer {
@@ -14,6 +15,7 @@ impl Timer {
             tima: 0x00,
             tma: 0x00,
             tac: 0x00,
+            cycles: MAX_CPU_CYCLES / 0x1000,
         }
     }
 
@@ -22,10 +24,13 @@ impl Timer {
     }
 
     pub fn step(&mut self, irq: &mut Irq, cycles: usize) -> Result<(), String> {
+        // DIV register increments regardless
+        self.inc_div_register(cycles);
+
         if !self.enabled() {
             return Ok(());
         }
-        self.inc_div_register(cycles);
+
         self.inc_tima_register(irq, cycles);
 
         Ok(())
@@ -33,7 +38,10 @@ impl Timer {
 
     pub fn read_u8(&self, addr: u16) -> u8 {
         match addr {
-            0x04 => self.div,
+            0x04 => {
+                println!("Reading DIV: {:02X}", self.div);
+                self.div
+            }
             0x05 => self.tima,
             0x06 => self.tma,
             0x07 => self.tac,
@@ -56,36 +64,34 @@ impl Timer {
     }
 
     fn inc_div_register(&mut self, cycles: usize) {
-        let rate = MAX_CPU_CYCLES / 0x4000;
-        if cycles > rate {
-            self.div.wrapping_add(0x01);
+        self.div += cycles as u8;
+        if self.div >= 0xFF {
+            self.div = 0x00;
         }
     }
 
     fn inc_tima_register(&mut self, irq: &mut Irq, cycles: usize) {
-        let rate = self.get_timer_frequency();
-        if cycles > rate {
-            if self.tima == 0xFF {
-                self.tima = self.tma; // set the TIMA register to be whatever is in the modulo TMA register
-                irq.request(Interrupt::Timer); // it overflowed, request a timer interrupt
+        if self.enabled() {
+            self.cycles -= cycles;
+            if self.cycles < 0x00 {
+                self.set_timer_frequency();
+                if self.tima == 0xFF {
+                    self.tima = self.tma; // set the TIMA register to be whatever is in the modulo TMA register
+                    irq.request(Interrupt::Timer); // it overflowed, request a timer interrupt
+                }
+                self.tima.wrapping_add(0x01);
             }
-            self.tima.wrapping_add(0x01);
         }
     }
 
-    fn get_timer_frequency(&self) -> usize {
-        let enabled = self.tac & 0x04 == 0x04;
-        if !enabled {
-            0
-        } else {
-            let speed = self.tac & 0x03;
-            match speed {
-                0x00 => MAX_CPU_CYCLES / 0x1000,
-                0x01 => MAX_CPU_CYCLES / 0x40000,
-                0x02 => MAX_CPU_CYCLES / 0x10000,
-                0x03 => MAX_CPU_CYCLES / 0x4000,
-                _ => 0,
-            }
-        }
+    fn set_timer_frequency(&mut self) {
+        let speed = self.tac & 0x03;
+        self.cycles = match speed {
+            0x00 => MAX_CPU_CYCLES / 0x1000,
+            0x01 => MAX_CPU_CYCLES / 0x40000,
+            0x02 => MAX_CPU_CYCLES / 0x10000,
+            0x03 => MAX_CPU_CYCLES / 0x4000,
+            _ => 0,
+        };
     }
 }
