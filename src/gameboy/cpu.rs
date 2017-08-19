@@ -268,7 +268,10 @@ impl Cpu {
                 0x67 => self.ld_h_a(),
                 0x68 => self.ld_l_b(),
                 0x69 => self.ld_l_c(),
+                0x6A => self.ld_l_d(),
                 0x6B => self.ld_l_e(),
+                0x6C => self.ld_l_h(),
+                0x6D => (),
                 0x6E => self.ld_l_hl(interconnect),
                 0x6F => self.ld_l_a(),
                 0x70 => self.ld_hl_b(interconnect),
@@ -1560,8 +1563,16 @@ impl Cpu {
         self.registers.l = self.registers.c;
     }
 
+    fn ld_l_d(&mut self) {
+        self.registers.l = self.registers.d;
+    }
+
     fn ld_l_e(&mut self) {
         self.registers.l = self.registers.e;
+    }
+
+    fn ld_l_h(&mut self) {
+        self.registers.l = self.registers.h;
     }
 
     fn ld_l_hl(&mut self, interconnect: &mut Interconnect) {
