@@ -325,6 +325,7 @@ impl Cpu {
                 0x9C => self.sbc_a_h(),
                 0x9D => self.sbc_a_l(),
                 0x9E => self.sbc_a_hl_ptr(interconnect),
+                0x9F => self.sbc_a_a(),
                 0xA1 => self.and_c(),
                 0xA7 => self.and_a(),
                 0xA8 => self.xor_b(),
@@ -2113,6 +2114,11 @@ impl Cpu {
         self.registers.flags.carry = a & 0x0F < (b + carry);
 
         self.registers.a = result as u8;
+    }
+
+    fn sbc_a_a(&mut self) {
+        let a = self.registers.a;
+        self.sbc(a);
     }
 
     fn sbc_a_b(&mut self) {
