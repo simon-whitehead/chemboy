@@ -64,7 +64,7 @@ impl OpCode {
     }
 }
 
-static OPCODES: [OpCode; 221] = [OpCode {
+static OPCODES: [OpCode; 226] = [OpCode {
                                      code: 0x00,
                                      mnemonic: "NOP",
                                      length: 1,
@@ -1203,6 +1203,46 @@ static OPCODES: [OpCode; 221] = [OpCode {
                                  OpCode {
                                      code: 0x90,
                                      mnemonic: "SUB B",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x91,
+                                     mnemonic: "SUB C",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x92,
+                                     mnemonic: "SUB D",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x93,
+                                     mnemonic: "SUB E",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x94,
+                                     mnemonic: "SUB H",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0x95,
+                                     mnemonic: "SUB L",
                                      length: 1,
                                      cycles: 4,
                                      argument_type: ArgumentType::Implied,
