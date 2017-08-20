@@ -64,7 +64,7 @@ impl OpCode {
     }
 }
 
-static OPCODES: [OpCode; 206] = [OpCode {
+static OPCODES: [OpCode; 212] = [OpCode {
                                      code: 0x00,
                                      mnemonic: "NOP",
                                      length: 1,
@@ -1281,8 +1281,48 @@ static OPCODES: [OpCode; 206] = [OpCode {
                                      extended: false,
                                  },
                                  OpCode {
+                                     code: 0xB8,
+                                     mnemonic: "CP B",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
                                      code: 0xB9,
                                      mnemonic: "CP C",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0xBA,
+                                     mnemonic: "CP D",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0xBB,
+                                     mnemonic: "CP E",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0xBC,
+                                     mnemonic: "CP H",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0xBD,
+                                     mnemonic: "CP L",
                                      length: 1,
                                      cycles: 4,
                                      argument_type: ArgumentType::Implied,
@@ -1293,6 +1333,14 @@ static OPCODES: [OpCode; 206] = [OpCode {
                                      mnemonic: "CP (HL)",
                                      length: 1,
                                      cycles: 8,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0xBF,
+                                     mnemonic: "CP A",
+                                     length: 1,
+                                     cycles: 4,
                                      argument_type: ArgumentType::Implied,
                                      extended: false,
                                  },
