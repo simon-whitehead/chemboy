@@ -64,7 +64,7 @@ impl OpCode {
     }
 }
 
-static OPCODES: [OpCode; 233] = [OpCode {
+static OPCODES: [OpCode; 239] = [OpCode {
                                      code: 0x00,
                                      mnemonic: "NOP",
                                      length: 1,
@@ -1329,10 +1329,58 @@ static OPCODES: [OpCode; 233] = [OpCode {
                                      extended: false,
                                  },
                                  OpCode {
+                                     code: 0xA0,
+                                     mnemonic: "AND B",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
                                      code: 0xA1,
                                      mnemonic: "AND C",
                                      length: 1,
                                      cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0xA2,
+                                     mnemonic: "AND D",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0xA3,
+                                     mnemonic: "AND E",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0xA4,
+                                     mnemonic: "AND H",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0xA5,
+                                     mnemonic: "AND L",
+                                     length: 1,
+                                     cycles: 4,
+                                     argument_type: ArgumentType::Implied,
+                                     extended: false,
+                                 },
+                                 OpCode {
+                                     code: 0xA6,
+                                     mnemonic: "AND (HL)",
+                                     length: 1,
+                                     cycles: 8,
                                      argument_type: ArgumentType::Implied,
                                      extended: false,
                                  },

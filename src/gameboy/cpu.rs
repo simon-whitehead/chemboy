@@ -326,7 +326,13 @@ impl Cpu {
                 0x9D => self.sbc_a_l(),
                 0x9E => self.sbc_a_hl_ptr(interconnect),
                 0x9F => self.sbc_a_a(),
+                0xA0 => self.and_b(),
                 0xA1 => self.and_c(),
+                0xA2 => self.and_d(),
+                0xA3 => self.and_e(),
+                0xA4 => self.and_h(),
+                0xA5 => self.and_l(),
+                0xA6 => self.and_hl_ptr(interconnect),
                 0xA7 => self.and_a(),
                 0xA8 => self.xor_b(),
                 0xA9 => self.xor_c(),
@@ -726,8 +732,8 @@ impl Cpu {
         self.registers.sp += val as usize;
     }
 
-    fn and_a(&mut self) {
-        let r = self.registers.a & self.registers.a;
+    fn and(&mut self, b: u8) {
+        let r = self.registers.a & b;
 
         self.registers.a = r;
         self.registers.flags.zero = r == 0x00;
@@ -736,25 +742,49 @@ impl Cpu {
         self.registers.flags.carry = false;
     }
 
-    fn and_c(&mut self) {
-        let r = self.registers.a & self.registers.c;
+    fn and_a(&mut self) {
+        let a = self.registers.a;
+        self.and(a);
+    }
 
-        self.registers.a = r;
-        self.registers.flags.zero = r == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
-        self.registers.flags.carry = false;
+    fn and_b(&mut self) {
+        let b = self.registers.b;
+        self.and(b);
+    }
+
+    fn and_c(&mut self) {
+        let c = self.registers.c;
+        self.and(c);
+    }
+
+    fn and_d(&mut self) {
+        let d = self.registers.d;
+        self.and(d);
+    }
+
+    fn and_e(&mut self) {
+        let e = self.registers.e;
+        self.and(e);
+    }
+
+    fn and_h(&mut self) {
+        let h = self.registers.h;
+        self.and(h);
+    }
+
+    fn and_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.and(val);
     }
 
     fn and_imm8(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
-        let r = self.registers.a & val;
+        self.and(val);
+    }
 
-        self.registers.a = r;
-        self.registers.flags.zero = r == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
-        self.registers.flags.carry = false;
+    fn and_l(&mut self) {
+        let l = self.registers.l;
+        self.and(l);
     }
 
     fn bit_0_a(&mut self) {
