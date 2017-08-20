@@ -229,6 +229,7 @@ impl Cpu {
                 0x3C => self.inc_a(),
                 0x3D => self.dec_a(),
                 0x3E => self.ld_a_imm8(&operand),
+                0x3F => self.ccf(),
                 0x40 => (),
                 0x41 => self.ld_b_c(),
                 0x42 => self.ld_b_d(),
@@ -923,6 +924,12 @@ impl Cpu {
             let addr = operand.unwrap_imm16();
             self.call(addr, interconnect);
         }
+    }
+
+    fn ccf(&mut self) {
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = !self.registers.flags.carry;
     }
 
     fn cpl(&mut self) {
