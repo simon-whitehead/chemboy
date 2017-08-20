@@ -2011,7 +2011,7 @@ static OPCODES: [OpCode; 243] = [OpCode {
 
 // EXTENDED OPCODES (all prefixed with 0xCB)
 
-static EXT_OPCODES: [OpCode; 70] = [OpCode {
+static EXT_OPCODES: [OpCode; 78] = [OpCode {
                                         code: 0x00,
                                         mnemonic: "RLC B",
                                         length: 1,
@@ -2326,6 +2326,70 @@ static EXT_OPCODES: [OpCode; 70] = [OpCode {
                                     OpCode {
                                         code: 0x27,
                                         mnemonic: "SLA A",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x28,
+                                        mnemonic: "SRA B",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x29,
+                                        mnemonic: "SRA C",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x2A,
+                                        mnemonic: "SRA D",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x2B,
+                                        mnemonic: "SRA E",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x2C,
+                                        mnemonic: "SRA H",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x2D,
+                                        mnemonic: "SRA L",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x2E,
+                                        mnemonic: "SRA (HL)",
+                                        length: 1,
+                                        cycles: 16,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x2F,
+                                        mnemonic: "SRA A",
                                         length: 1,
                                         cycles: 8,
                                         argument_type: ArgumentType::Implied,

@@ -480,6 +480,14 @@ impl Cpu {
                 0x25 => self.sla_l(),
                 0x26 => self.sla_hl_ptr(interconnect),
                 0x27 => self.sla_a(),
+                0x28 => self.sra_b(),
+                0x29 => self.sra_c(),
+                0x2A => self.sra_d(),
+                0x2B => self.sra_e(),
+                0x2C => self.sra_h(),
+                0x2D => self.sra_l(),
+                0x2E => self.sra_hl_ptr(interconnect),
+                0x2F => self.sra_a(),
                 0x33 => self.swap_e(),
                 0x37 => self.swap_a(),
                 0x38 => self.srl_b(),
@@ -2570,6 +2578,58 @@ impl Cpu {
     fn sla_l(&mut self) {
         let l = self.registers.l;
         self.registers.l = self.sla(l);
+    }
+
+    fn sra(&mut self, mut b: u8) -> u8 {
+        let carry = if b & 0x01 == 0x01 { true } else { false };
+        b = b >> 0x01;
+
+        self.registers.flags.zero = b == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
+
+        b
+    }
+
+    fn sra_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.sra(a);
+    }
+
+    fn sra_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.sra(b);
+    }
+
+    fn sra_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.sra(c);
+    }
+
+    fn sra_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.sra(d);
+    }
+
+    fn sra_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.sra(e);
+    }
+
+    fn sra_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.sra(h);
+    }
+
+    fn sra_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.sra(val));
+    }
+
+    fn sra_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.sra(l);
     }
 
     fn srl_a(&mut self) {
