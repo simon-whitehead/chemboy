@@ -2011,7 +2011,7 @@ static OPCODES: [OpCode; 243] = [OpCode {
 
 // EXTENDED OPCODES (all prefixed with 0xCB)
 
-static EXT_OPCODES: [OpCode; 84] = [OpCode {
+static EXT_OPCODES: [OpCode; 90] = [OpCode {
                                         code: 0x00,
                                         mnemonic: "RLC B",
                                         length: 1,
@@ -2464,6 +2464,54 @@ static EXT_OPCODES: [OpCode; 84] = [OpCode {
                                         mnemonic: "SRL B",
                                         length: 1,
                                         cycles: 8,
+                                        argument_type: ArgumentType::Imm16,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x39,
+                                        mnemonic: "SRL C",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Imm16,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x3A,
+                                        mnemonic: "SRL D",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Imm16,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x3B,
+                                        mnemonic: "SRL E",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Imm16,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x3C,
+                                        mnemonic: "SRL H",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Imm16,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x3D,
+                                        mnemonic: "SRL L",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Imm16,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x3E,
+                                        mnemonic: "SRL (HL)",
+                                        length: 1,
+                                        cycles: 16,
                                         argument_type: ArgumentType::Imm16,
                                         extended: true,
                                     },
