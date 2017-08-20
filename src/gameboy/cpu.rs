@@ -354,6 +354,7 @@ impl Cpu {
                 0xE5 => self.push_hl(interconnect),
                 0xE6 => self.and_imm8(&operand),
                 0xE7 => self.call(0x20, interconnect),
+                0xE8 => self.add_sp_imm8(&operand),
                 0xE9 => self.jp_hl(),
                 0xEA => self.ld_imm16_a(&operand, interconnect),
                 0xEE => self.xor_a_imm8(&operand),
@@ -627,6 +628,11 @@ impl Cpu {
         self.registers.flags.half_carry = ((hl & 0x0FFF) + (sp & 0x0FFF)) & 0x1000 == 0x1000;
         self.registers.flags.negative = false;
         self.registers.flags.carry = r > 0xFFFF;
+    }
+
+    fn add_sp_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        self.registers.sp += val as usize;
     }
 
     fn and_a(&mut self) {
