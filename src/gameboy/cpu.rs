@@ -468,194 +468,83 @@ impl Cpu {
                     self.registers.pc))
     }
 
-    fn adc_a_a(&mut self) {
+    fn adc(&mut self, a: u8, b: u8) {
         let carry = if self.registers.flags.carry {
             0x01
         } else {
             0x00
         };
 
-        let result = self.registers
-            .a
-            .wrapping_add(self.registers.a)
+        let result = a.wrapping_add(b)
             .wrapping_add(carry);
 
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
-                                          (self.registers.a & 0x0F) + carry;
-        self.registers.flags.negative = true;
+        self.registers.flags.half_carry = (a & 0x0F) + (b & 0x0F) + carry > 0x0F;
+        self.registers.flags.negative = false;
         self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.a + carry);
+        self.registers.flags.carry = (a as u16) + (b as u16) + (carry as u16) > 0xFF;
 
         self.registers.a = result as u8;
+    }
+
+    fn adc_a_a(&mut self) {
+        let a = self.registers.a;
+        self.adc(a, a);
     }
 
     fn adc_a_b(&mut self) {
-        let carry = if self.registers.flags.carry {
-            0x01
-        } else {
-            0x00
-        };
+        let a = self.registers.a;
+        let b = self.registers.b;
 
-        let result = self.registers
-            .a
-            .wrapping_add(self.registers.b)
-            .wrapping_add(carry);
-
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
-                                          (self.registers.b & 0x0F) + carry;
-        self.registers.flags.negative = true;
-        self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.b + carry);
-
-        self.registers.a = result as u8;
+        self.adc(a, b);
     }
 
     fn adc_a_c(&mut self) {
-        let carry = if self.registers.flags.carry {
-            0x01
-        } else {
-            0x00
-        };
+        let a = self.registers.a;
+        let c = self.registers.c;
 
-        let result = self.registers
-            .a
-            .wrapping_add(self.registers.c)
-            .wrapping_add(carry);
-
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
-                                          (self.registers.c & 0x0F) + carry;
-        self.registers.flags.negative = true;
-        self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.c + carry);
-
-        self.registers.a = result as u8;
+        self.adc(a, c);
     }
 
     fn adc_a_d(&mut self) {
-        let carry = if self.registers.flags.carry {
-            0x01
-        } else {
-            0x00
-        };
+        let a = self.registers.a;
+        let d = self.registers.d;
 
-        let result = self.registers
-            .a
-            .wrapping_add(self.registers.d)
-            .wrapping_add(carry);
-
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
-                                          (self.registers.d & 0x0F) + carry;
-        self.registers.flags.negative = true;
-        self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.d + carry);
-
-        self.registers.a = result as u8;
+        self.adc(a, d);
     }
 
     fn adc_a_e(&mut self) {
-        let carry = if self.registers.flags.carry {
-            0x01
-        } else {
-            0x00
-        };
+        let a = self.registers.a;
+        let e = self.registers.e;
 
-        let result = self.registers
-            .a
-            .wrapping_add(self.registers.e)
-            .wrapping_add(carry);
-
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
-                                          (self.registers.e & 0x0F) + carry;
-        self.registers.flags.negative = true;
-        self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.e + carry);
-
-        self.registers.a = result as u8;
+        self.adc(a, e);
     }
 
     fn adc_a_h(&mut self) {
-        let carry = if self.registers.flags.carry {
-            0x01
-        } else {
-            0x00
-        };
+        let a = self.registers.a;
+        let h = self.registers.h;
 
-        let result = self.registers
-            .a
-            .wrapping_add(self.registers.h)
-            .wrapping_add(carry);
-
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
-                                          (self.registers.h & 0x0F) + carry;
-        self.registers.flags.negative = true;
-        self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.h + carry);
-
-        self.registers.a = result as u8;
+        self.adc(a, h);
     }
 
     fn adc_a_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let a = self.registers.a;
         let val = interconnect.read_u8(self.registers.get_hl());
-        let carry = if self.registers.flags.carry {
-            0x01
-        } else {
-            0x00
-        };
 
-        let result = self.registers
-            .a
-            .wrapping_add(val)
-            .wrapping_add(carry);
-
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) < (val & 0x0F) + carry;
-        self.registers.flags.negative = true;
-        self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = self.registers.a & 0x0F < (val + carry);
-
-        self.registers.a = result as u8;
+        self.adc(a, val);
     }
 
     fn adc_a_imm8(&mut self, operand: &Operand) {
+        let a = self.registers.a;
         let val = operand.unwrap_imm8();
-        let carry = if self.registers.flags.carry {
-            0x01
-        } else {
-            0x00
-        };
 
-        let result = self.registers
-            .a
-            .wrapping_add(val)
-            .wrapping_add(carry);
-
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) + (val & 0x0F) + carry > 0x0F;
-        self.registers.flags.negative = false;
-        self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = (self.registers.a as u16) + (val as u16) + (carry as u16) >
-                                     0xFF;
-
-        self.registers.a = result as u8;
+        self.adc(a, val);
     }
 
     fn adc_a_l(&mut self) {
-        let carry = if self.registers.flags.carry {
-            0x01
-        } else {
-            0x00
-        };
+        let a = self.registers.a;
+        let l = self.registers.l;
 
-        let result = self.registers
-            .a
-            .wrapping_add(self.registers.l)
-            .wrapping_add(carry);
-
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
-                                          (self.registers.l & 0x0F) + carry;
-        self.registers.flags.negative = true;
-        self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.l + carry);
-
-        self.registers.a = result as u8;
+        self.adc(a, l);
     }
 
     fn add_a_a(&mut self) {
