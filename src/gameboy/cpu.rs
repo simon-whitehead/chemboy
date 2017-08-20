@@ -318,7 +318,13 @@ impl Cpu {
                 0x95 => self.sub_l(),
                 0x96 => self.sub_hl(interconnect),
                 0x97 => self.sub_a(),
+                0x98 => self.sbc_a_b(),
+                0x99 => self.sbc_a_c(),
                 0x9A => self.sbc_a_d(),
+                0x9B => self.sbc_a_e(),
+                0x9C => self.sbc_a_h(),
+                0x9D => self.sbc_a_l(),
+                0x9E => self.sbc_a_hl_ptr(interconnect),
                 0xA1 => self.and_c(),
                 0xA7 => self.and_a(),
                 0xA8 => self.xor_b(),
@@ -2090,46 +2096,63 @@ impl Cpu {
         self.registers.flags.zero = self.registers.e == 0x00;
     }
 
-    fn sbc_a_d(&mut self) {
+    fn sbc(&mut self, b: u8) {
+        let a = self.registers.a;
         let carry = if self.registers.flags.carry {
             0x01
         } else {
             0x00
         };
 
-        let result = self.registers
-            .a
-            .wrapping_sub(self.registers.d)
+        let result = a.wrapping_sub(b)
             .wrapping_sub(carry);
 
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) <
-                                          (self.registers.d & 0x0F) + carry;
+        self.registers.flags.half_carry = (a & 0x0F) < (b & 0x0F) + carry;
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = self.registers.a & 0x0F < (self.registers.d + carry);
+        self.registers.flags.carry = a & 0x0F < (b + carry);
 
         self.registers.a = result as u8;
     }
 
+    fn sbc_a_b(&mut self) {
+        let b = self.registers.b;
+        self.sbc(b);
+    }
+
+    fn sbc_a_c(&mut self) {
+        let c = self.registers.c;
+        self.sbc(c);
+    }
+
+    fn sbc_a_d(&mut self) {
+        let d = self.registers.d;
+        self.sbc(d);
+    }
+
+    fn sbc_a_e(&mut self) {
+        let e = self.registers.e;
+        self.sbc(e);
+    }
+
+    fn sbc_a_h(&mut self) {
+        let h = self.registers.h;
+        self.sbc(h);
+    }
+
+    fn sbc_a_l(&mut self) {
+        let l = self.registers.l;
+        self.sbc(l);
+    }
+
+    fn sbc_a_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.sbc(val);
+    }
+
     fn sbc_a_imm8(&mut self, operand: &Operand) {
         let val = operand.unwrap_imm8();
-        let carry = if self.registers.flags.carry {
-            0x01
-        } else {
-            0x00
-        };
-
-        let result = self.registers
-            .a
-            .wrapping_sub(val)
-            .wrapping_sub(carry);
-
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) < (val & 0x0F) + carry;
-        self.registers.flags.negative = true;
-        self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = (self.registers.a as u16) < (val as u16) + carry as u16;
-
-        self.registers.a = result as u8;
+        self.sbc(val);
     }
 
     fn scf(&mut self) {
