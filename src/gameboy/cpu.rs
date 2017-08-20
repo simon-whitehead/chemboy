@@ -2174,6 +2174,7 @@ impl Cpu {
     fn rlca(&mut self) {
         let a = self.registers.a;
         self.registers.a = self.rlc(a);
+        self.registers.flags.zero = false;
     }
 
     fn rr(&mut self, mut b: u8) -> u8 {
@@ -2235,6 +2236,7 @@ impl Cpu {
     fn rra(&mut self) {
         let a = self.registers.a;
         self.registers.a = self.rr(a);
+        self.registers.flags.zero = false;
     }
 
     fn rrc(&mut self, mut b: u8) -> u8 {
@@ -2292,6 +2294,7 @@ impl Cpu {
     fn rrca(&mut self) {
         let a = self.registers.a;
         self.registers.a = self.rrc(a);
+        self.registers.flags.zero = false;
     }
 
     fn sbc(&mut self, b: u8) {
