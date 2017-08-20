@@ -2011,7 +2011,7 @@ static OPCODES: [OpCode; 243] = [OpCode {
 
 // EXTENDED OPCODES (all prefixed with 0xCB)
 
-static EXT_OPCODES: [OpCode; 43] = [OpCode {
+static EXT_OPCODES: [OpCode; 51] = [OpCode {
                                         code: 0x00,
                                         mnemonic: "RLC B",
                                         length: 1,
@@ -2070,6 +2070,70 @@ static EXT_OPCODES: [OpCode; 43] = [OpCode {
                                     OpCode {
                                         code: 0x07,
                                         mnemonic: "RLC A",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: false,
+                                    },
+                                    OpCode {
+                                        code: 0x08,
+                                        mnemonic: "RRC B",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: false,
+                                    },
+                                    OpCode {
+                                        code: 0x09,
+                                        mnemonic: "RRC C",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: false,
+                                    },
+                                    OpCode {
+                                        code: 0x0A,
+                                        mnemonic: "RRC D",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: false,
+                                    },
+                                    OpCode {
+                                        code: 0x0B,
+                                        mnemonic: "RRC E",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: false,
+                                    },
+                                    OpCode {
+                                        code: 0x0C,
+                                        mnemonic: "RRC H",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: false,
+                                    },
+                                    OpCode {
+                                        code: 0x0D,
+                                        mnemonic: "RRC L",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: false,
+                                    },
+                                    OpCode {
+                                        code: 0x0E,
+                                        mnemonic: "RRC (HL)",
+                                        length: 1,
+                                        cycles: 16,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: false,
+                                    },
+                                    OpCode {
+                                        code: 0x0F,
+                                        mnemonic: "RRC A",
                                         length: 1,
                                         cycles: 8,
                                         argument_type: ArgumentType::Implied,

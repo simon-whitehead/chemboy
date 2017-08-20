@@ -448,6 +448,14 @@ impl Cpu {
                 0x05 => self.rlc_l(),
                 0x06 => self.rlc_hl_ptr(interconnect),
                 0x07 => self.rlc_a(),
+                0x08 => self.rrc_b(),
+                0x09 => self.rrc_c(),
+                0x0A => self.rrc_d(),
+                0x0B => self.rrc_e(),
+                0x0C => self.rrc_h(),
+                0x0D => self.rrc_l(),
+                0x0E => self.rrc_hl_ptr(interconnect),
+                0x0F => self.rrc_a(),
                 0x11 => self.rl_c(),
                 0x19 => self.rr_c(),
                 0x1A => self.rr_d(),
@@ -2224,6 +2232,101 @@ impl Cpu {
         };
         self.registers.a = self.registers.a >> 0x01;
         self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
+    }
+
+    fn rrc_a(&mut self) {
+        self.rrca();
+    }
+
+    fn rrc_b(&mut self) {
+        let carry = if self.registers.b & 0x01 == 0x01 {
+            true
+        } else {
+            false
+        };
+        self.registers.b = self.registers.b >> 0x01;
+        self.registers.flags.zero = self.registers.b == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
+    }
+
+    fn rrc_c(&mut self) {
+        let carry = if self.registers.c & 0x01 == 0x01 {
+            true
+        } else {
+            false
+        };
+        self.registers.c = self.registers.c >> 0x01;
+        self.registers.flags.zero = self.registers.c == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
+    }
+
+    fn rrc_d(&mut self) {
+        let carry = if self.registers.d & 0x01 == 0x01 {
+            true
+        } else {
+            false
+        };
+        self.registers.d = self.registers.d >> 0x01;
+        self.registers.flags.zero = self.registers.d == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
+    }
+
+    fn rrc_e(&mut self) {
+        let carry = if self.registers.e & 0x01 == 0x01 {
+            true
+        } else {
+            false
+        };
+        self.registers.e = self.registers.e >> 0x01;
+        self.registers.flags.zero = self.registers.e == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
+    }
+
+    fn rrc_h(&mut self) {
+        let carry = if self.registers.h & 0x01 == 0x01 {
+            true
+        } else {
+            false
+        };
+        self.registers.h = self.registers.h >> 0x01;
+        self.registers.flags.zero = self.registers.h == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
+    }
+
+    fn rrc_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        let carry = if val & 0x01 == 0x01 { true } else { false };
+        let val = val >> 0x01;
+
+        interconnect.write_u8(self.registers.get_hl(), val);
+
+        self.registers.flags.zero = val == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
+    }
+
+    fn rrc_l(&mut self) {
+        let carry = if self.registers.l & 0x01 == 0x01 {
+            true
+        } else {
+            false
+        };
+        self.registers.l = self.registers.l >> 0x01;
+        self.registers.flags.zero = self.registers.l == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
         self.registers.flags.carry = carry;
