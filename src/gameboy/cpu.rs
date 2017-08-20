@@ -221,6 +221,7 @@ impl Cpu {
                 0x34 => self.inc_hl_ptr(interconnect),
                 0x35 => self.dec_hl_ptr(interconnect),
                 0x36 => self.ld_hl_imm8(&operand, interconnect),
+                0x37 => self.scf(),
                 0x38 => self.jr_c_imm8(&operand),
                 0x39 => self.add_hl_sp(),
                 0x3A => self.ld_a_hld(interconnect),
@@ -1961,6 +1962,12 @@ impl Cpu {
         self.registers.flags.carry = (self.registers.a as u16) < (val as u16) + carry as u16;
 
         self.registers.a = result as u8;
+    }
+
+    fn scf(&mut self) {
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = true;
     }
 
     fn set_3_b(&mut self) {
