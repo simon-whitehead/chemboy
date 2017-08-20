@@ -456,7 +456,14 @@ impl Cpu {
                 0x0D => self.rrc_l(),
                 0x0E => self.rrc_hl_ptr(interconnect),
                 0x0F => self.rrc_a(),
+                0x10 => self.rl_b(),
                 0x11 => self.rl_c(),
+                0x12 => self.rl_d(),
+                0x13 => self.rl_e(),
+                0x14 => self.rl_h(),
+                0x15 => self.rl_l(),
+                0x16 => self.rl_hl_ptr(interconnect),
+                0x17 => self.rl_a(),
                 0x19 => self.rr_c(),
                 0x1A => self.rr_d(),
                 0x1B => self.rr_e(),
@@ -2077,18 +2084,60 @@ impl Cpu {
         self.registers.flags.zero = false;
     }
 
-    fn rl_c(&mut self) {
+    fn rl(&mut self, mut b: u8) -> u8 {
         let original_carry = if self.registers.flags.carry {
             0x01
         } else {
             0x00
         };
-        self.registers.flags.carry = self.registers.c & 0x80 == 0x80;
-        self.registers.c = (self.registers.c << 0x01) | original_carry;
+        self.registers.flags.carry = b & 0x80 == 0x80;
+        b = (b << 0x01) | original_carry;
 
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
-        self.registers.flags.zero = self.registers.c == 0x00;
+        self.registers.flags.zero = b == 0x00;
+
+        b
+    }
+
+    fn rl_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.rl(a);
+    }
+
+    fn rl_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.rl(b);
+    }
+
+    fn rl_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.rl(c);
+    }
+
+    fn rl_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.rl(d);
+    }
+
+    fn rl_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.rl(e);
+    }
+
+    fn rl_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.rl(h);
+    }
+
+    fn rl_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.rl(val));
+    }
+
+    fn rl_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.rl(l);
     }
 
     fn rlc_a(&mut self) {
