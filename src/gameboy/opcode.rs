@@ -2011,7 +2011,7 @@ static OPCODES: [OpCode; 243] = [OpCode {
 
 // EXTENDED OPCODES (all prefixed with 0xCB)
 
-static EXT_OPCODES: [OpCode; 58] = [OpCode {
+static EXT_OPCODES: [OpCode; 63] = [OpCode {
                                         code: 0x00,
                                         mnemonic: "RLC B",
                                         length: 1,
@@ -2204,6 +2204,14 @@ static EXT_OPCODES: [OpCode; 58] = [OpCode {
                                         extended: true,
                                     },
                                     OpCode {
+                                        code: 0x18,
+                                        mnemonic: "RR B",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
                                         code: 0x19,
                                         mnemonic: "RR C",
                                         length: 1,
@@ -2222,6 +2230,38 @@ static EXT_OPCODES: [OpCode; 58] = [OpCode {
                                     OpCode {
                                         code: 0x1B,
                                         mnemonic: "RR E",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x1C,
+                                        mnemonic: "RR H",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x1D,
+                                        mnemonic: "RR L",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x1E,
+                                        mnemonic: "RR (HL)",
+                                        length: 1,
+                                        cycles: 16,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x1F,
+                                        mnemonic: "RR A",
                                         length: 1,
                                         cycles: 8,
                                         argument_type: ArgumentType::Implied,

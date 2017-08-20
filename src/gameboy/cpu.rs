@@ -464,9 +464,14 @@ impl Cpu {
                 0x15 => self.rl_l(),
                 0x16 => self.rl_hl_ptr(interconnect),
                 0x17 => self.rl_a(),
+                0x18 => self.rr_b(),
                 0x19 => self.rr_c(),
                 0x1A => self.rr_d(),
                 0x1B => self.rr_e(),
+                0x1C => self.rr_h(),
+                0x1D => self.rr_l(),
+                0x1E => self.rr_hl_ptr(interconnect),
+                0x1F => self.rr_a(),
                 0x27 => self.sla_a(),
                 0x33 => self.swap_e(),
                 0x37 => self.swap_a(),
@@ -2259,18 +2264,60 @@ impl Cpu {
         self.registers.flags.zero = self.registers.a == 0x00;
     }
 
-    fn rr_c(&mut self) {
+    fn rr(&mut self, mut b: u8) -> u8 {
         let original_carry = if self.registers.flags.carry {
             0x80
         } else {
             0x00
         };
-        self.registers.flags.carry = self.registers.c & 0x01 == 0x01;
-        self.registers.c = (self.registers.c >> 0x01) | original_carry;
+        self.registers.flags.carry = b & 0x01 == 0x01;
+        b = (b >> 0x01) | original_carry;
 
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
-        self.registers.flags.zero = self.registers.c == 0x00;
+        self.registers.flags.zero = b == 0x00;
+
+        b
+    }
+
+    fn rr_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.rr(a);
+    }
+
+    fn rr_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.rr(b);
+    }
+
+    fn rr_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.rr(c);
+    }
+
+    fn rr_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.rr(d);
+    }
+
+    fn rr_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.rr(e);
+    }
+
+    fn rr_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.rr(h);
+    }
+
+    fn rr_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.rr(val));
+    }
+
+    fn rr_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.rr(l);
     }
 
     fn rrca(&mut self) {
@@ -2379,34 +2426,6 @@ impl Cpu {
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
         self.registers.flags.carry = carry;
-    }
-
-    fn rr_d(&mut self) {
-        let original_carry = if self.registers.flags.carry {
-            0x80
-        } else {
-            0x00
-        };
-        self.registers.flags.carry = self.registers.d & 0x01 == 0x01;
-        self.registers.d = (self.registers.d >> 0x01) | original_carry;
-
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.zero = self.registers.d == 0x00;
-    }
-
-    fn rr_e(&mut self) {
-        let original_carry = if self.registers.flags.carry {
-            0x80
-        } else {
-            0x00
-        };
-        self.registers.flags.carry = self.registers.e & 0x01 == 0x01;
-        self.registers.e = (self.registers.e >> 0x01) | original_carry;
-
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.zero = self.registers.e == 0x00;
     }
 
     fn sbc(&mut self, b: u8) {
