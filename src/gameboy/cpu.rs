@@ -315,6 +315,9 @@ impl Cpu {
                 0xB0 => self.or_b(),
                 0xB1 => self.or_c(),
                 0xB2 => self.or_d(),
+                0xB3 => self.or_e(),
+                0xB4 => self.or_h(),
+                0xB5 => self.or_l(),
                 0xB6 => self.or_hl_ptr(interconnect),
                 0xB7 => self.or_a(),
                 0xB9 => self.cp_c(),
@@ -1691,6 +1694,33 @@ impl Cpu {
 
     fn or_d(&mut self) {
         self.registers.a |= self.registers.d;
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
+    }
+
+    fn or_e(&mut self) {
+        self.registers.a |= self.registers.e;
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
+    }
+
+    fn or_h(&mut self) {
+        self.registers.a |= self.registers.h;
+
+        self.registers.flags.zero = self.registers.a == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = false;
+    }
+
+    fn or_l(&mut self) {
+        self.registers.a |= self.registers.l;
 
         self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.negative = false;
