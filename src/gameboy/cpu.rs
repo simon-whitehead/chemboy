@@ -222,6 +222,7 @@ impl Cpu {
                 0x35 => self.dec_hl_ptr(interconnect),
                 0x36 => self.ld_hl_imm8(&operand, interconnect),
                 0x38 => self.jr_c_imm8(&operand),
+                0x39 => self.add_hl_sp(),
                 0x3A => self.ld_a_hld(interconnect),
                 0x3B => self.dec_sp(),
                 0x3C => self.inc_a(),
@@ -612,6 +613,18 @@ impl Cpu {
 
         self.registers.set_hl(r);
         self.registers.flags.half_carry = ((hl & 0x0FFF) + (hl & 0x0FFF)) & 0x1000 == 0x1000;
+        self.registers.flags.negative = false;
+        self.registers.flags.carry = r > 0xFFFF;
+    }
+
+    fn add_hl_sp(&mut self) {
+        let hl = self.registers.get_hl();
+        let sp = self.registers.sp as u16;
+
+        let r = hl.wrapping_add(sp);
+
+        self.registers.set_hl(r);
+        self.registers.flags.half_carry = ((hl & 0x0FFF) + (sp & 0x0FFF)) & 0x1000 == 0x1000;
         self.registers.flags.negative = false;
         self.registers.flags.carry = r > 0xFFFF;
     }
