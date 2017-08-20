@@ -591,9 +591,9 @@ impl Cpu {
         let r = hl.wrapping_add(bc);
 
         self.registers.set_hl(r);
-        self.registers.flags.half_carry = ((hl & 0x0FFF) + (bc & 0x0FFF)) & 0x1000 == 0x1000;
+        self.registers.flags.half_carry = ((hl & 0x07FF) + (bc & 0x07FF)) > 0x07FF;
         self.registers.flags.negative = false;
-        self.registers.flags.carry = r > 0xFFFF;
+        self.registers.flags.carry = hl > 0xFFFF - bc;
     }
 
     fn add_hl_de(&mut self) {
@@ -603,9 +603,9 @@ impl Cpu {
         let r = hl.wrapping_add(de);
 
         self.registers.set_hl(r);
-        self.registers.flags.half_carry = ((hl & 0x0FFF) + (de & 0x0FFF)) & 0x1000 == 0x1000;
+        self.registers.flags.half_carry = ((hl & 0x07FF) + (de & 0x07FF)) > 0x07FF;
         self.registers.flags.negative = false;
-        self.registers.flags.carry = r > 0xFFFF;
+        self.registers.flags.carry = hl > 0xFFFF - de;
     }
 
     fn add_hl_hl(&mut self) {
