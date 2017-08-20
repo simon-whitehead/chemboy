@@ -2594,7 +2594,7 @@ impl Cpu {
 
     fn sra(&mut self, mut b: u8) -> u8 {
         let carry = if b & 0x01 == 0x01 { true } else { false };
-        b = b >> 0x01;
+        b = ((b as i8) >> 0x01) as u8; // This cast preserves the sign bit for signed numbers
 
         self.registers.flags.zero = b == 0x00;
         self.registers.flags.negative = false;
