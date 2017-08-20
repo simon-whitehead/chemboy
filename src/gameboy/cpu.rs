@@ -336,6 +336,9 @@ impl Cpu {
                 0xA7 => self.and_a(),
                 0xA8 => self.xor_b(),
                 0xA9 => self.xor_c(),
+                0xAA => self.xor_d(),
+                0xAB => self.xor_e(),
+                0xAC => self.xor_h(),
                 0xAD => self.xor_l(),
                 0xAE => self.xor_hl_ptr(interconnect),
                 0xAF => self.xor_a(),
@@ -395,7 +398,7 @@ impl Cpu {
                 0xE8 => self.add_sp_imm8(&operand),
                 0xE9 => self.jp_hl(),
                 0xEA => self.ld_imm16_a(&operand, interconnect),
-                0xEE => self.xor_a_imm8(&operand),
+                0xEE => self.xor_imm8(&operand),
                 0xEF => self.call(0x28, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF1 => self.pop_af(interconnect),
@@ -2318,55 +2321,57 @@ impl Cpu {
         self.registers.flags.carry = false;
     }
 
-    fn xor_a(&mut self) {
-        self.registers.a ^= self.registers.a;
+    fn xor(&mut self, b: u8) {
+        self.registers.a ^= b;
         self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
         self.registers.flags.carry = false;
     }
 
-    fn xor_a_imm8(&mut self, operand: &Operand) {
-        let val = operand.unwrap_imm8();
-
-        self.registers.a ^= val;
-        self.registers.flags.zero = self.registers.a == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = false;
+    fn xor_a(&mut self) {
+        let a = self.registers.a;
+        self.xor(a);
     }
 
     fn xor_b(&mut self) {
-        self.registers.a ^= self.registers.b;
-        self.registers.flags.zero = self.registers.a == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = false;
+        let b = self.registers.b;
+        self.xor(b);
     }
 
     fn xor_c(&mut self) {
-        self.registers.a ^= self.registers.c;
-        self.registers.flags.zero = self.registers.a == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = false;
+        let c = self.registers.c;
+        self.xor(c);
+    }
+
+    fn xor_d(&mut self) {
+        let d = self.registers.d;
+        self.xor(d);
+    }
+
+    fn xor_e(&mut self) {
+        let e = self.registers.e;
+        self.xor(e);
+    }
+
+    fn xor_h(&mut self) {
+        let h = self.registers.h;
+        self.xor(h);
     }
 
     fn xor_hl_ptr(&mut self, interconnect: &mut Interconnect) {
         let val = interconnect.read_u8(self.registers.get_hl());
-        self.registers.a ^= val;
-        self.registers.flags.zero = self.registers.a == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = false;
+        self.xor(val);
+    }
+
+    fn xor_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8();
+        self.xor(val);
     }
 
     fn xor_l(&mut self) {
-        self.registers.a ^= self.registers.l;
-        self.registers.flags.zero = self.registers.a == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = false;
+        let l = self.registers.l;
+        self.xor(l);
     }
 
     fn relative_jump(&mut self, offset: u8) {
