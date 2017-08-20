@@ -488,7 +488,13 @@ impl Cpu {
                 0x2D => self.sra_l(),
                 0x2E => self.sra_hl_ptr(interconnect),
                 0x2F => self.sra_a(),
+                0x30 => self.swap_b(),
+                0x31 => self.swap_c(),
+                0x32 => self.swap_d(),
                 0x33 => self.swap_e(),
+                0x34 => self.swap_h(),
+                0x35 => self.swap_l(),
+                0x36 => self.swap_hl_ptr(interconnect),
                 0x37 => self.swap_a(),
                 0x38 => self.srl_b(),
                 0x3F => self.srl_a(),
@@ -2708,24 +2714,55 @@ impl Cpu {
         self.sub(val);
     }
 
-    fn swap_a(&mut self) {
-        let result = (self.registers.a >> 4) | (self.registers.a << 4);
+    fn swap(&mut self, b: u8) -> u8 {
+        let result = (b >> 0x04) | (b << 0x04);
 
-        self.registers.a = result;
         self.registers.flags.zero = result == 0x00;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = false;
         self.registers.flags.carry = false;
+
+        result
+    }
+
+    fn swap_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.swap(a);
+    }
+
+    fn swap_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.swap(b);
+    }
+
+    fn swap_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.swap(c);
+    }
+
+    fn swap_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.swap(d);
     }
 
     fn swap_e(&mut self) {
-        let result = (self.registers.e >> 4) | (self.registers.e << 4);
+        let e = self.registers.e;
+        self.registers.e = self.swap(e);
+    }
 
-        self.registers.e = result;
-        self.registers.flags.zero = result == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = false;
+    fn swap_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.swap(h);
+    }
+
+    fn swap_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.swap(val));
+    }
+
+    fn swap_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.swap(l);
     }
 
     fn xor(&mut self, b: u8) {

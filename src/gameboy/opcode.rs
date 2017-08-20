@@ -2011,7 +2011,7 @@ static OPCODES: [OpCode; 243] = [OpCode {
 
 // EXTENDED OPCODES (all prefixed with 0xCB)
 
-static EXT_OPCODES: [OpCode; 78] = [OpCode {
+static EXT_OPCODES: [OpCode; 84] = [OpCode {
                                         code: 0x00,
                                         mnemonic: "RLC B",
                                         length: 1,
@@ -2396,10 +2396,58 @@ static EXT_OPCODES: [OpCode; 78] = [OpCode {
                                         extended: true,
                                     },
                                     OpCode {
+                                        code: 0x30,
+                                        mnemonic: "SWAP B",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x31,
+                                        mnemonic: "SWAP C",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x32,
+                                        mnemonic: "SWAP D",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
                                         code: 0x33,
                                         mnemonic: "SWAP E",
                                         length: 1,
                                         cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x34,
+                                        mnemonic: "SWAP H",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x35,
+                                        mnemonic: "SWAP L",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x36,
+                                        mnemonic: "SWAP (HL)",
+                                        length: 1,
+                                        cycles: 16,
                                         argument_type: ArgumentType::Implied,
                                         extended: true,
                                     },
