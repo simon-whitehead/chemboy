@@ -2335,7 +2335,7 @@ impl Cpu {
         self.registers.flags.half_carry = (a & 0x0F) < (b & 0x0F) + carry;
         self.registers.flags.negative = true;
         self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = a & 0x0F < (b + carry);
+        self.registers.flags.carry = (a as u16) < b as u16 + carry as u16;
 
         self.registers.a = result as u8;
     }
