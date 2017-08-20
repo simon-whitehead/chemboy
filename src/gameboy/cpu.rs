@@ -2360,99 +2360,56 @@ impl Cpu {
         self.registers.flags.carry = carry;
     }
 
+    fn rrc(&mut self, mut b: u8) -> u8 {
+        let carry = if b & 0x01 == 0x01 { true } else { false };
+        b = (b >> 0x01) | if carry { 0x80 } else { 0x00 };
+
+        self.registers.flags.zero = b == 0x00;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = false;
+        self.registers.flags.carry = carry;
+
+        b
+    }
+
     fn rrc_a(&mut self) {
-        self.rrca();
+        let a = self.registers.a;
+        self.registers.a = self.rrc(a);
     }
 
     fn rrc_b(&mut self) {
-        let carry = if self.registers.b & 0x01 == 0x01 {
-            true
-        } else {
-            false
-        };
-        self.registers.b = self.registers.b >> 0x01;
-        self.registers.flags.zero = self.registers.b == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = carry;
+        let b = self.registers.b;
+        self.registers.b = self.rrc(b);
     }
 
     fn rrc_c(&mut self) {
-        let carry = if self.registers.c & 0x01 == 0x01 {
-            true
-        } else {
-            false
-        };
-        self.registers.c = self.registers.c >> 0x01;
-        self.registers.flags.zero = self.registers.c == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = carry;
+        let c = self.registers.c;
+        self.registers.c = self.rrc(c);
     }
 
     fn rrc_d(&mut self) {
-        let carry = if self.registers.d & 0x01 == 0x01 {
-            true
-        } else {
-            false
-        };
-        self.registers.d = self.registers.d >> 0x01;
-        self.registers.flags.zero = self.registers.d == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = carry;
+        let d = self.registers.d;
+        self.registers.d = self.rrc(d);
     }
 
     fn rrc_e(&mut self) {
-        let carry = if self.registers.e & 0x01 == 0x01 {
-            true
-        } else {
-            false
-        };
-        self.registers.e = self.registers.e >> 0x01;
-        self.registers.flags.zero = self.registers.e == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = carry;
+        let e = self.registers.e;
+        self.registers.e = self.rrc(e);
     }
 
     fn rrc_h(&mut self) {
-        let carry = if self.registers.h & 0x01 == 0x01 {
-            true
-        } else {
-            false
-        };
-        self.registers.h = self.registers.h >> 0x01;
-        self.registers.flags.zero = self.registers.h == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = carry;
+        let h = self.registers.h;
+        self.registers.h = self.rrc(h);
     }
 
     fn rrc_hl_ptr(&mut self, interconnect: &mut Interconnect) {
         let val = interconnect.read_u8(self.registers.get_hl());
-        let carry = if val & 0x01 == 0x01 { true } else { false };
-        let val = val >> 0x01;
-
-        interconnect.write_u8(self.registers.get_hl(), val);
-
-        self.registers.flags.zero = val == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = carry;
+        interconnect.write_u8(self.registers.get_hl(), self.rrc(val));
     }
 
     fn rrc_l(&mut self) {
-        let carry = if self.registers.l & 0x01 == 0x01 {
-            true
-        } else {
-            false
-        };
-        self.registers.l = self.registers.l >> 0x01;
-        self.registers.flags.zero = self.registers.l == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = false;
-        self.registers.flags.carry = carry;
+        let l = self.registers.l;
+        self.registers.l = self.rrc(l);
     }
 
     fn sbc(&mut self, b: u8) {
