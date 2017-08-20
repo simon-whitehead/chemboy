@@ -614,9 +614,9 @@ impl Cpu {
         let r = hl.wrapping_add(hl);
 
         self.registers.set_hl(r);
-        self.registers.flags.half_carry = ((hl & 0x0FFF) + (hl & 0x0FFF)) & 0x1000 == 0x1000;
+        self.registers.flags.half_carry = ((hl & 0x07FF) + (hl & 0x07FF)) > 0x07FF;
         self.registers.flags.negative = false;
-        self.registers.flags.carry = r > 0xFFFF;
+        self.registers.flags.carry = hl > 0xFFFF - hl;
     }
 
     fn add_hl_sp(&mut self) {
