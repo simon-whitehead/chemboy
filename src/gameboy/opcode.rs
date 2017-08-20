@@ -2011,7 +2011,7 @@ static OPCODES: [OpCode; 243] = [OpCode {
 
 // EXTENDED OPCODES (all prefixed with 0xCB)
 
-static EXT_OPCODES: [OpCode; 63] = [OpCode {
+static EXT_OPCODES: [OpCode; 70] = [OpCode {
                                         code: 0x00,
                                         mnemonic: "RLC B",
                                         length: 1,
@@ -2264,6 +2264,62 @@ static EXT_OPCODES: [OpCode; 63] = [OpCode {
                                         mnemonic: "RR A",
                                         length: 1,
                                         cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x20,
+                                        mnemonic: "SLA B",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x21,
+                                        mnemonic: "SLA C",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x22,
+                                        mnemonic: "SLA D",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x23,
+                                        mnemonic: "SLA E",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x24,
+                                        mnemonic: "SLA H",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x25,
+                                        mnemonic: "SLA L",
+                                        length: 1,
+                                        cycles: 8,
+                                        argument_type: ArgumentType::Implied,
+                                        extended: true,
+                                    },
+                                    OpCode {
+                                        code: 0x26,
+                                        mnemonic: "SLA (HL)",
+                                        length: 1,
+                                        cycles: 16,
                                         argument_type: ArgumentType::Implied,
                                         extended: true,
                                     },
