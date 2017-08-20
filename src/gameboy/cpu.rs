@@ -365,6 +365,7 @@ impl Cpu {
                 0xF5 => self.push_af(interconnect),
                 0xF6 => self.or_imm8(&operand),
                 0xF7 => self.call(0x30, interconnect),
+                0xF8 => self.ldhl_sp_imm8(&operand),
                 0xF9 => self.ld_sp_hl(),
                 0xFA => self.ld_a_imm16(&operand, interconnect),
                 0xFB => self.ei(interconnect),
@@ -631,7 +632,14 @@ impl Cpu {
     }
 
     fn add_sp_imm8(&mut self, operand: &Operand) {
-        let val = operand.unwrap_imm8();
+        let val = operand.unwrap_imm8() as i8 as i16 as u16;
+        let sp = self.registers.sp as u16;
+
+        self.registers.flags.zero = false;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = (sp & 0x000F) + (val & 0x000F) > 0x000F;
+        self.registers.flags.carry = (sp & 0x00FF) + (val & 0x00FF) > 0x00FF;
+
         self.registers.sp += val as usize;
     }
 
@@ -1485,6 +1493,18 @@ impl Cpu {
     fn ld_ff00_c_a(&mut self, interconnect: &mut Interconnect) {
         let addr = 0xFF00 as u16 + self.registers.c as u16;
         interconnect.write_u8(addr, self.registers.a);
+    }
+
+    fn ldhl_sp_imm8(&mut self, operand: &Operand) {
+        let val = operand.unwrap_imm8() as i8 as i16 as u16;
+        let sp = self.registers.sp as u16;
+
+        self.registers.flags.zero = false;
+        self.registers.flags.negative = false;
+        self.registers.flags.half_carry = (sp & 0x000F) + (val & 0x000F) > 0x000F;
+        self.registers.flags.carry = (sp & 0x00FF) + (val & 0x00FF) > 0x00FF;
+
+        self.registers.set_hl(sp.wrapping_add(val));
     }
 
     fn ld_h_a(&mut self) {
