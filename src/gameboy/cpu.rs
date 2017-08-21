@@ -1018,7 +1018,7 @@ impl Cpu {
         let shift = 0x01 << n;
         let bit = if b & shift == shift { true } else { false };
 
-        self.registers.flags.zero = bit;
+        self.registers.flags.zero = !bit;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = true;
     }
@@ -2510,7 +2510,7 @@ impl Cpu {
 
     fn res_5_l(&mut self) {
         let l = self.registers.l;
-        self.registers.l = self.res(l, 0x06);
+        self.registers.l = self.res(l, 0x05);
     }
 
     fn res_6_a(&mut self) {
@@ -3201,7 +3201,7 @@ impl Cpu {
 
     fn set_5_l(&mut self) {
         let l = self.registers.l;
-        self.registers.l = self.set(l, 0x06);
+        self.registers.l = self.set(l, 0x05);
     }
 
     fn set_6_a(&mut self) {
