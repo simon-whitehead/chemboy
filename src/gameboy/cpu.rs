@@ -506,23 +506,67 @@ impl Cpu {
                 0x3F => self.srl_a(),
                 0x40 => self.bit_0_b(),
                 0x41 => self.bit_0_c(),
-                0x46 => self.bit_0_hl(interconnect),
+                0x42 => self.bit_0_d(),
+                0x43 => self.bit_0_e(),
+                0x44 => self.bit_0_h(),
+                0x45 => self.bit_0_l(),
+                0x46 => self.bit_0_hl_ptr(interconnect),
                 0x47 => self.bit_0_a(),
                 0x48 => self.bit_1_b(),
+                0x49 => self.bit_1_c(),
+                0x4A => self.bit_1_d(),
+                0x4B => self.bit_1_e(),
+                0x4C => self.bit_1_h(),
+                0x4D => self.bit_1_l(),
+                0x4E => self.bit_1_hl_ptr(interconnect),
+                0x4F => self.bit_1_a(),
                 0x50 => self.bit_2_b(),
+                0x51 => self.bit_2_c(),
+                0x52 => self.bit_2_d(),
+                0x53 => self.bit_2_e(),
+                0x54 => self.bit_2_h(),
+                0x55 => self.bit_2_l(),
+                0x56 => self.bit_2_hl_ptr(interconnect),
                 0x57 => self.bit_2_a(),
                 0x58 => self.bit_3_b(),
+                0x59 => self.bit_3_c(),
+                0x5A => self.bit_3_d(),
+                0x5B => self.bit_3_e(),
+                0x5C => self.bit_3_h(),
+                0x5D => self.bit_3_l(),
+                0x5E => self.bit_3_hl_ptr(interconnect),
                 0x5F => self.bit_3_a(),
                 0x60 => self.bit_4_b(),
                 0x61 => self.bit_4_c(),
+                0x62 => self.bit_4_d(),
+                0x63 => self.bit_4_e(),
+                0x64 => self.bit_4_h(),
+                0x65 => self.bit_4_l(),
+                0x66 => self.bit_4_hl_ptr(interconnect),
+                0x67 => self.bit_4_a(),
                 0x68 => self.bit_5_b(),
                 0x69 => self.bit_5_c(),
+                0x6A => self.bit_5_d(),
+                0x6B => self.bit_5_e(),
+                0x6C => self.bit_5_h(),
+                0x6D => self.bit_5_l(),
+                0x6E => self.bit_5_hl_ptr(interconnect),
                 0x6F => self.bit_5_a(),
                 0x70 => self.bit_6_b(),
+                0x71 => self.bit_6_c(),
+                0x72 => self.bit_6_d(),
+                0x73 => self.bit_6_e(),
+                0x74 => self.bit_6_h(),
+                0x75 => self.bit_6_l(),
+                0x76 => self.bit_6_hl_ptr(interconnect),
                 0x77 => self.bit_6_a(),
                 0x78 => self.bit_7_b(),
+                0x79 => self.bit_7_c(),
+                0x7A => self.bit_7_d(),
+                0x7B => self.bit_7_e(),
                 0x7C => self.bit_7_h(),
-                0x7E => self.bit_7_hl(interconnect),
+                0x7D => self.bit_7_l(),
+                0x7E => self.bit_7_hl_ptr(interconnect),
                 0x7F => self.bit_7_a(),
                 0x86 => self.res_0_hl(interconnect),
                 0x87 => self.res_0_a(),
@@ -846,220 +890,333 @@ impl Cpu {
         self.and(l);
     }
 
-    fn bit_0_a(&mut self) {
-        let bit = if self.registers.a & 0x01 == 0x01 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
+    fn bit(&mut self, b: u8, n: u8) {
+        let shift = 0x01 << n;
+        let bit = if b & shift == shift { true } else { false };
+
+        self.registers.flags.zero = bit;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = true;
+    }
+
+    fn bit_0_a(&mut self) {
+        let a = self.registers.a;
+        self.bit(a, 0x00);
     }
 
     fn bit_0_b(&mut self) {
-        let bit = if self.registers.b & 0x01 == 0x01 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let b = self.registers.b;
+        self.bit(b, 0x00);
     }
 
     fn bit_0_c(&mut self) {
-        let bit = if self.registers.c & 0x01 == 0x01 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let c = self.registers.c;
+        self.bit(c, 0x00);
     }
 
-    fn bit_0_hl(&mut self, interconnect: &mut Interconnect) {
-        let addr = self.registers.get_hl();
-        let val = interconnect.read_u8(addr);
-        let bit = if val & 0x01 == 0x01 { 0x01 } else { 0x00 };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+    fn bit_0_d(&mut self) {
+        let d = self.registers.d;
+        self.bit(d, 0x00);
+    }
+
+    fn bit_0_e(&mut self) {
+        let e = self.registers.e;
+        self.bit(e, 0x00);
+    }
+
+    fn bit_0_h(&mut self) {
+        let h = self.registers.h;
+        self.bit(h, 0x00);
+    }
+
+    fn bit_0_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.bit(val, 0x00);
+    }
+
+    fn bit_0_l(&mut self) {
+        let l = self.registers.l;
+        self.bit(l, 0x00);
+    }
+
+    fn bit_1_a(&mut self) {
+        let a = self.registers.a;
+        self.bit(a, 0x01);
     }
 
     fn bit_1_b(&mut self) {
-        let bit = if self.registers.b & 0x02 == 0x02 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let b = self.registers.b;
+        self.bit(b, 0x01);
+    }
+
+    fn bit_1_c(&mut self) {
+        let c = self.registers.c;
+        self.bit(c, 0x01);
+    }
+
+    fn bit_1_d(&mut self) {
+        let d = self.registers.d;
+        self.bit(d, 0x01);
+    }
+
+    fn bit_1_e(&mut self) {
+        let e = self.registers.e;
+        self.bit(e, 0x01);
+    }
+
+    fn bit_1_h(&mut self) {
+        let h = self.registers.h;
+        self.bit(h, 0x01);
+    }
+
+    fn bit_1_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.bit(val, 0x01);
+    }
+
+    fn bit_1_l(&mut self) {
+        let l = self.registers.l;
+        self.bit(l, 0x01);
     }
 
     fn bit_2_a(&mut self) {
-        let bit = if self.registers.a & 0x04 == 0x04 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let a = self.registers.a;
+        self.bit(a, 0x02);
     }
 
     fn bit_2_b(&mut self) {
-        let bit = if self.registers.b & 0x04 == 0x04 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let b = self.registers.b;
+        self.bit(b, 0x02);
+    }
+
+    fn bit_2_c(&mut self) {
+        let c = self.registers.c;
+        self.bit(c, 0x02);
+    }
+
+    fn bit_2_d(&mut self) {
+        let d = self.registers.d;
+        self.bit(d, 0x02);
+    }
+
+    fn bit_2_e(&mut self) {
+        let e = self.registers.e;
+        self.bit(e, 0x02);
+    }
+
+    fn bit_2_h(&mut self) {
+        let h = self.registers.h;
+        self.bit(h, 0x02);
+    }
+
+    fn bit_2_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.bit(val, 0x02);
+    }
+
+    fn bit_2_l(&mut self) {
+        let l = self.registers.l;
+        self.bit(l, 0x02);
     }
 
     fn bit_3_a(&mut self) {
-        let bit = if self.registers.a & 0x08 == 0x08 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let a = self.registers.a;
+        self.bit(a, 0x03);
     }
 
     fn bit_3_b(&mut self) {
-        let bit = if self.registers.b & 0x08 == 0x08 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let b = self.registers.b;
+        self.bit(b, 0x03);
+    }
+
+    fn bit_3_c(&mut self) {
+        let c = self.registers.c;
+        self.bit(c, 0x03);
+    }
+
+    fn bit_3_d(&mut self) {
+        let d = self.registers.d;
+        self.bit(d, 0x03);
+    }
+
+    fn bit_3_e(&mut self) {
+        let e = self.registers.e;
+        self.bit(e, 0x03);
+    }
+
+    fn bit_3_h(&mut self) {
+        let h = self.registers.h;
+        self.bit(h, 0x03);
+    }
+
+    fn bit_3_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.bit(val, 0x03);
+    }
+
+    fn bit_3_l(&mut self) {
+        let l = self.registers.l;
+        self.bit(l, 0x03);
+    }
+
+    fn bit_4_a(&mut self) {
+        let a = self.registers.a;
+        self.bit(a, 0x04);
     }
 
     fn bit_4_b(&mut self) {
-        let bit = if self.registers.b & 0x10 == 0x10 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let b = self.registers.b;
+        self.bit(b, 0x04);
     }
 
     fn bit_4_c(&mut self) {
-        let bit = if self.registers.c & 0x10 == 0x10 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let c = self.registers.c;
+        self.bit(c, 0x04);
+    }
+
+    fn bit_4_d(&mut self) {
+        let d = self.registers.d;
+        self.bit(d, 0x04);
+    }
+
+    fn bit_4_e(&mut self) {
+        let e = self.registers.e;
+        self.bit(e, 0x04);
+    }
+
+    fn bit_4_h(&mut self) {
+        let h = self.registers.h;
+        self.bit(h, 0x04);
+    }
+
+    fn bit_4_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.bit(val, 0x04);
+    }
+
+    fn bit_4_l(&mut self) {
+        let l = self.registers.l;
+        self.bit(l, 0x04);
     }
 
     fn bit_5_a(&mut self) {
-        let bit = if self.registers.a & 0x20 == 0x20 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let a = self.registers.a;
+        self.bit(a, 0x05);
     }
 
     fn bit_5_b(&mut self) {
-        let bit = if self.registers.b & 0x20 == 0x20 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let b = self.registers.b;
+        self.bit(b, 0x05);
     }
 
     fn bit_5_c(&mut self) {
-        let bit = if self.registers.c & 0x20 == 0x20 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let c = self.registers.c;
+        self.bit(c, 0x05);
+    }
+
+    fn bit_5_d(&mut self) {
+        let d = self.registers.d;
+        self.bit(d, 0x05);
+    }
+
+    fn bit_5_e(&mut self) {
+        let e = self.registers.e;
+        self.bit(e, 0x05);
+    }
+
+    fn bit_5_h(&mut self) {
+        let h = self.registers.h;
+        self.bit(h, 0x05);
+    }
+
+    fn bit_5_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.bit(val, 0x05);
+    }
+
+    fn bit_5_l(&mut self) {
+        let l = self.registers.l;
+        self.bit(l, 0x05);
     }
 
     fn bit_6_a(&mut self) {
-        let bit = if self.registers.a & 0x40 == 0x40 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let a = self.registers.a;
+        self.bit(a, 0x06);
     }
 
     fn bit_6_b(&mut self) {
-        let bit = if self.registers.b & 0x40 == 0x40 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let b = self.registers.b;
+        self.bit(b, 0x06);
+    }
+
+    fn bit_6_c(&mut self) {
+        let c = self.registers.c;
+        self.bit(c, 0x06);
+    }
+
+    fn bit_6_d(&mut self) {
+        let d = self.registers.d;
+        self.bit(d, 0x06);
+    }
+
+    fn bit_6_e(&mut self) {
+        let e = self.registers.e;
+        self.bit(e, 0x06);
+    }
+
+    fn bit_6_h(&mut self) {
+        let h = self.registers.h;
+        self.bit(h, 0x06);
+    }
+
+    fn bit_6_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.bit(val, 0x06);
+    }
+
+    fn bit_6_l(&mut self) {
+        let l = self.registers.l;
+        self.bit(l, 0x06);
     }
 
     fn bit_7_a(&mut self) {
-        let bit = if self.registers.a & 0x80 == 0x80 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let a = self.registers.a;
+        self.bit(a, 0x07);
     }
 
     fn bit_7_b(&mut self) {
-        let bit = if self.registers.b & 0x80 == 0x80 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let b = self.registers.b;
+        self.bit(b, 0x07);
+    }
+
+    fn bit_7_c(&mut self) {
+        let c = self.registers.c;
+        self.bit(c, 0x07);
+    }
+
+    fn bit_7_d(&mut self) {
+        let d = self.registers.d;
+        self.bit(d, 0x07);
+    }
+
+    fn bit_7_e(&mut self) {
+        let e = self.registers.e;
+        self.bit(e, 0x07);
     }
 
     fn bit_7_h(&mut self) {
-        let bit = if self.registers.h & 0x80 == 0x80 {
-            0x01
-        } else {
-            0x00
-        };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+        let h = self.registers.h;
+        self.bit(h, 0x07);
     }
 
-    fn bit_7_hl(&mut self, interconnect: &mut Interconnect) {
-        let addr = self.registers.get_hl();
-        let val = interconnect.read_u8(addr);
-        let bit = if val & 0x80 == 0x80 { 0x01 } else { 0x00 };
-        self.registers.flags.zero = bit == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = true;
+    fn bit_7_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        self.bit(val, 0x07);
+    }
+
+    fn bit_7_l(&mut self) {
+        let l = self.registers.l;
+        self.bit(l, 0x07);
     }
 
     fn call(&mut self, addr: u16, interconnect: &mut Interconnect) {
