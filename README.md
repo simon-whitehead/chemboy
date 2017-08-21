@@ -7,11 +7,13 @@ A GameBoy (and hopefully in future, GameBoy Colour) emulator written in Rust.
 
 ### Progress GIF
 
-Here is the latest progress GIF. We have Tetrominos! We are able to play a game of Tetris until we want to start a new game.
+Here is the latest progress GIF. We can play Tetris!
 
-The score seems to be a little bit bugged too the longer a game goes on - so that needs investigating.
+I have implemented 243 base instructions and all 256 of the extended instruction range. This means we're only a couple of instructions away from full support of the Gameboy CPU. As such, we can now play Tetris without it crashing at all. The progress GIF below shows a 2 game session of Tetris.
 
-![chemboy-progress-19-08-2017](https://user-images.githubusercontent.com/2499070/29483787-32c5c180-84f3-11e7-9305-13dc4827759f.gif)
+The score is still a little bit buggy. Not sure whats going on there, but thats the next thing to figure out.
+
+![chemboy-progress-22-08-2017](https://user-images.githubusercontent.com/2499070/29525895-74f411e8-86d7-11e7-9c31-1ef7d3c27c24.gif)
 
 ### Project goals
 
