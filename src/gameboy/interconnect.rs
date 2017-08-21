@@ -203,7 +203,7 @@ impl Interconnect {
                     0x47...0x49 => self.gpu.read_u8(a),
                     0x4A...0x4B => self.gpu.read_u8(a),
                     0x7F => self.mmap_io.read_u8(a),
-                    _ => panic!("read memory mapped I/O in unsupported range"),
+                    n @ _ => panic!("read memory mapped I/O in unsupported range: {:04X}", n),
                 }
             }
             Address::InterruptEnableRegister(a) => self.irq.enable_flag,
