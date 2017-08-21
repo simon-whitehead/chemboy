@@ -568,12 +568,136 @@ impl Cpu {
                 0x7D => self.bit_7_l(),
                 0x7E => self.bit_7_hl_ptr(interconnect),
                 0x7F => self.bit_7_a(),
-                0x86 => self.res_0_hl(interconnect),
+
+                0x80 => self.res_0_b(),
+                0x81 => self.res_0_c(),
+                0x82 => self.res_0_d(),
+                0x83 => self.res_0_e(),
+                0x84 => self.res_0_h(),
+                0x85 => self.res_0_l(),
+                0x86 => self.res_0_hl_ptr(interconnect),
                 0x87 => self.res_0_a(),
-                0xBE => self.res_7_hl(interconnect),
+                0x88 => self.res_1_b(),
+                0x89 => self.res_1_c(),
+                0x8A => self.res_1_d(),
+                0x8B => self.res_1_e(),
+                0x8C => self.res_1_h(),
+                0x8D => self.res_1_l(),
+                0x8E => self.res_1_hl_ptr(interconnect),
+                0x8F => self.res_1_a(),
+                0x90 => self.res_2_b(),
+                0x91 => self.res_2_c(),
+                0x92 => self.res_2_d(),
+                0x93 => self.res_2_e(),
+                0x94 => self.res_2_h(),
+                0x95 => self.res_2_l(),
+                0x96 => self.res_2_hl_ptr(interconnect),
+                0x97 => self.res_2_a(),
+                0x98 => self.res_3_b(),
+                0x99 => self.res_3_c(),
+                0x9A => self.res_3_d(),
+                0x9B => self.res_3_e(),
+                0x9C => self.res_3_h(),
+                0x9D => self.res_3_l(),
+                0x9E => self.res_3_hl_ptr(interconnect),
+                0x9F => self.res_3_a(),
+                0xA0 => self.res_4_b(),
+                0xA1 => self.res_4_c(),
+                0xA2 => self.res_4_d(),
+                0xA3 => self.res_4_e(),
+                0xA4 => self.res_4_h(),
+                0xA5 => self.res_4_l(),
+                0xA6 => self.res_4_hl_ptr(interconnect),
+                0xA7 => self.res_4_a(),
+                0xA8 => self.res_5_b(),
+                0xA9 => self.res_5_c(),
+                0xAA => self.res_5_d(),
+                0xAB => self.res_5_e(),
+                0xAC => self.res_5_h(),
+                0xAD => self.res_5_l(),
+                0xAE => self.res_5_hl_ptr(interconnect),
+                0xAF => self.res_5_a(),
+                0xB0 => self.res_6_b(),
+                0xB1 => self.res_6_c(),
+                0xB2 => self.res_6_d(),
+                0xB3 => self.res_6_e(),
+                0xB4 => self.res_6_h(),
+                0xB5 => self.res_6_l(),
+                0xB6 => self.res_6_hl_ptr(interconnect),
+                0xB7 => self.res_6_a(),
+                0xB8 => self.res_7_b(),
+                0xB9 => self.res_7_c(),
+                0xBA => self.res_7_d(),
+                0xBB => self.res_7_e(),
+                0xBC => self.res_7_h(),
+                0xBD => self.res_7_l(),
+                0xBE => self.res_7_hl_ptr(interconnect),
+                0xBF => self.res_7_a(),
+
+                0xC0 => self.set_0_b(),
+                0xC1 => self.set_0_c(),
+                0xC2 => self.set_0_d(),
+                0xC3 => self.set_0_e(),
+                0xC4 => self.set_0_h(),
+                0xC5 => self.set_0_l(),
+                0xC6 => self.set_0_hl_ptr(interconnect),
+                0xC7 => self.set_0_a(),
+                0xC8 => self.set_1_b(),
+                0xC9 => self.set_1_c(),
+                0xCA => self.set_1_d(),
+                0xCB => self.set_1_e(),
+                0xCC => self.set_1_h(),
+                0xCD => self.set_1_l(),
+                0xCE => self.set_1_hl_ptr(interconnect),
+                0xCF => self.set_1_a(),
+                0xD0 => self.set_2_b(),
+                0xD1 => self.set_2_c(),
+                0xD2 => self.set_2_d(),
+                0xD3 => self.set_2_e(),
+                0xD4 => self.set_2_h(),
+                0xD5 => self.set_2_l(),
+                0xD6 => self.set_2_hl_ptr(interconnect),
+                0xD7 => self.set_2_a(),
                 0xD8 => self.set_3_b(),
+                0xD9 => self.set_3_c(),
+                0xDA => self.set_3_d(),
+                0xDB => self.set_3_e(),
+                0xDC => self.set_3_h(),
+                0xDD => self.set_3_l(),
+                0xDE => self.set_3_hl_ptr(interconnect),
+                0xDF => self.set_3_a(),
+                0xE0 => self.set_4_b(),
+                0xE1 => self.set_4_c(),
+                0xE2 => self.set_4_d(),
+                0xE3 => self.set_4_e(),
+                0xE4 => self.set_4_h(),
+                0xE5 => self.set_4_l(),
+                0xE6 => self.set_4_hl_ptr(interconnect),
+                0xE7 => self.set_4_a(),
+                0xE8 => self.set_5_b(),
+                0xE9 => self.set_5_c(),
+                0xEA => self.set_5_d(),
+                0xEB => self.set_5_e(),
+                0xEC => self.set_5_h(),
+                0xED => self.set_5_l(),
+                0xEE => self.set_5_hl_ptr(interconnect),
+                0xEF => self.set_5_a(),
+                0xF0 => self.set_6_b(),
+                0xF1 => self.set_6_c(),
+                0xF2 => self.set_6_d(),
+                0xF3 => self.set_6_e(),
+                0xF4 => self.set_6_h(),
+                0xF5 => self.set_6_l(),
+                0xF6 => self.set_6_hl_ptr(interconnect),
+                0xF7 => self.set_6_a(),
                 0xF8 => self.set_7_b(),
-                0xFE => self.set_7_hl(interconnect),
+                0xF9 => self.set_7_c(),
+                0xFA => self.set_7_d(),
+                0xFB => self.set_7_e(),
+                0xFC => self.set_7_h(),
+                0xFD => self.set_7_l(),
+                0xFE => self.set_7_hl_ptr(interconnect),
+                0xFF => self.set_7_a(),
                 _ => {
                     return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
                                        opcode.code,
@@ -2142,22 +2266,331 @@ impl Cpu {
         interconnect.write_u16(self.registers.sp as u16, val);
     }
 
+    fn res(&mut self, mut b: u8, n: u8) -> u8 {
+        let shift = 0x01 << n;
+        b &= !shift;
+
+        b
+    }
+
     fn res_0_a(&mut self) {
-        self.registers.a &= !0x01;
+        let a = self.registers.a;
+        self.registers.a = self.res(a, 0x00);
     }
 
-    fn res_0_hl(&mut self, interconnect: &mut Interconnect) {
-        let addr = self.registers.get_hl();
-        let val = interconnect.read_u8(addr);
-        let r = val & !0x01;
-        interconnect.write_u8(addr, r);
+    fn res_0_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.res(b, 0x00);
     }
 
-    fn res_7_hl(&mut self, interconnect: &mut Interconnect) {
-        let addr = self.registers.get_hl();
-        let val = interconnect.read_u8(addr);
-        let r = val & !0x80;
-        interconnect.write_u8(addr, r);
+    fn res_0_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.res(c, 0x00);
+    }
+
+    fn res_0_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.res(d, 0x00);
+    }
+
+    fn res_0_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.res(e, 0x00);
+    }
+
+    fn res_0_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.res(h, 0x00);
+    }
+
+    fn res_0_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.res(val, 0x00));
+    }
+
+    fn res_0_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.res(l, 0x00);
+    }
+
+    fn res_1_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.res(a, 0x01);
+    }
+
+    fn res_1_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.res(b, 0x01);
+    }
+
+    fn res_1_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.res(c, 0x01);
+    }
+
+    fn res_1_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.res(d, 0x01);
+    }
+
+    fn res_1_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.res(e, 0x01);
+    }
+
+    fn res_1_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.res(h, 0x01);
+    }
+
+    fn res_1_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.res(val, 0x01));
+    }
+
+    fn res_1_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.res(l, 0x01);
+    }
+
+    fn res_2_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.res(a, 0x02);
+    }
+
+    fn res_2_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.res(b, 0x02);
+    }
+
+    fn res_2_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.res(c, 0x02);
+    }
+
+    fn res_2_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.res(d, 0x02);
+    }
+
+    fn res_2_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.res(e, 0x02);
+    }
+
+    fn res_2_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.res(h, 0x02);
+    }
+
+    fn res_2_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.res(val, 0x02));
+    }
+
+    fn res_2_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.res(l, 0x02);
+    }
+
+    fn res_3_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.res(a, 0x03);
+    }
+
+    fn res_3_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.res(b, 0x03);
+    }
+
+    fn res_3_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.res(c, 0x03);
+    }
+
+    fn res_3_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.res(d, 0x03);
+    }
+
+    fn res_3_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.res(e, 0x03);
+    }
+
+    fn res_3_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.res(h, 0x03);
+    }
+
+    fn res_3_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.res(val, 0x03));
+    }
+
+    fn res_3_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.res(l, 0x03);
+    }
+
+    fn res_4_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.res(a, 0x04);
+    }
+
+    fn res_4_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.res(b, 0x04);
+    }
+
+    fn res_4_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.res(c, 0x04);
+    }
+
+    fn res_4_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.res(d, 0x04);
+    }
+
+    fn res_4_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.res(e, 0x04);
+    }
+
+    fn res_4_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.res(h, 0x04);
+    }
+
+    fn res_4_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.res(val, 0x04));
+    }
+
+    fn res_4_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.res(l, 0x04);
+    }
+
+    fn res_5_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.res(a, 0x05);
+    }
+
+    fn res_5_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.res(b, 0x05);
+    }
+
+    fn res_5_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.res(c, 0x05);
+    }
+
+    fn res_5_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.res(d, 0x05);
+    }
+
+    fn res_5_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.res(e, 0x05);
+    }
+
+    fn res_5_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.res(h, 0x05);
+    }
+
+    fn res_5_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.res(val, 0x05));
+    }
+
+    fn res_5_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.res(l, 0x06);
+    }
+
+    fn res_6_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.res(a, 0x06);
+    }
+
+    fn res_6_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.res(b, 0x06);
+    }
+
+    fn res_6_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.res(c, 0x06);
+    }
+
+    fn res_6_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.res(d, 0x06);
+    }
+
+    fn res_6_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.res(e, 0x06);
+    }
+
+    fn res_6_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.res(h, 0x06);
+    }
+
+    fn res_6_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.res(val, 0x06));
+    }
+
+    fn res_6_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.res(l, 0x06);
+    }
+
+    fn res_7_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.res(a, 0x07);
+    }
+
+    fn res_7_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.res(b, 0x07);
+    }
+
+    fn res_7_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.res(c, 0x07);
+    }
+
+    fn res_7_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.res(d, 0x07);
+    }
+
+    fn res_7_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.res(e, 0x07);
+    }
+
+    fn res_7_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.res(h, 0x07);
+    }
+
+    fn res_7_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.res(val, 0x07));
+    }
+
+    fn res_7_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.res(l, 0x07);
     }
 
     fn ret(&mut self, interconnect: &mut Interconnect) {
@@ -2524,19 +2957,331 @@ impl Cpu {
         self.registers.flags.carry = true;
     }
 
+    fn set(&mut self, mut b: u8, n: u8) -> u8 {
+        let shift = 0x01 << n;
+        b |= shift;
+
+        b
+    }
+
+    fn set_0_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.set(a, 0x00);
+    }
+
+    fn set_0_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.set(b, 0x00);
+    }
+
+    fn set_0_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.set(c, 0x00);
+    }
+
+    fn set_0_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.set(d, 0x00);
+    }
+
+    fn set_0_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.set(e, 0x00);
+    }
+
+    fn set_0_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.set(h, 0x00);
+    }
+
+    fn set_0_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.set(val, 0x00));
+    }
+
+    fn set_0_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.set(l, 0x00);
+    }
+
+    fn set_1_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.set(a, 0x01);
+    }
+
+    fn set_1_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.set(b, 0x01);
+    }
+
+    fn set_1_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.set(c, 0x01);
+    }
+
+    fn set_1_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.set(d, 0x01);
+    }
+
+    fn set_1_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.set(e, 0x01);
+    }
+
+    fn set_1_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.set(h, 0x01);
+    }
+
+    fn set_1_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.set(val, 0x01));
+    }
+
+    fn set_1_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.set(l, 0x01);
+    }
+
+    fn set_2_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.set(a, 0x02);
+    }
+
+    fn set_2_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.set(b, 0x02);
+    }
+
+    fn set_2_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.set(c, 0x02);
+    }
+
+    fn set_2_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.set(d, 0x02);
+    }
+
+    fn set_2_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.set(e, 0x02);
+    }
+
+    fn set_2_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.set(h, 0x02);
+    }
+
+    fn set_2_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.set(val, 0x02));
+    }
+
+    fn set_2_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.set(l, 0x02);
+    }
+
+    fn set_3_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.set(a, 0x03);
+    }
+
     fn set_3_b(&mut self) {
-        self.registers.b |= 0x08;
+        let b = self.registers.b;
+        self.registers.b = self.set(b, 0x03);
+    }
+
+    fn set_3_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.set(c, 0x03);
+    }
+
+    fn set_3_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.set(d, 0x03);
+    }
+
+    fn set_3_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.set(e, 0x03);
+    }
+
+    fn set_3_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.set(h, 0x03);
+    }
+
+    fn set_3_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.set(val, 0x03));
+    }
+
+    fn set_3_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.set(l, 0x03);
+    }
+
+    fn set_4_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.set(a, 0x04);
+    }
+
+    fn set_4_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.set(b, 0x04);
+    }
+
+    fn set_4_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.set(c, 0x04);
+    }
+
+    fn set_4_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.set(d, 0x04);
+    }
+
+    fn set_4_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.set(e, 0x04);
+    }
+
+    fn set_4_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.set(h, 0x04);
+    }
+
+    fn set_4_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.set(val, 0x04));
+    }
+
+    fn set_4_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.set(l, 0x04);
+    }
+
+    fn set_5_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.set(a, 0x05);
+    }
+
+    fn set_5_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.set(b, 0x05);
+    }
+
+    fn set_5_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.set(c, 0x05);
+    }
+
+    fn set_5_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.set(d, 0x05);
+    }
+
+    fn set_5_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.set(e, 0x05);
+    }
+
+    fn set_5_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.set(h, 0x05);
+    }
+
+    fn set_5_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.set(val, 0x05));
+    }
+
+    fn set_5_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.set(l, 0x06);
+    }
+
+    fn set_6_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.set(a, 0x06);
+    }
+
+    fn set_6_b(&mut self) {
+        let b = self.registers.b;
+        self.registers.b = self.set(b, 0x06);
+    }
+
+    fn set_6_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.set(c, 0x06);
+    }
+
+    fn set_6_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.set(d, 0x06);
+    }
+
+    fn set_6_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.set(e, 0x06);
+    }
+
+    fn set_6_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.set(h, 0x06);
+    }
+
+    fn set_6_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.set(val, 0x06));
+    }
+
+    fn set_6_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.set(l, 0x06);
+    }
+
+    fn set_7_a(&mut self) {
+        let a = self.registers.a;
+        self.registers.a = self.set(a, 0x07);
     }
 
     fn set_7_b(&mut self) {
-        self.registers.b |= 0x80;
+        let b = self.registers.b;
+        self.registers.b = self.set(b, 0x07);
     }
 
-    fn set_7_hl(&mut self, interconnect: &mut Interconnect) {
-        let addr = self.registers.get_hl();
-        let val = interconnect.read_u8(addr);
+    fn set_7_c(&mut self) {
+        let c = self.registers.c;
+        self.registers.c = self.set(c, 0x07);
+    }
 
-        interconnect.write_u8(addr, val | 0x80);
+    fn set_7_d(&mut self) {
+        let d = self.registers.d;
+        self.registers.d = self.set(d, 0x07);
+    }
+
+    fn set_7_e(&mut self) {
+        let e = self.registers.e;
+        self.registers.e = self.set(e, 0x07);
+    }
+
+    fn set_7_h(&mut self) {
+        let h = self.registers.h;
+        self.registers.h = self.set(h, 0x07);
+    }
+
+    fn set_7_hl_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(self.registers.get_hl());
+        interconnect.write_u8(self.registers.get_hl(), self.set(val, 0x07));
+    }
+
+    fn set_7_l(&mut self) {
+        let l = self.registers.l;
+        self.registers.l = self.set(l, 0x07);
     }
 
     fn sla(&mut self, mut b: u8) -> u8 {
