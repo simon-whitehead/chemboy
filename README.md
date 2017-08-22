@@ -9,9 +9,7 @@ A GameBoy (and hopefully in future, GameBoy Colour) emulator written in Rust.
 
 Here is the latest progress GIF. We can play Tetris!
 
-I have implemented 243 base instructions and all 256 of the extended instruction range. This means we're only a couple of instructions away from full support of the Gameboy CPU. As such, we can now play Tetris without it crashing at all. The progress GIF below shows a 2 game session of Tetris.
-
-The score is still a little bit buggy. Not sure whats going on there, but thats the next thing to figure out.
+The entire instruction set is now supported! As such, we can now play Tetris without it crashing at all. The progress GIF below shows a 2 game session of Tetris.
 
 ![chemboy-progress-22-08-2017](https://user-images.githubusercontent.com/2499070/29525895-74f411e8-86d7-11e7-9c31-1ef7d3c27c24.gif)
 
