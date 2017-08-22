@@ -403,6 +403,7 @@ impl Cpu {
                 0xEF => self.call(0x28, interconnect),
                 0xF0 => self.ld_a_ff00_imm8(&operand, interconnect),
                 0xF1 => self.pop_af(interconnect),
+                0xF2 => self.ld_a_c_ptr(interconnect),
                 0xF3 => self.di(interconnect),
                 0xF5 => self.push_af(interconnect),
                 0xF6 => self.or_imm8(&operand),
@@ -1745,6 +1746,11 @@ impl Cpu {
 
     fn ld_a_c(&mut self) {
         self.registers.a = self.registers.c;
+    }
+
+    fn ld_a_c_ptr(&mut self, interconnect: &mut Interconnect) {
+        let val = interconnect.read_u8(0xFF00 + self.registers.c as u16);
+        self.registers.a = val;
     }
 
     fn ld_a_d(&mut self) {
