@@ -1446,61 +1446,26 @@ impl Cpu {
     }
 
     fn daa(&mut self) {
-        let mut val = self.registers.a as u16;
-        if !self.registers.flags.negative {
-            if self.registers.flags.half_carry || (val & 0x0F) > 0x09 {
-                val += 0x06;
-            }
+        let mut correction_factor: u8 = 0x00;
+        let subtraction = self.registers.flags.negative;
 
-            if self.registers.flags.carry || val > 0x9F {
-                val += 0x60;
-            }
-        } else {
-            if self.registers.flags.half_carry {
-                val -= 0x06;
-                if !self.registers.flags.carry {
-                    val &= 0xFF;
-                }
-            }
-            if self.registers.flags.carry {
-                val -= 0x60;
-            }
+        if (self.registers.a > 0x99 && !subtraction) || self.registers.flags.carry {
+            correction_factor |= 0x60;
+            self.registers.flags.carry = true;
         }
 
+        if ((self.registers.a & 0x0F) > 0x09 && !subtraction) || self.registers.flags.half_carry {
+            correction_factor |= 0x06;
+        }
+
+        if subtraction {
+            self.registers.a -= correction_factor;
+        } else {
+            self.registers.a += correction_factor;
+        }
+
+        self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.half_carry = false;
-        self.registers.flags.zero = val == 0x00;
-        self.registers.flags.carry = self.registers.flags.carry || (val & 0x100) == 0x100;
-        self.registers.a = (val & 0xFF) as u8;
-        // let mut val = self.registers.a as u16;
-        // if val & 0x0F > 0x09 || self.registers.flags.half_carry {
-        // if self.registers.flags.negative {
-        // val -= 0x06;
-        // if !self.registers.flags.carry {
-        // val &= 0xFF;
-        // }
-        // } else {
-        // val += 0x06;
-        // }
-        // }
-        //
-        // if val > 0x99 || self.registers.flags.carry {
-        // if self.registers.flags.negative {
-        // val -= 0x60;
-        // } else {
-        // val += 0x60;
-        // }
-        // }
-        //
-        // self.registers.a = (val & 0xFF) as u8;
-        // self.registers.flags.carry = val & 0x100 == 0x100;
-        // if self.registers.flags.negative {
-        // self.registers.flags.half_carry = self.registers.flags.half_carry &&
-        // ((val & 0x0F) < 0x06);
-        // } else {
-        // self.registers.flags.half_carry = (val & 0x0F) > 0x09;
-        // }
-        // self.registers.flags.zero = (val & 0xFF) == 0x00;
-        //
     }
 
     fn dec_a(&mut self) {
