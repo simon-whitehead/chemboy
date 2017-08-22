@@ -184,6 +184,7 @@ impl Cpu {
                 0x0D => self.dec_c(),
                 0x0E => self.ld_c_imm8(&operand),
                 0x0F => self.rrca(),
+                0x10 => self.halt(), // We're emulating hardware... just HALT instead of STOP
                 0x11 => self.ld_de_imm16(&operand),
                 0x12 => self.ld_de_a(interconnect),
                 0x13 => self.inc_de(),
