@@ -193,9 +193,9 @@ static OPCODES: [OpCode; 245] = [OpCode {
                                      extended: false,
                                  },
                                  OpCode {
-                                     code: 0x0F,
+                                     code: 0x10,
                                      mnemonic: "STOP",
-                                     length: 2,
+                                     length: 2, // theres a $00 after this opcode
                                      cycles: 4,
                                      argument_type: ArgumentType::Implied,
                                      extended: false,
