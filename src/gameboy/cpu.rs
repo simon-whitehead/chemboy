@@ -165,7 +165,7 @@ impl Cpu {
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
             println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
-
+            let pc = self.registers.pc;
             self.registers.pc += opcode.length;
 
             match opcode.code {
@@ -421,6 +421,11 @@ impl Cpu {
                                        opcode.code,
                                        self.registers.pc))
                 }
+            }
+
+
+            if pc == 0x4B36 {
+                panic!("{:?}", operand);
             }
 
             return Ok(cycles);
@@ -1349,6 +1354,7 @@ impl Cpu {
     fn call(&mut self, addr: u16, interconnect: &mut Interconnect) {
         self.registers.sp -= 0x02;
         interconnect.write_u16(self.registers.sp as u16, self.registers.pc);
+        println!("Calling {:04X}", addr);
         self.registers.pc = addr;
     }
 

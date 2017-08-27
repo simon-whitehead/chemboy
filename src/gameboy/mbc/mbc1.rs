@@ -65,7 +65,19 @@ impl MBC for MBC1 {
     }
 
     fn read_rom_u16(&self, addr: u16) -> u16 {
-        self.rom.read_u16(addr)
+        println!("Reading u16 from ROM Bank: {}", self.rom_bank);
+        let addr = if addr < 0x4000 {
+            addr
+        } else {
+            self.rom_bank as u16 * 0x4000 | (addr & 0x3FFF)
+        };
+
+        let addr = addr as usize;
+        let a = self.rom[addr] as u16;
+        let b = self.rom[addr + 0x01] as u16;
+        let result = (b << 0x08) | a;
+        println!("Read result: {:04X}", result);
+        result
     }
 
     fn write_ram_u8(&mut self, addr: u16, b: u8) {
@@ -76,9 +88,9 @@ impl MBC for MBC1 {
 
     fn write_rom_u8(&mut self, addr: u16, b: u8) {
         match addr {
-            0x0000...0x1FFF => self.ram_enabled = b & 0x0F == 0x0A,
+            0x0000...0x1FFF => self.ram_enabled = b == 0x0A,
             0x2000...0x3FFF => {
-                let b = if b & 0x1F == 0x00 { 0x01 } else { b };
+                let b = if b & 0x1F == 0x00 { 0x01 } else { b & 0x1F };
                 self.rom_bank = (self.rom_bank & 0x60) | b as usize;
             }
             0x4000...0x5FFF => {

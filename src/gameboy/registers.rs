@@ -1,4 +1,4 @@
-#[derive(Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Registers {
     pub a: u8,
     pub b: u8,
@@ -90,7 +90,7 @@ impl Registers {
     }
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Flags {
     pub zero: bool,
     pub negative: bool,
