@@ -22,6 +22,8 @@ pub trait MBC {
 
     fn write_ram_u8(&mut self, addr: u16, b: u8);
     fn write_rom_u8(&mut self, addr: u16, b: u8);
+
+    fn write_ram_u16(&mut self, addr: u16, b: u16);
 }
 
 pub fn get_ram_size(b: u8) -> usize {

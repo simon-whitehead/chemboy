@@ -48,4 +48,8 @@ impl MBC for MBC0 {
     fn write_rom_u8(&mut self, addr: u16, b: u8) {
         ()
     }
+
+    fn write_ram_u16(&mut self, addr: u16, b: u16) {
+        self.ram.write_u16(addr, b)
+    }
 }

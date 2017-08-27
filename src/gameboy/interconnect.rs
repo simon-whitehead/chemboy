@@ -20,6 +20,7 @@ pub struct Interconnect {
     pub ram: Memory,
     pub zram: Memory,
     pub mmap_io: Memory,
+    pub unused_memory: Memory,
     pub timer: Timer,
     pub irq: Irq,
     pub cart: Option<Cartridge>,
@@ -36,6 +37,7 @@ impl Interconnect {
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
             mmap_io: Memory::new(MMAP_SIZE),
+            unused_memory: Memory::new(0x60),
             timer: Timer::new(),
             irq: Irq::new(),
             cart: None,
@@ -52,6 +54,7 @@ impl Interconnect {
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
             mmap_io: Memory::new(MMAP_SIZE),
+            unused_memory: Memory::new(0x60),
             timer: Timer::new(),
             irq: Irq::new(),
             cart: Some(cart),
@@ -224,11 +227,16 @@ impl Interconnect {
     }
 
     pub fn write_u16(&mut self, addr: u16, val: u16) {
-        let cart = self.cart.as_ref().expect("Cartridge is empty");
+        let cart = self.cart.as_mut().expect("Cartridge is empty");
 
         match memory_map::map_address(addr) {
+            Address::CartRam(a) => cart.write_ram_u16(a, val),
+            Address::Gfx(a) => self.gpu.write_u16(a, val),
+            Address::Io(a) => self.mmap_io.write_u16(a, val),
+            Address::Oam(a) => self.gpu.sprite_data.write_u16(a, val),
             Address::Ram(a) => self.ram.write_u16(a, val),
             Address::RamShadow(a) => self.ram.write_u16(a, val),
+            Address::Unused(a) => self.unused_memory.write_u16(a, val),
             Address::ZRam(a) => self.zram.write_u16(a, val),
             _ => panic!("Unable to write address: {:#X}", addr),
         }

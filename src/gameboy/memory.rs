@@ -1,7 +1,7 @@
 use std;
 use std::fs::File;
 use std::io::Write;
-use std::ops::{Deref, Range};
+use std::ops::{Deref, DerefMut, Range};
 use std::path::Path;
 
 use byteorder::{ByteOrder, LittleEndian};
@@ -61,5 +61,11 @@ impl Deref for Memory {
 
     fn deref(&self) -> &[u8] {
         &self.ram
+    }
+}
+
+impl DerefMut for Memory {
+    fn deref_mut(&mut self) -> &mut [u8] {
+        &mut self.ram
     }
 }

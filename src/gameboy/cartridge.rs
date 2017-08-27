@@ -1,7 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 use gameboy::interconnect::Interconnect;
-use gameboy::mbc::{MBC, MBC0};
+use gameboy::mbc::{MBC, MBC0, MBC1};
 use gameboy::Memory;
 
 const CART_MEM_SIZE: usize = 0x200000;
@@ -44,6 +44,7 @@ impl Cartridge {
     fn get_controller(b: u8, rom: &[u8]) -> Box<MBC> {
         match b {
             0x00 => Box::new(MBC0::new(rom)),
+            0x01...0x03 => Box::new(MBC1::new(rom)),
             _ => panic!("MBC not supported"),
         }
     }
