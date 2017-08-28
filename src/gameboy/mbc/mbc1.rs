@@ -65,18 +65,15 @@ impl MBC for MBC1 {
     }
 
     fn read_rom_u16(&self, addr: u16) -> u16 {
-        println!("Reading u16 from ROM Bank: {}", self.rom_bank);
         let addr = if addr < 0x4000 {
-            addr
+            addr as usize
         } else {
-            self.rom_bank as u16 * 0x4000 | (addr & 0x3FFF)
+            self.rom_bank as usize * 0x4000 + (addr as usize - 0x4000)
         };
 
-        let addr = addr as usize;
         let a = self.rom[addr] as u16;
         let b = self.rom[addr + 0x01] as u16;
         let result = (b << 0x08) | a;
-        println!("Read result: {:04X}", result);
         result
     }
 
