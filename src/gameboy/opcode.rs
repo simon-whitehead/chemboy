@@ -1,6 +1,6 @@
 use gameboy::registers;
 
-#[derive(Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Operand {
     None,
     Imm8(u8),

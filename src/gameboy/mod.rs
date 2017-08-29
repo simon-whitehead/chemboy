@@ -9,6 +9,7 @@ mod gpu;
 mod interconnect;
 mod irq;
 mod joypad;
+mod mbc;
 mod memory;
 mod memory_map;
 mod opcode;

@@ -165,6 +165,7 @@ impl Cpu {
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
             // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
+            let pc = self.registers.pc;
             self.registers.pc += opcode.length;
 
             match opcode.code {

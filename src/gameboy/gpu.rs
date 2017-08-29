@@ -1,3 +1,5 @@
+use byteorder::{ByteOrder, LittleEndian};
+
 use gameboy;
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
 use gameboy::frame::{Color, Frame};
@@ -33,20 +35,20 @@ impl GpuStat {
 
     pub fn to_u8(&self, gpu: &Gpu) -> u8 {
         (if self.coincidence_interrupt_enabled {
-             0x40
-         } else {
-             0
-         }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
-            (if self.VBlank_interrupt_enabled {
-                 0x10
-             } else {
-                 0
-             }) |
-            (if self.HBlank_interrupt_enabled {
-                 0x08
-             } else {
-                 0
-             }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
+            0x40
+        } else {
+            0
+        }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
+        (if self.VBlank_interrupt_enabled {
+            0x10
+        } else {
+            0
+        }) |
+        (if self.HBlank_interrupt_enabled {
+            0x08
+        } else {
+            0
+        }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
     }
 }
 
@@ -203,13 +205,13 @@ impl Gpu {
         for i in 0..gameboy::SCREEN_WIDTH {
             let x = (i as u8).wrapping_add(self.scroll_x);
             let bg_map_col = (x / 8) as usize;
-            let raw_tile_number =
-                self.ram[bg_base + (bg_map_row * 0x20 + bg_map_col)] as usize;
+            let raw_tile_number = self.ram[bg_base + (bg_map_row * 0x20 + bg_map_col)] as usize;
 
             let line_offset = (line % 0x08) << 0x01;
 
-            let tile_data_start = tile_base + (if tile_base == 0x00 {
-                raw_tile_number 
+            let tile_data_start = tile_base +
+                                  (if tile_base == 0x00 {
+                raw_tile_number
             } else {
                 (raw_tile_number as i8 as i16 + 0x80) as usize
             }) * 0x10 + line_offset;
@@ -247,10 +249,8 @@ impl Gpu {
                 let tile_data2 = (self.ram[tile_data_start as usize + 0x01] >> x_shift) & 0x01;
                 let total_row_data = (tile_data2 << 1) | tile_data1;
                 let color_value = total_row_data;
-                let c = self.get_sprite_color_for_byte(
-                    color_value as u8,
-                    ((attributes & 0x10) >> 0x04) as u8,
-                );
+                let c = self.get_sprite_color_for_byte(color_value as u8,
+                                                       ((attributes & 0x10) >> 0x04) as u8);
                 // White means transparent for Sprites, so ignore this pixel completely
                 if c.is_white() {
                     continue;
@@ -337,6 +337,11 @@ impl Gpu {
             0x4B => self.window_x = val,
             _ => panic!("tried to write GPU memory that is not mapped: {:04}", addr),
         }
+    }
+
+    pub fn write_u16(&mut self, addr: u16, val: u16) {
+        let addr = addr as usize;
+        LittleEndian::write_u16(&mut self.ram[addr..], val)
     }
 
     fn check_coincidence(&mut self, irq: &mut Irq) {

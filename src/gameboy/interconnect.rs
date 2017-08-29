@@ -20,6 +20,7 @@ pub struct Interconnect {
     pub ram: Memory,
     pub zram: Memory,
     pub mmap_io: Memory,
+    pub unused_memory: Memory,
     pub timer: Timer,
     pub irq: Irq,
     pub cart: Option<Cartridge>,
@@ -36,6 +37,7 @@ impl Interconnect {
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
             mmap_io: Memory::new(MMAP_SIZE),
+            unused_memory: Memory::new(0x60),
             timer: Timer::new(),
             irq: Irq::new(),
             cart: None,
@@ -52,6 +54,7 @@ impl Interconnect {
             ram: Memory::new(MAIN_MEM_SIZE),
             zram: Memory::new(ZRAM_SIZE),
             mmap_io: Memory::new(MMAP_SIZE),
+            unused_memory: Memory::new(0x60),
             timer: Timer::new(),
             irq: Irq::new(),
             cart: Some(cart),
@@ -93,10 +96,10 @@ impl Interconnect {
         self.irq.reset();
     }
 
-    pub fn cart_details(&self) -> CartridgeDetails {
+    pub fn cart_details(&self) -> &CartridgeDetails {
         let cart = self.cart.as_ref().expect("Cartridge is empty");
 
-        cart.details(&self)
+        &cart.details
     }
 
     pub fn request_frame(&self) -> &Frame {
@@ -123,8 +126,8 @@ impl Interconnect {
             Address::Ram(a) => self.ram.write_u8(a, byte),
             Address::RamShadow(a) => self.ram.write_u8(a, byte),
             Address::Gfx(a) => self.gpu.ram.write_u8(a, byte),
-            Address::CartRam(a) => cart.ram.write_u8(a, byte),
-            Address::CartRom(a) => cart.rom.write_u8(a, byte),
+            Address::CartRam(a) => cart.write_ram_u8(a, byte),
+            Address::CartRom(a) => cart.write_rom_u8(a, byte),
             Address::ZRam(a) => {
                 // if a != 0x00 {
                 self.zram.write_u8(a, byte);
@@ -173,12 +176,12 @@ impl Interconnect {
                 if self.booting {
                     self.boot_rom.read_u8(addr)
                 } else {
-                    cart.rom.read_u8(addr)
+                    cart.read_rom_u8(addr)
                 }
             }
-            Address::CartRomOtherBank(addr) => cart.rom.read_u8(addr),
+            Address::CartRomOtherBank(addr) => cart.read_rom_u8(addr),
             Address::Gfx(value) => self.gpu.ram.read_u8(value),
-            Address::CartRam(a) => cart.ram.read_u8(a),
+            Address::CartRam(a) => cart.read_ram_u8(a),
             Address::ZRam(a) => self.zram.read_u8(a),
             Address::Oam(a) => self.gpu.sprite_data.read_u8(a),
             Address::Unused(_) => 0xFF, // Always return high
@@ -212,21 +215,11 @@ impl Interconnect {
     }
 
     pub fn read_bytes(&self, r: Range<u16>) -> &[u8] {
+        panic!("CALLED, APPARENTLY");
         let cart = self.cart.as_ref().expect("Cartridge is empty");
 
         match memory_map::map_address(r.start) {
-            Address::Ram(_) |
-            Address::RamShadow(_) => self.ram.read_bytes(r),
-            Address::CartRom(_) => {
-                if self.booting && r.start < 0xE0 {
-                    self.boot_rom.read_bytes(r)
-                } else {
-                    cart.rom.read_bytes(r)
-                }
-            }
-            Address::CartRomOtherBank(_) => cart.rom.read_bytes(r),
-            Address::Gfx(_) => self.gpu.ram.read_bytes(r),
-            Address::CartRam(_) => cart.ram.read_bytes(r),
+            Address::Ram(_) | Address::Gfx(_) => self.gpu.ram.read_bytes(r),
             Address::ZRam(a) => self.zram.read_bytes(r),
             Address::Io(a) => self.mmap_io.read_bytes(r),
             _ => panic!("Unable to read address range: {:?}", r),
@@ -234,11 +227,16 @@ impl Interconnect {
     }
 
     pub fn write_u16(&mut self, addr: u16, val: u16) {
-        let cart = self.cart.as_ref().expect("Cartridge is empty");
+        let cart = self.cart.as_mut().expect("Cartridge is empty");
 
         match memory_map::map_address(addr) {
+            Address::CartRam(a) => cart.write_ram_u16(a, val),
+            Address::Gfx(a) => self.gpu.write_u16(a, val),
+            Address::Io(a) => self.mmap_io.write_u16(a, val),
+            Address::Oam(a) => self.gpu.sprite_data.write_u16(a, val),
             Address::Ram(a) => self.ram.write_u16(a, val),
             Address::RamShadow(a) => self.ram.write_u16(a, val),
+            Address::Unused(a) => self.unused_memory.write_u16(a, val),
             Address::ZRam(a) => self.zram.write_u16(a, val),
             _ => panic!("Unable to write address: {:#X}", addr),
         }
@@ -254,12 +252,12 @@ impl Interconnect {
                 if self.booting {
                     self.boot_rom.read_u16(addr)
                 } else {
-                    cart.rom.read_u16(addr)
+                    cart.read_rom_u16(addr)
                 }
             }
-            Address::CartRomOtherBank(addr) => cart.rom.read_u16(addr),
+            Address::CartRomOtherBank(addr) => cart.read_rom_u16(addr),
             Address::Gfx(value) => self.gpu.ram.read_u16(value),
-            Address::CartRam(a) => cart.ram.read_u16(a),
+            Address::CartRam(a) => cart.read_ram_u16(a),
             Address::ZRam(a) => self.zram.read_u16(a),
             Address::Io(a) => self.mmap_io.read_u16(a),
             _ => panic!("Unable to read address: {:#X}", addr),
@@ -269,7 +267,7 @@ impl Interconnect {
     pub fn write_bytes(&mut self, addr: u16, bytes: &[u8]) {
         let cart = self.cart.as_mut().expect("Cartridge is empty");
         match memory_map::map_address(addr) {
-            Address::CartRom(addr) => cart.rom.write_bytes(addr, bytes),
+            // Address::CartRom(addr) => cart.write_rom_bytes(addr, bytes),
             _ => panic!("write_bytes not mapped for specified memory region"),
         }
     }
