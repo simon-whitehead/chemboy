@@ -249,6 +249,8 @@ impl Gpu {
             let tile_number = self.sprite_data[sprite_table_entry_base + 0x02] as i16;
             let attributes = self.sprite_data[sprite_table_entry_base + 0x03];
             let above_background = attributes & 0x80 == 0x00;
+            let flip_y = attributes & 0x40 == 0x40;
+            let flip_x = attributes & 0x20 == 0x20;
 
             let sprite_y = (line as i16 - s_y) << 0x01;
             let tile_data_start = (tile_number * 0x10) + sprite_y;
@@ -256,9 +258,9 @@ impl Gpu {
                 if s_x + x < 0 || s_x + x >= 160 {
                     continue;
                 }
-                let x_shift = 0x07 - x;
-                let tile_data1 = (self.ram[tile_data_start as usize] >> x_shift) & 0x01;
-                let tile_data2 = (self.ram[tile_data_start as usize + 0x01] >> x_shift) & 0x01;
+                let shift = if flip_x { x } else { 0x07 - x };
+                let tile_data1 = (self.ram[tile_data_start as usize] >> shift) & 0x01;
+                let tile_data2 = (self.ram[tile_data_start as usize + 0x01] >> shift) & 0x01;
                 let total_row_data = (tile_data2 << 1) | tile_data1;
                 let color_value = total_row_data;
                 if color_value == 0x00 {
