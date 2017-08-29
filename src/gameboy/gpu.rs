@@ -243,7 +243,7 @@ impl Gpu {
             } else {
                 0x08
             };
-            if line < s_y as usize || line > s_y as usize + sprite_height {
+            if line < s_y as usize || line >= s_y as usize + sprite_height {
                 continue;
             }
             let tile_number = self.sprite_data[sprite_table_entry_base + 0x02] as i16;
