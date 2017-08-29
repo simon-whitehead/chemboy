@@ -71,6 +71,11 @@ impl GpuMode {
     }
 }
 
+pub enum SpriteShape {
+    Square,
+    Rectangle,
+}
+
 pub struct Gpu {
     pub enabled: bool,
     pub ram: Memory,
@@ -96,6 +101,7 @@ pub struct Gpu {
     counter: u8,
     tile_base: usize,
     background_base: usize,
+    sprite_shape: SpriteShape,
 }
 
 impl Gpu {
@@ -122,6 +128,7 @@ impl Gpu {
             counter: 0,
             tile_base: 0x00,
             background_base: 0xC00,
+            sprite_shape: SpriteShape::Square,
         }
     }
 
@@ -231,12 +238,17 @@ impl Gpu {
             let sprite_table_entry_base = i * 0x04;
             let s_y = self.sprite_data[sprite_table_entry_base] as i16 - 0x10;
             let s_x = self.sprite_data[sprite_table_entry_base + 0x01] as i16 - 0x08;
-            if line < s_y as usize || line > s_y as usize + 0x08 {
-                // sprite height? 16 or 8?
+            let sprite_height = if let SpriteShape::Rectangle = self.sprite_shape {
+                0x10
+            } else {
+                0x08
+            };
+            if line < s_y as usize || line > s_y as usize + sprite_height {
                 continue;
             }
             let tile_number = self.sprite_data[sprite_table_entry_base + 0x02] as i16;
             let attributes = self.sprite_data[sprite_table_entry_base + 0x03];
+            let above_background = attributes & 0x80 == 0x00;
 
             let sprite_y = (line as i16 - s_y) << 0x01;
             let tile_data_start = (tile_number * 0x10) + sprite_y;
@@ -249,12 +261,11 @@ impl Gpu {
                 let tile_data2 = (self.ram[tile_data_start as usize + 0x01] >> x_shift) & 0x01;
                 let total_row_data = (tile_data2 << 1) | tile_data1;
                 let color_value = total_row_data;
-                let c = self.get_sprite_color_for_byte(color_value as u8,
-                                                       ((attributes & 0x10) >> 0x04) as u8);
-                // White means transparent for Sprites, so ignore this pixel completely
-                if c.is_white() {
+                if color_value == 0x00 {
                     continue;
                 }
+                let c = self.get_sprite_color_for_byte(color_value as u8,
+                                                       ((attributes & 0x10) >> 0x04) as u8);
                 self.backbuffer.pixels[line as usize * 160 + (s_x as usize + x as usize)] = c;
             }
         }
@@ -321,6 +332,11 @@ impl Gpu {
                     0x1C00
                 } else {
                     0x1800
+                };
+                self.sprite_shape = if self.control_register & 0x04 == 0x04 {
+                    SpriteShape::Rectangle
+                } else {
+                    SpriteShape::Square
                 };
             }
             0x41 => self.stat = GpuStat::from_u8(val),
