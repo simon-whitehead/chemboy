@@ -1,4 +1,7 @@
+
 use byteorder::{ByteOrder, LittleEndian};
+
+use std;
 
 use gameboy;
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
@@ -243,32 +246,36 @@ impl Gpu {
             } else {
                 0x08
             };
-            if line < s_y as usize || line >= s_y as usize + sprite_height {
-                continue;
-            }
-            let tile_number = self.sprite_data[sprite_table_entry_base + 0x02] as i16;
-            let attributes = self.sprite_data[sprite_table_entry_base + 0x03];
-            let above_background = attributes & 0x80 == 0x00;
-            let flip_y = attributes & 0x40 == 0x40;
-            let flip_x = attributes & 0x20 == 0x20;
 
-            let sprite_y = (line as i16 - s_y) << 0x01;
-            let tile_data_start = (tile_number * 0x10) + sprite_y;
-            for x in 0..8 {
-                if s_x + x < 0 || s_x + x >= 160 {
-                    continue;
+            // Ignore this scanline if the sprite doesn't sit within it
+            // Should we be casting to usize here? If the number is negative the sign bit
+            // will be throwing this calculation off entirely - perhaps this is why Kirby
+            // disappears when sprite Y position is negative?
+            if s_y as usize <= line && (s_y as usize + sprite_height) > line {
+                let tile_number = self.sprite_data[sprite_table_entry_base + 0x02] as i16;
+                let attributes = self.sprite_data[sprite_table_entry_base + 0x03];
+                let above_background = attributes & 0x80 == 0x00;
+                let flip_y = attributes & 0x40 == 0x40;
+                let flip_x = attributes & 0x20 == 0x20;
+
+                let sprite_y = (line as i16 - s_y) << 0x01;
+                let tile_data_start = (tile_number * 0x10) + sprite_y;
+                for x in 0..8 {
+                    if s_x + x < 0 || s_x + x >= 160 {
+                        continue;
+                    }
+                    let shift = if flip_x { x } else { 0x07 - x };
+                    let tile_data1 = (self.ram[tile_data_start as usize] >> shift) & 0x01;
+                    let tile_data2 = (self.ram[tile_data_start as usize + 0x01] >> shift) & 0x01;
+                    let total_row_data = (tile_data2 << 1) | tile_data1;
+                    let color_value = total_row_data;
+                    if color_value == 0x00 {
+                        continue;
+                    }
+                    let c = self.get_sprite_color_for_byte(color_value as u8,
+                                                           ((attributes & 0x10) >> 0x04) as u8);
+                    self.backbuffer.pixels[line as usize * 160 + (s_x as usize + x as usize)] = c;
                 }
-                let shift = if flip_x { x } else { 0x07 - x };
-                let tile_data1 = (self.ram[tile_data_start as usize] >> shift) & 0x01;
-                let tile_data2 = (self.ram[tile_data_start as usize + 0x01] >> shift) & 0x01;
-                let total_row_data = (tile_data2 << 1) | tile_data1;
-                let color_value = total_row_data;
-                if color_value == 0x00 {
-                    continue;
-                }
-                let c = self.get_sprite_color_for_byte(color_value as u8,
-                                                       ((attributes & 0x10) >> 0x04) as u8);
-                self.backbuffer.pixels[line as usize * 160 + (s_x as usize + x as usize)] = c;
             }
         }
     }
