@@ -247,11 +247,7 @@ impl Gpu {
                 0x08
             };
 
-            // Ignore this scanline if the sprite doesn't sit within it
-            // Should we be casting to usize here? If the number is negative the sign bit
-            // will be throwing this calculation off entirely - perhaps this is why Kirby
-            // disappears when sprite Y position is negative?
-            if s_y as usize <= line && (s_y as usize + sprite_height) > line {
+            if s_y <= line as i16 && (s_y + sprite_height as i16) > line as i16 {
                 let tile_number = self.sprite_data[sprite_table_entry_base + 0x02] as i16;
                 let attributes = self.sprite_data[sprite_table_entry_base + 0x03];
                 let above_background = attributes & 0x80 == 0x00;
