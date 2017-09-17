@@ -10,3 +10,11 @@ macro_rules! gb_asm {
         }
     };
 }
+
+macro_rules! guard {
+    ( $x:expr ) => {
+        if !$x {
+            return;
+        }
+    }
+}

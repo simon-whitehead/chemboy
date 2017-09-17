@@ -105,6 +105,7 @@ pub struct Gpu {
     tile_base: usize,
     background_base: usize,
     sprite_shape: SpriteShape,
+    sprites_enabled: bool,
 }
 
 impl Gpu {
@@ -132,6 +133,7 @@ impl Gpu {
             tile_base: 0x00,
             background_base: 0xC00,
             sprite_shape: SpriteShape::Square,
+            sprites_enabled: true,
         }
     }
 
@@ -237,6 +239,8 @@ impl Gpu {
     }
 
     fn render_sprites(&mut self, line: usize) {
+        guard!(self.sprites_enabled);
+
         for i in 0..40 {
             let sprite_table_entry_base = i * 0x04;
             let s_y = self.sprite_data[sprite_table_entry_base] as i16 - 0x10;
@@ -343,6 +347,7 @@ impl Gpu {
                 } else {
                     SpriteShape::Square
                 };
+                self.sprites_enabled = self.control_register & 0x02 == 0x02;
             }
             0x41 => self.stat = GpuStat::from_u8(val),
             0x42 => self.scroll_y = val,
