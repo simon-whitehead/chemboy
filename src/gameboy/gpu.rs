@@ -102,7 +102,7 @@ pub struct Gpu {
     mode: GpuMode,
 
     counter: u8,
-    tile_base: usize,
+    bg_tile_base: usize,
     background_base: usize,
     sprite_shape: SpriteShape,
     sprites_enabled: bool,
@@ -130,7 +130,7 @@ impl Gpu {
             backbuffer: Frame::new(),
             mode: GpuMode::HBlank,
             counter: 0,
-            tile_base: 0x00,
+            bg_tile_base: 0x00,
             background_base: 0xC00,
             sprite_shape: SpriteShape::Square,
             sprites_enabled: true,
@@ -212,7 +212,7 @@ impl Gpu {
 
     fn render_background(&mut self, line: usize) {
         let bg_base = self.background_base;
-        let tile_base = self.tile_base;
+        let tile_base = self.bg_tile_base;
         let bg_map_row = (line / 0x08) as usize;
         for i in 0..gameboy::SCREEN_WIDTH {
             let x = (i as u8).wrapping_add(self.scroll_x);
@@ -332,7 +332,7 @@ impl Gpu {
             0x40 => {
                 self.control_register = val;
                 self.enabled = self.control_register & 0x80 == 0x80;
-                self.tile_base = if self.control_register & 0x10 == 0x10 {
+                self.bg_tile_base = if self.control_register & 0x10 == 0x10 {
                     0x00
                 } else {
                     0x800
