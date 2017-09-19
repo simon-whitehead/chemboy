@@ -106,6 +106,7 @@ pub struct Gpu {
     background_base: usize,
     sprite_shape: SpriteShape,
     sprites_enabled: bool,
+    background_enabled: bool,
 }
 
 impl Gpu {
@@ -134,6 +135,7 @@ impl Gpu {
             background_base: 0xC00,
             sprite_shape: SpriteShape::Square,
             sprites_enabled: true,
+            background_enabled: true,
         }
     }
 
@@ -348,6 +350,7 @@ impl Gpu {
                     SpriteShape::Square
                 };
                 self.sprites_enabled = self.control_register & 0x02 == 0x02;
+                self.background_enabled = self.control_register & 0x01 == 0x01;
             }
             0x41 => self.stat = GpuStat::from_u8(val),
             0x42 => self.scroll_y = val,
