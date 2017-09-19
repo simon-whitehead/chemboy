@@ -11,7 +11,7 @@ macro_rules! gb_asm {
     };
 }
 
-macro_rules! guard {
+macro_rules! requires {
     ( $x:expr ) => {
         if !$x {
             return;

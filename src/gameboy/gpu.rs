@@ -103,10 +103,13 @@ pub struct Gpu {
 
     counter: u8,
     bg_tile_base: usize,
+    window_tile_base: usize,
     background_base: usize,
+    window_base: usize,
     sprite_shape: SpriteShape,
     sprites_enabled: bool,
     background_enabled: bool,
+    window_enabled: bool,
 }
 
 impl Gpu {
@@ -132,10 +135,13 @@ impl Gpu {
             mode: GpuMode::HBlank,
             counter: 0,
             bg_tile_base: 0x00,
+            window_tile_base: 0x00,
             background_base: 0xC00,
+            window_base: 0x00,
             sprite_shape: SpriteShape::Square,
             sprites_enabled: true,
             background_enabled: true,
+            window_enabled: true,
         }
     }
 
@@ -202,6 +208,7 @@ impl Gpu {
         let line = self.ly.wrapping_add(self.scroll_y) as usize;
         // self.clear_scanline(line);
         self.render_background(line);
+        self.render_window(line);
         self.render_sprites(line);
         self.frame = self.backbuffer.clone();
     }
@@ -240,8 +247,42 @@ impl Gpu {
         }
     }
 
+    fn render_window(&mut self, line: usize) {
+        requires!(self.window_enabled);
+        requires!(line >= self.window_y as usize);
+
+        let bg_base = self.window_base;
+        let tile_base = self.bg_tile_base;
+        let bg_map_row = ((line - self.window_y as usize) / 0x08) as usize;
+        for i in 0..gameboy::SCREEN_WIDTH {
+            if i < self.window_x as u32 {
+                continue;
+            }
+            let x = i as u8 - self.window_x;
+            let bg_map_col = (x / 8) as usize;
+            let raw_tile_number = self.ram[bg_base + (bg_map_row * 0x20 + bg_map_col)] as usize;
+
+            let line_offset = (line % 0x08) << 0x01;
+
+            let tile_data_start = tile_base +
+                                  (if tile_base == 0x00 {
+                raw_tile_number
+            } else {
+                (raw_tile_number as i8 as i16 + 0x80) as usize
+            }) * 0x10 + line_offset;
+
+            let x_shift = (x % 8).wrapping_sub(0x07).wrapping_mul(0xFF);
+            let tile_data1 = (self.ram[tile_data_start] >> x_shift) & 0x01;
+            let tile_data2 = (self.ram[tile_data_start + 0x01] >> x_shift) & 0x01;
+            let total_row_data = (tile_data2 << 1) | tile_data1;
+            let color_value = total_row_data;
+            let c = self.get_background_color_for_byte(color_value as u8);
+            self.backbuffer.pixels[self.ly as usize * 160 + i as usize] = c;
+        }
+    }
+
     fn render_sprites(&mut self, line: usize) {
-        guard!(self.sprites_enabled);
+        requires!(self.sprites_enabled);
 
         for i in 0..40 {
             let sprite_table_entry_base = i * 0x04;
@@ -339,6 +380,11 @@ impl Gpu {
                 } else {
                     0x800
                 };
+                self.window_base = if self.control_register & 0x40 == 0x40 {
+                    0x1C00
+                } else {
+                    0x1800
+                };
                 self.background_base = if self.control_register & 0x08 == 0x08 {
                     0x1C00
                 } else {
@@ -349,6 +395,7 @@ impl Gpu {
                 } else {
                     SpriteShape::Square
                 };
+                self.window_enabled = self.control_register & 0x20 == 0x20;
                 self.sprites_enabled = self.control_register & 0x02 == 0x02;
                 self.background_enabled = self.control_register & 0x01 == 0x01;
             }
