@@ -33,5 +33,5 @@ pub const CPU_FREQUENCY: usize = 0x400000; // 4,194,304
 pub const MAX_CPU_CYCLES: usize = CPU_FREQUENCY / 60; // 60hz, our target refresh rate/fps
 pub const MAX_DIV_REG_CYCLES: usize = MAX_CPU_CYCLES / 0x10;
 
-pub const SCREEN_WIDTH: u32 = 0xA0;
-pub const SCREEN_HEIGHT: u32 = 0x90;
+pub const SCREEN_WIDTH: usize = 0xA0;
+pub const SCREEN_HEIGHT: usize = 0x90;

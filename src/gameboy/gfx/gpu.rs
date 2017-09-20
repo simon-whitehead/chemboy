@@ -144,8 +144,9 @@ impl Gpu {
     }
 
     fn clear_scanline(&mut self, line: usize) {
-        for i in 0..160 {
-            self.backbuffer.pixels[line * 160 + i] = Color::new(0xFF, 0xFF, 0xFF, 0xFF);
+        for i in 0..gameboy::SCREEN_WIDTH {
+            self.backbuffer.pixels[line * gameboy::SCREEN_WIDTH as usize + i] =
+                Color::new(0xFF, 0xFF, 0xFF, 0xFF);
         }
     }
 
@@ -173,7 +174,7 @@ impl Gpu {
             let total_row_data = (tile_data2 << 1) | tile_data1;
             let color_value = total_row_data;
             let c = self.get_background_color_for_byte(color_value as u8);
-            self.backbuffer.pixels[self.ly as usize * 160 + i as usize] = c;
+            self.backbuffer.pixels[self.ly as usize * gameboy::SCREEN_WIDTH + i as usize] = c;
         }
     }
 
@@ -185,7 +186,7 @@ impl Gpu {
         let tile_base = self.bg_tile_base;
         let bg_map_row = ((line - self.window_y as usize) / 0x08) as usize;
         for i in 0..gameboy::SCREEN_WIDTH {
-            if i < self.window_x as u32 {
+            if i < self.window_x as usize {
                 continue;
             }
             let x = i as u8 - self.window_x;
@@ -207,7 +208,7 @@ impl Gpu {
             let total_row_data = (tile_data2 << 1) | tile_data1;
             let color_value = total_row_data;
             let c = self.get_background_color_for_byte(color_value as u8);
-            self.backbuffer.pixels[self.ly as usize * 160 + i as usize] = c;
+            self.backbuffer.pixels[self.ly as usize * gameboy::SCREEN_WIDTH + i as usize] = c;
         }
     }
 
@@ -234,7 +235,7 @@ impl Gpu {
                 let sprite_y = (line as i16 - s_y) << 0x01;
                 let tile_data_start = (tile_number * 0x10) + sprite_y;
                 for x in 0..8 {
-                    if s_x + x < 0 || s_x + x >= 160 {
+                    if s_x + x < 0 || s_x + x >= gameboy::SCREEN_WIDTH as i16 {
                         continue;
                     }
                     let shift = if flip_x { x } else { 0x07 - x };
@@ -247,7 +248,8 @@ impl Gpu {
                     }
                     let c = self.get_sprite_color_for_byte(color_value as u8,
                                                            ((attributes & 0x10) >> 0x04) as u8);
-                    self.backbuffer.pixels[line as usize * 160 + (s_x as usize + x as usize)] = c;
+                    self.backbuffer.pixels[line * gameboy::SCREEN_WIDTH +
+                                           (s_x as usize + x as usize)] = c;
                 }
             }
         }
