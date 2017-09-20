@@ -11,23 +11,25 @@ pub struct Gpu {
     pub enabled: bool,
     pub ram: Memory,
     pub sprite_data: Memory,
+
+    pub ly: u8,
+    pub lyc: u8,
+
+    pub frame: Frame,
+    pub backbuffer: Frame,
+    pub mode: GpuMode,
+
     control_register: u8,
     stat: GpuStat,
     scroll_y: u8,
     scroll_x: u8,
     window_y: u8,
     window_x: u8,
-    pub ly: u8,
-    pub lyc: u8,
     bg_palette: u8,
     palette0: u8,
     palette1: u8,
 
     cycles: isize,
-
-    pub frame: Frame,
-    pub backbuffer: Frame,
-    pub mode: GpuMode,
 
     counter: u8,
     bg_tile_base: usize,
