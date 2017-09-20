@@ -5,12 +5,7 @@ use std;
 
 use gameboy;
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
-use gameboy::gfx::{Color, Frame, GpuMode, GpuStat};
-
-pub enum SpriteShape {
-    Square,
-    Rectangle,
-}
+use gameboy::gfx::{Color, Frame, GpuMode, GpuStat, SpriteShape};
 
 pub struct Gpu {
     pub enabled: bool,
