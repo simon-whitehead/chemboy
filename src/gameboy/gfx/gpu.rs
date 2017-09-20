@@ -5,74 +5,10 @@ use std;
 
 use gameboy;
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
-use gameboy::gfx::{Color, Frame};
+use gameboy::gfx::{Color, Frame, GpuMode, GpuStat};
 
 const VRAM_SIZE: usize = 0x4000;
 const SPRITE_DATA_SIZE: usize = 0xA0;
-
-pub struct GpuStat {
-    pub coincidence_interrupt_enabled: bool,
-    pub OAM_interrupt_enabled: bool,
-    pub VBlank_interrupt_enabled: bool,
-    pub HBlank_interrupt_enabled: bool,
-}
-
-impl GpuStat {
-    pub fn new() -> GpuStat {
-        GpuStat {
-            coincidence_interrupt_enabled: false,
-            OAM_interrupt_enabled: false,
-            VBlank_interrupt_enabled: false,
-            HBlank_interrupt_enabled: false,
-        }
-    }
-
-    pub fn from_u8(b: u8) -> GpuStat {
-        GpuStat {
-            coincidence_interrupt_enabled: b & 0x40 == 0x40,
-            OAM_interrupt_enabled: b & 0x20 == 0x20,
-            VBlank_interrupt_enabled: b & 0x10 == 0x10,
-            HBlank_interrupt_enabled: b & 0x08 == 0x08,
-        }
-    }
-
-    pub fn to_u8(&self, gpu: &Gpu) -> u8 {
-        (if self.coincidence_interrupt_enabled {
-            0x40
-        } else {
-            0
-        }) | (if self.OAM_interrupt_enabled { 0x20 } else { 0 }) |
-        (if self.VBlank_interrupt_enabled {
-            0x10
-        } else {
-            0
-        }) |
-        (if self.HBlank_interrupt_enabled {
-            0x08
-        } else {
-            0
-        }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
-    }
-}
-
-#[derive(Eq, PartialEq, Clone)]
-pub enum GpuMode {
-    HBlank,
-    VBlank,
-    SearchingRam,
-    TransferringData,
-}
-
-impl GpuMode {
-    fn to_u8(&self) -> u8 {
-        match *self {
-            GpuMode::HBlank => 0x00,
-            GpuMode::VBlank => 0x01,
-            GpuMode::SearchingRam => 0x02,
-            GpuMode::TransferringData => 0x03,
-        }
-    }
-}
 
 pub enum SpriteShape {
     Square,
@@ -90,7 +26,7 @@ pub struct Gpu {
     window_y: u8,
     window_x: u8,
     pub ly: u8,
-    lyc: u8,
+    pub lyc: u8,
     bg_palette: u8,
     palette0: u8,
     palette1: u8,
@@ -99,7 +35,7 @@ pub struct Gpu {
 
     pub frame: Frame,
     pub backbuffer: Frame,
-    mode: GpuMode,
+    pub mode: GpuMode,
 
     counter: u8,
     bg_tile_base: usize,
