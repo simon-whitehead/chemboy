@@ -83,7 +83,7 @@ impl Gpu {
         if !self.enabled {
             self.cycles = 0x1C8;
             self.ly = 0x00;
-            self.stat = GpuStat::from_u8(0xFD);
+            self.stat = GpuStat::from(0xFD);
         }
 
         let current_mode = self.mode.clone();
@@ -331,7 +331,7 @@ impl Gpu {
                 self.sprites_enabled = self.control_register & 0x02 == 0x02;
                 self.background_enabled = self.control_register & 0x01 == 0x01;
             }
-            0x41 => self.stat = GpuStat::from_u8(val),
+            0x41 => self.stat = GpuStat::from(val),
             0x42 => self.scroll_y = val,
             0x43 => self.scroll_x = val,
             0x44 => (),

@@ -17,15 +17,6 @@ impl GpuStat {
         }
     }
 
-    pub fn from_u8(b: u8) -> GpuStat {
-        GpuStat {
-            coincidence_interrupt_enabled: b & 0x40 == 0x40,
-            OAM_interrupt_enabled: b & 0x20 == 0x20,
-            VBlank_interrupt_enabled: b & 0x10 == 0x10,
-            HBlank_interrupt_enabled: b & 0x08 == 0x08,
-        }
-    }
-
     pub fn to_u8(&self, gpu: &Gpu) -> u8 {
         (if self.coincidence_interrupt_enabled {
             0x40
@@ -42,5 +33,16 @@ impl GpuStat {
         } else {
             0
         }) | (if gpu.ly == gpu.lyc { 0x04 } else { 0 }) | gpu.mode.to_u8()
+    }
+}
+
+impl From<u8> for GpuStat {
+    fn from(b: u8) -> GpuStat {
+        GpuStat {
+            coincidence_interrupt_enabled: b & 0x40 == 0x40,
+            OAM_interrupt_enabled: b & 0x20 == 0x20,
+            VBlank_interrupt_enabled: b & 0x10 == 0x10,
+            HBlank_interrupt_enabled: b & 0x08 == 0x08,
+        }
     }
 }
