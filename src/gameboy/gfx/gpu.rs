@@ -264,7 +264,7 @@ impl Gpu {
             _ => panic!("err: invalid pixel color value found"),
         };
 
-        Color::from_dmg_byte(palette_index as u8)
+        Color::from(palette_index as u8)
     }
 
     fn get_sprite_color_for_byte(&self, b: u8, palette_entry: u8) -> Color {
@@ -282,7 +282,7 @@ impl Gpu {
             _ => panic!("err: invalid pixel color value found"),
         };
 
-        Color::from_dmg_byte(palette_index as u8)
+        Color::from(palette_index as u8)
     }
 
     pub fn read_u8(&self, addr: u16) -> u8 {
