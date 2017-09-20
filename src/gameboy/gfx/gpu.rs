@@ -7,9 +7,6 @@ use gameboy;
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
 use gameboy::gfx::{Color, Frame, GpuMode, GpuStat};
 
-const VRAM_SIZE: usize = 0x4000;
-const SPRITE_DATA_SIZE: usize = 0xA0;
-
 pub enum SpriteShape {
     Square,
     Rectangle,
@@ -52,8 +49,8 @@ impl Gpu {
     pub fn new() -> Gpu {
         Gpu {
             enabled: true,
-            ram: Memory::new(VRAM_SIZE),
-            sprite_data: Memory::new(SPRITE_DATA_SIZE),
+            ram: Memory::new(gameboy::gfx::VRAM_SIZE),
+            sprite_data: Memory::new(gameboy::gfx::SPRITE_DATA_SIZE),
             control_register: 0x00,
             stat: GpuStat::new(),
             scroll_y: 0x00,
