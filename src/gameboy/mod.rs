@@ -3,9 +3,8 @@ mod macros;
 
 mod cartridge;
 mod cpu;
-mod frame;
 mod gameboy;
-mod gpu;
+pub mod gfx;
 mod interconnect;
 mod irq;
 mod joypad;
@@ -19,9 +18,9 @@ mod timer;
 
 pub use self::cartridge::{Cartridge, CartridgeDetails};
 pub use self::cpu::{Cpu, CpuSpeed};
-pub use self::frame::Frame;
+pub use gameboy::gfx::Frame;
 pub use self::gameboy::GameBoy;
-pub use self::gpu::Gpu;
+// pub use ::gameboy::gfx::Gpu;
 pub use self::joypad::{Joypad, JoypadButton};
 pub use self::memory::Memory;
 pub use self::interconnect::Interconnect;

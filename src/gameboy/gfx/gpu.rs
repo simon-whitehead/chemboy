@@ -5,7 +5,7 @@ use std;
 
 use gameboy;
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
-use gameboy::frame::{Color, Frame};
+use gameboy::gfx::{Color, Frame};
 
 const VRAM_SIZE: usize = 0x4000;
 const SPRITE_DATA_SIZE: usize = 0xA0;
