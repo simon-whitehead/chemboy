@@ -16,10 +16,6 @@ impl Color {
             a: a,
         }
     }
-
-    pub fn is_white(&self) -> bool {
-        self.r == 0xFF && self.g == 0xFF && self.b == 0xFF && self.a == 0xFF
-    }
 }
 
 impl From<u8> for Color {
