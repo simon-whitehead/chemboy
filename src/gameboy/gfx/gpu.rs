@@ -5,7 +5,7 @@ use std;
 
 use gameboy;
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
-use gameboy::gfx::{Color, Frame, GpuMode, GpuStat, SpriteShape};
+use gameboy::gfx::{Color, Frame, GpuMode, GpuStat, SpriteShape, TileRenderOptions, TileRenderType};
 
 pub struct Gpu {
     pub enabled: bool,
@@ -32,10 +32,9 @@ pub struct Gpu {
     cycles: isize,
 
     counter: u8,
-    bg_tile_base: usize,
-    window_tile_base: usize,
-    background_base: usize,
-    window_base: usize,
+    tile_data_addr: usize,
+    background_tilemap_addr: usize,
+    window_tilemap_addr: usize,
     sprite_shape: SpriteShape,
     sprites_enabled: bool,
     background_enabled: bool,
@@ -64,10 +63,9 @@ impl Gpu {
             backbuffer: Frame::new(),
             mode: GpuMode::HBlank,
             counter: 0,
-            bg_tile_base: 0x00,
-            window_tile_base: 0x00,
-            background_base: 0xC00,
-            window_base: 0x00,
+            tile_data_addr: 0x00,
+            background_tilemap_addr: 0xC00,
+            window_tilemap_addr: 0x00,
             sprite_shape: SpriteShape::Square,
             sprites_enabled: true,
             background_enabled: true,
@@ -136,67 +134,63 @@ impl Gpu {
 
     fn render_scanline(&mut self) {
         let line = self.ly.wrapping_add(self.scroll_y) as usize;
-        // self.clear_scanline(line);
+
         self.render_background(line);
         self.render_window(line);
         self.render_sprites(line);
         self.frame = self.backbuffer.clone();
     }
 
-    fn clear_scanline(&mut self, line: usize) {
-        for i in 0..gameboy::SCREEN_WIDTH {
-            self.backbuffer.pixels[line * gameboy::SCREEN_WIDTH as usize + i] =
-                Color::new(0xFF, 0xFF, 0xFF, 0xFF);
-        }
-    }
-
     fn render_background(&mut self, line: usize) {
-        let bg_base = self.background_base;
-        let tile_base = self.bg_tile_base;
-        let bg_map_row = (line / 0x08) as usize;
-        for i in 0..gameboy::SCREEN_WIDTH {
-            let x = (i as u8).wrapping_add(self.scroll_x);
-            let bg_map_col = (x / 8) as usize;
-            let raw_tile_number = self.ram[bg_base + (bg_map_row * 0x20 + bg_map_col)] as usize;
+        requires!(self.background_enabled);
 
-            let line_offset = (line % 0x08) << 0x01;
-
-            let tile_data_start = tile_base +
-                                  (if tile_base == 0x00 {
-                raw_tile_number
-            } else {
-                (raw_tile_number as i8 as i16 + 0x80) as usize
-            }) * 0x10 + line_offset;
-
-            let x_shift = (x % 8).wrapping_sub(0x07).wrapping_mul(0xFF);
-            let tile_data1 = (self.ram[tile_data_start] >> x_shift) & 0x01;
-            let tile_data2 = (self.ram[tile_data_start + 0x01] >> x_shift) & 0x01;
-            let total_row_data = (tile_data2 << 1) | tile_data1;
-            let color_value = total_row_data;
-            let c = self.get_background_color_for_byte(color_value as u8);
-            self.backbuffer.pixels[self.ly as usize * gameboy::SCREEN_WIDTH + i as usize] = c;
-        }
+        let options = TileRenderOptions::new(TileRenderType::Background,
+                                             line,
+                                             self.background_tilemap_addr,
+                                             self.tile_data_addr);
+        self.render_tile(&options);
     }
 
     fn render_window(&mut self, line: usize) {
         requires!(self.window_enabled);
         requires!(line >= self.window_y as usize);
 
-        let bg_base = self.window_base;
-        let tile_base = self.bg_tile_base;
-        let bg_map_row = ((line - self.window_y as usize) / 0x08) as usize;
+        let options = TileRenderOptions::new(TileRenderType::Window,
+                                             line,
+                                             self.window_tilemap_addr,
+                                             self.tile_data_addr);
+        self.render_tile(&options);
+    }
+
+    fn render_tile(&mut self, options: &TileRenderOptions) {
+        let window = variant_equals!(TileRenderType::Window, options.render_type);
+
+        // If rendering a window tile, we need to make sure we offset tile line properly
+        let window_offset = if window { self.window_y as usize } else { 0x00 };
+        let bg_map_row = ((options.line - window_offset) / 0x08) as usize;
+
         for i in 0..gameboy::SCREEN_WIDTH {
-            if i < self.window_x as usize {
+            // if nowhere near the window, skip
+            if window && i < self.window_x as usize {
                 continue;
             }
-            let x = i as u8 - self.window_x;
-            let bg_map_col = (x / 8) as usize;
-            let raw_tile_number = self.ram[bg_base + (bg_map_row * 0x20 + bg_map_col)] as usize;
 
-            let line_offset = (line % 0x08) << 0x01;
+            // If we're at the window, lets negate the window X position from where we
+            // need to be in the tile map
+            let x = if window {
+                i as u8 - self.window_x
+            } else {
+                // Otherwise, scroll the background
+                (i as u8).wrapping_add(self.scroll_x)
+            };
+            let bg_map_col = (x / 0x08) as usize;
+            let raw_tile_number =
+                self.ram[options.map_addr + (bg_map_row * 0x20 + bg_map_col)] as usize;
 
-            let tile_data_start = tile_base +
-                                  (if tile_base == 0x00 {
+            let line_offset = (options.line % 0x08) << 0x01;
+
+            let tile_data_start = options.tile_base_addr +
+                                  (if options.tile_base_addr == 0x00 {
                 raw_tile_number
             } else {
                 (raw_tile_number as i8 as i16 + 0x80) as usize
@@ -307,17 +301,17 @@ impl Gpu {
             0x40 => {
                 self.control_register = val;
                 self.enabled = self.control_register & 0x80 == 0x80;
-                self.bg_tile_base = if self.control_register & 0x10 == 0x10 {
+                self.tile_data_addr = if self.control_register & 0x10 == 0x10 {
                     0x00
                 } else {
                     0x800
                 };
-                self.window_base = if self.control_register & 0x40 == 0x40 {
+                self.window_tilemap_addr = if self.control_register & 0x40 == 0x40 {
                     0x1C00
                 } else {
                     0x1800
                 };
-                self.background_base = if self.control_register & 0x08 == 0x08 {
+                self.background_tilemap_addr = if self.control_register & 0x08 == 0x08 {
                     0x1C00
                 } else {
                     0x1800

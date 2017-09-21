@@ -18,3 +18,9 @@ macro_rules! requires {
         }
     }
 }
+
+macro_rules! variant_equals {
+    ( $variant:pat, $val:expr ) => {
+        if let $variant = $val { true } else { false }
+    }
+}
