@@ -167,7 +167,7 @@ impl Gpu {
 
         // If rendering a window tile, we need to make sure we offset tile line properly
         let window_offset = if window { self.window_y as usize } else { 0x00 };
-        let bg_map_row = ((options.line - window_offset) / 0x08) as usize;
+        let map_row = ((options.line - window_offset) / 0x08) as usize;
 
         for i in 0..gameboy::SCREEN_WIDTH {
             // if nowhere near the window, skip
@@ -183,9 +183,8 @@ impl Gpu {
                 // Otherwise, scroll the background
                 (i as u8).wrapping_add(self.scroll_x)
             };
-            let bg_map_col = (x / 0x08) as usize;
-            let raw_tile_number =
-                self.ram[options.map_addr + (bg_map_row * 0x20 + bg_map_col)] as usize;
+            let map_col = (x / 0x08) as usize;
+            let raw_tile_number = self.ram[options.map_addr + (map_row * 0x20 + map_col)] as usize;
 
             let line_offset = (options.line % 0x08) << 0x01;
 
