@@ -196,10 +196,7 @@ impl Gpu {
             }) * 0x10 + line_offset;
 
             let x_shift = (x % 8).wrapping_sub(0x07).wrapping_mul(0xFF);
-            let tile_data1 = (self.ram[tile_data_start] >> x_shift) & 0x01;
-            let tile_data2 = (self.ram[tile_data_start + 0x01] >> x_shift) & 0x01;
-            let total_row_data = (tile_data2 << 1) | tile_data1;
-            let color_value = total_row_data;
+            let color_value = Self::build_palette_index(&self.ram[tile_data_start..], x_shift);
             let c = self.get_background_color_for_byte(color_value as u8);
             self.backbuffer.pixels[self.ly as usize * gameboy::SCREEN_WIDTH + i as usize] = c;
         }
@@ -232,10 +229,9 @@ impl Gpu {
                         continue;
                     }
                     let shift = if flip_x { x } else { 0x07 - x };
-                    let tile_data1 = (self.ram[tile_data_start as usize] >> shift) & 0x01;
-                    let tile_data2 = (self.ram[tile_data_start as usize + 0x01] >> shift) & 0x01;
-                    let total_row_data = (tile_data2 << 1) | tile_data1;
-                    let color_value = total_row_data;
+                    let color_value =
+                        Self::build_palette_index(&self.ram[tile_data_start as usize..],
+                                                  shift as u8);
                     if color_value == 0x00 {
                         continue;
                     }
@@ -350,5 +346,12 @@ impl Gpu {
         if self.lyc == self.ly && self.stat.coincidence_interrupt_enabled {
             irq.request(Interrupt::Lcd);
         }
+    }
+
+    fn build_palette_index(data: &[u8], x_shift: u8) -> u8 {
+        let tile_data1 = (data[0x00] >> x_shift) & 0x01;
+        let tile_data2 = (data[0x01] >> x_shift) & 0x01;
+        let pixel_palette_entry = (tile_data2 << 1) | tile_data1;
+        pixel_palette_entry
     }
 }
