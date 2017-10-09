@@ -1,7 +1,7 @@
 use gameboy::{MAX_CPU_CYCLES, Interconnect, Irq, Interrupt};
 
 pub struct Timer {
-    div: u8,
+    div: usize,
     tima: u8,
     tma: u8,
     tac: u8,
@@ -38,7 +38,7 @@ impl Timer {
 
     pub fn read_u8(&self, addr: u16) -> u8 {
         match addr {
-            0x04 => self.div,
+            0x04 => self.div as u8,
             0x05 => self.tima,
             0x06 => self.tma,
             0x07 => self.tac,
@@ -61,7 +61,7 @@ impl Timer {
     }
 
     fn inc_div_register(&mut self, cycles: usize) {
-        self.div += cycles as u8;
+        self.div += cycles;
         if self.div >= 0xFF {
             self.div = 0x00;
         }
@@ -69,8 +69,7 @@ impl Timer {
 
     fn inc_tima_register(&mut self, irq: &mut Irq, cycles: usize) {
         if self.enabled() {
-            self.cycles -= cycles;
-            if self.cycles < 0x00 {
+            if self.cycles < cycles {
                 self.set_timer_frequency();
                 if self.tima == 0xFF {
                     self.tima = self.tma; // set the TIMA register to be whatever is in the modulo TMA register
@@ -78,6 +77,7 @@ impl Timer {
                 }
                 self.tima.wrapping_add(0x01);
             }
+            self.cycles = self.cycles.wrapping_sub(cycles);
         }
     }
 
