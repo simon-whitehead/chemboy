@@ -1,6 +1,6 @@
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
 use gameboy::cpu;
-use gameboy::frame::Frame;
+use ::gameboy::gfx::Frame;
 use gameboy::joypad::JoypadButton;
 use gameboy::interconnect::Interconnect;
 

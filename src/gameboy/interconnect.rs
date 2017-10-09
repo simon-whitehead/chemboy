@@ -1,8 +1,8 @@
 use std::ops::Range;
 
-use gameboy::{Gpu, Irq, Memory, Timer};
+use gameboy::{Irq, Memory, Timer};
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
-use gameboy::frame::Frame;
+use super::gfx::{Frame, Gpu};
 use gameboy::irq::Interrupt;
 use gameboy::joypad::{Joypad, JoypadButton};
 use super::memory_map::{self, Address};

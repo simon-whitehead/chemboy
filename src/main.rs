@@ -127,7 +127,7 @@ fn load_rom(fname: &str) -> std::io::Result<Vec<u8>> {
 }
 
 fn build_frame(frame: &Frame) -> RgbaImage {
-    let mut img = ImageBuffer::new(gameboy::SCREEN_WIDTH, gameboy::SCREEN_HEIGHT);
+    let mut img = ImageBuffer::new(gameboy::SCREEN_WIDTH as u32, gameboy::SCREEN_HEIGHT as u32);
     for x in 0..160 {
         for y in 0..144 {
             let frame_pixel = frame.pixels[160 * y + x];

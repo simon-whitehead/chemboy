@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/simon-whitehead/chemboy.svg?branch=master)](https://travis-ci.org/simon-whitehead/chemboy)
+
 ### chemboy
 -------------
 
