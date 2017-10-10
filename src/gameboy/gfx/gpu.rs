@@ -133,30 +133,28 @@ impl Gpu {
     }
 
     fn render_scanline(&mut self) {
-        let line = self.ly.wrapping_add(self.scroll_y) as usize;
-
-        self.render_background(line);
-        self.render_window(line);
-        self.render_sprites(line);
+        self.render_background();
+        self.render_window();
+        self.render_sprites();
         self.frame = self.backbuffer.clone();
     }
 
-    fn render_background(&mut self, line: usize) {
+    fn render_background(&mut self) {
         requires!(self.background_enabled);
 
         let options = TileRenderOptions::new(TileRenderType::Background,
-                                             line,
+                                             self.ly,
                                              self.background_tilemap_addr,
                                              self.tile_data_addr);
         self.render_tile(&options);
     }
 
-    fn render_window(&mut self, line: usize) {
+    fn render_window(&mut self) {
         requires!(self.window_enabled);
-        requires!(line >= self.window_y as usize);
+        requires!(self.ly as usize >= self.window_y as usize);
 
         let options = TileRenderOptions::new(TileRenderType::Window,
-                                             line,
+                                             self.ly,
                                              self.window_tilemap_addr,
                                              self.tile_data_addr);
         self.render_tile(&options);
@@ -164,10 +162,11 @@ impl Gpu {
 
     fn render_tile(&mut self, options: &TileRenderOptions) {
         let window = variant_equals!(TileRenderType::Window, options.render_type);
+        let y = options.line.wrapping_add(self.scroll_y) as usize;
 
         // If rendering a window tile, we need to make sure we offset tile line properly
         let window_offset = if window { self.window_y as usize } else { 0x00 };
-        let map_row = ((options.line - window_offset) / 0x08) as usize;
+        let map_row = ((y - window_offset) / 0x08) as usize;
 
         for i in 0..gameboy::SCREEN_WIDTH {
             // if nowhere near the window, skip
@@ -186,7 +185,7 @@ impl Gpu {
             let map_col = (x / 0x08) as usize;
             let raw_tile_number = self.ram[options.map_addr + (map_row * 0x20 + map_col)] as usize;
 
-            let line_offset = (options.line % 0x08) << 0x01;
+            let line_offset = (y % 0x08) << 0x01;
 
             let tile_data_start = options.tile_base_addr +
                                   (if options.tile_base_addr == 0x00 {
@@ -202,7 +201,7 @@ impl Gpu {
         }
     }
 
-    fn render_sprites(&mut self, line: usize) {
+    fn render_sprites(&mut self) {
         requires!(self.sprites_enabled);
 
         for i in 0..40 {
@@ -215,15 +214,15 @@ impl Gpu {
                 0x08
             };
 
-            if s_y <= line as i16 && (s_y + sprite_height as i16) > line as i16 {
+            if s_y <= self.ly as i16 && (s_y + sprite_height as i16) > self.ly as i16 {
                 let tile_number = self.sprite_data[sprite_table_entry_base + 0x02] as i16;
                 let attributes = self.sprite_data[sprite_table_entry_base + 0x03];
                 let above_background = attributes & 0x80 == 0x00;
                 let flip_y = attributes & 0x40 == 0x40;
                 let flip_x = attributes & 0x20 == 0x20;
 
-                let sprite_y = (line as i16 - s_y) << 0x01;
-                let tile_data_start = (tile_number * 0x10) + sprite_y;
+                let sprite_line = (self.ly as i16 - s_y) << 0x01;
+                let tile_data_start = (tile_number * 0x10) + sprite_line;
                 for x in 0..8 {
                     if s_x + x < 0 || s_x + x >= gameboy::SCREEN_WIDTH as i16 {
                         continue;
@@ -237,8 +236,21 @@ impl Gpu {
                     }
                     let c = self.get_sprite_color_for_byte(color_value as u8,
                                                            ((attributes & 0x10) >> 0x04) as u8);
-                    self.backbuffer.pixels[line * gameboy::SCREEN_WIDTH +
-                                           (s_x as usize + x as usize)] = c;
+                    let idx = self.ly as usize * gameboy::SCREEN_WIDTH +
+                              (s_x as usize + x as usize);
+                    if idx > self.backbuffer.pixels.len() - 1 {
+                        panic!(format!("Just tried to place a pixel outside framebuffer size. \
+                                        Index was {} and backbuffer length is {}. line: {:b}, \
+                                        gameboy::SCREEN_WIDTH: {:b}, s_x: {:b}, x: {:b}",
+                                       idx,
+                                       self.backbuffer.pixels.len(),
+                                       self.ly,
+                                       gameboy::SCREEN_WIDTH,
+                                       s_x,
+                                       x));
+                    } else {
+                        self.backbuffer.pixels[idx] = c;
+                    }
                 }
             }
         }
