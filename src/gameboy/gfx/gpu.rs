@@ -162,7 +162,11 @@ impl Gpu {
 
     fn render_tile(&mut self, options: &TileRenderOptions) {
         let window = variant_equals!(TileRenderType::Window, options.render_type);
-        let y = options.line.wrapping_add(self.scroll_y) as usize;
+        let y = if window {
+            options.line as usize
+        } else {
+            options.line.wrapping_add(self.scroll_y) as usize
+        };
 
         // If rendering a window tile, we need to make sure we offset tile line properly
         let window_offset = if window { self.window_y as usize } else { 0x00 };
