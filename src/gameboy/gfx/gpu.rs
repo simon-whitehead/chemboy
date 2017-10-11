@@ -171,12 +171,15 @@ impl Gpu {
         // If rendering a window tile, we need to make sure we offset tile line properly
         let window_offset = if window { self.window_y as usize } else { 0x00 };
         let map_row = ((y - window_offset) / 0x08) as usize;
+        let start = if window {
+            // Gameboy manual: "With WX = 7, the window is displayed from the left edge of the LCD screen."
+            // If we don't do this, the window begins rendering slightly to the right
+            self.window_x.wrapping_sub(0x07) as usize
+        } else {
+            0
+        };
 
-        for i in 0..gameboy::SCREEN_WIDTH {
-            // if nowhere near the window, skip
-            if window && i < self.window_x as usize {
-                continue;
-            }
+        for i in start..gameboy::SCREEN_WIDTH {
 
             // If we're at the window, lets negate the window X position from where we
             // need to be in the tile map
