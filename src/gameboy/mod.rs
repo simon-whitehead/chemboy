@@ -3,6 +3,7 @@ mod macros;
 
 mod cartridge;
 mod cpu;
+pub mod debugger;
 mod gameboy;
 pub mod gfx;
 mod interconnect;

@@ -11,8 +11,10 @@ use image::{ImageBuffer, RgbaImage};
 use gfx_device_gl::Factory;
 use piston_window::*;
 
+use std::cell::RefCell;
 use std::fs::File;
 use std::io::Read;
+use std::rc::Rc;
 use std::time::Instant;
 
 pub mod gameboy;
@@ -34,9 +36,23 @@ fn main() {
         .arg(Arg::with_name("DISABLE_BOOT_ROM")
             .long("disable-boot-rom")
             .help("Disables the boot rom"))
+        .arg(Arg::with_name("DEBUG")
+            .long("debug")
+            .help("Enables the debugger"))
         .get_matches();
 
     let rom = matches.value_of("rom").unwrap();
+    if rom.len() < 1 {
+        panic!("Must specify ROM to load");
+    }
+
+    let enable_debugger = matches.is_present("DEBUG");
+    let debugger = if enable_debugger {
+        Some(Rc::new(RefCell::new(gameboy::debugger::Debugger::new())))
+    } else {
+        None
+    };
+
     let disable_boot_rom = matches.is_present("DISABLE_BOOT_ROM");
     let rom_data = load_rom(rom).unwrap();
     let cart = Cartridge::with_rom(rom_data);
@@ -54,6 +70,13 @@ fn main() {
         .unwrap();
 
     window.set_max_fps(60);
+    if enable_debugger {
+        let window_pos = window.get_position().unwrap();
+        let debugger = debugger.unwrap();
+        debugger.borrow_mut()
+            .window
+            .set_pos((10, 10));
+    }
     let n = 0;
     'start: while let Some(e) = window.next() {
         if let Some(button) = e.press_args() {
