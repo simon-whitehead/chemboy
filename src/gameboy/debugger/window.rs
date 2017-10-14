@@ -9,16 +9,20 @@ impl DebuggerWindow {
     pub fn new() -> DebuggerWindow {
 
         let opengl = OpenGL::V3_2;
-        let mut window: PistonWindow = WindowSettings::new("chemboy debugger", [160, 144])
+        let mut window: PistonWindow = WindowSettings::new("chemboy debugger", [320, 144])
             .exit_on_esc(true)
             .opengl(opengl)
             .build()
             .unwrap();
+        let window = window.position((10, 10));
 
         DebuggerWindow { piston_window: window }
     }
 
-    pub fn set_pos(&mut self, pos: (i32, i32)) {
-        self.piston_window.set_position(pos);
+    pub fn set_pos<P>(&mut self, pos: P)
+        where P: Into<(i32, i32)>
+    {
+        self.piston_window.show();
+        self.piston_window.set_position(pos.into());
     }
 }

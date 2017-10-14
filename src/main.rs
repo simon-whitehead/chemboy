@@ -75,7 +75,7 @@ fn main() {
         let debugger = debugger.unwrap();
         debugger.borrow_mut()
             .window
-            .set_pos((10, 10));
+            .set_pos((window_pos.x + ::gameboy::SCREEN_WIDTH as i32, window_pos.y));
     }
     let n = 0;
     'start: while let Some(e) = window.next() {
