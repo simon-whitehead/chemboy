@@ -14,7 +14,7 @@ use piston_window::*;
 use std::cell::RefCell;
 use std::fs::File;
 use std::io::Read;
-use std::rc::Rc;
+use std::sync::Arc;
 use std::time::Instant;
 
 pub mod gameboy;
@@ -48,7 +48,7 @@ fn main() {
 
     let enable_debugger = matches.is_present("DEBUG");
     let debugger = if enable_debugger {
-        Some(Rc::new(RefCell::new(gameboy::debugger::Debugger::new())))
+        Some(Arc::new(RefCell::new(gameboy::debugger::Debugger::new())))
     } else {
         None
     };

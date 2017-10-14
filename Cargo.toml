@@ -7,11 +7,11 @@ authors = ["simonwhitehead"]
 rand = "*"
 image = "*"
 gfx_core = "*"
-gfx_device_gl = "0.14.1"
-piston = "0.32.0"
-piston2d-graphics = "0.21.1"
-piston2d-opengl_graphics = "0.43.1"
-piston_window = "0.66.0"
+gfx_device_gl = "*"
+piston = "*"
+piston2d-graphics = "*"
+piston2d-opengl_graphics = "*"
+piston_window = "*"
 
 [dependencies.clap]
 version = "2"
