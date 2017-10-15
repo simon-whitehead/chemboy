@@ -11,10 +11,10 @@ use image::{ImageBuffer, RgbaImage};
 use gfx_device_gl::Factory;
 use piston_window::*;
 
-use std::cell::RefCell;
 use std::fs::File;
 use std::io::Read;
-use std::sync::Arc;
+use std::rc::Rc;
+use std::thread;
 use std::time::Instant;
 
 pub mod gameboy;
@@ -48,7 +48,7 @@ fn main() {
 
     let enable_debugger = matches.is_present("DEBUG");
     let debugger = if enable_debugger {
-        Some(Arc::new(RefCell::new(gameboy::debugger::Debugger::new())))
+        Some(Rc::new(gameboy::debugger::Debugger::new()))
     } else {
         None
     };
@@ -61,22 +61,20 @@ fn main() {
     let now = Instant::now();
 
     let opengl = OpenGL::V3_2;
+    let (width, height) = if enable_debugger {
+        (1280, 720)
+    } else {
+        (160, 144)
+    };
     let mut window: PistonWindow = WindowSettings::new(format!("chemboy: {}",
                                                                gameboy.cart_details().game_title),
-                                                       [160, 144])
+                                                       [width, height])
         .exit_on_esc(true)
         .opengl(opengl)
         .build()
         .unwrap();
 
     window.set_max_fps(60);
-    if enable_debugger {
-        let window_pos = window.get_position().unwrap();
-        let debugger = debugger.unwrap();
-        debugger.borrow_mut()
-            .window
-            .set_pos((window_pos.x + ::gameboy::SCREEN_WIDTH as i32, window_pos.y));
-    }
     let n = 0;
     'start: while let Some(e) = window.next() {
         if let Some(button) = e.press_args() {
