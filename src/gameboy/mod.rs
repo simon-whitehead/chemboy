@@ -15,7 +15,7 @@ mod memory_map;
 mod opcode;
 mod registers;
 mod timer;
-
+mod ui;
 
 pub use self::cartridge::{Cartridge, CartridgeDetails};
 pub use self::cpu::{Cpu, CpuSpeed};
@@ -27,6 +27,7 @@ pub use self::memory::Memory;
 pub use self::interconnect::Interconnect;
 pub use self::irq::{Irq, Interrupt};
 pub use self::timer::Timer;
+pub use self::ui::ui::Ui;
 
 pub use self::macros::*;
 
