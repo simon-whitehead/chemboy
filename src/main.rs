@@ -32,25 +32,19 @@ fn main() {
         .version("0.0.0.1")
         .author("Simon Whitehead")
         .about("A GameBoy and GameBoy Colour emulator written in Rust")
-        .arg(
-            Arg::with_name("rom")
-                .short("r")
-                .long("rom")
-                .value_name("ROM_PATH")
-                .required(true)
-                .help("Path to a Gameboy or Gameboy Color ROM")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("DISABLE_BOOT_ROM")
-                .long("disable-boot-rom")
-                .help("Disables the boot rom"),
-        )
-        .arg(
-            Arg::with_name("DEBUG")
-                .long("debug")
-                .help("Enables the debugger"),
-        )
+        .arg(Arg::with_name("rom")
+            .short("r")
+            .long("rom")
+            .value_name("ROM_PATH")
+            .required(true)
+            .help("Path to a Gameboy or Gameboy Color ROM")
+            .takes_value(true))
+        .arg(Arg::with_name("DISABLE_BOOT_ROM")
+            .long("disable-boot-rom")
+            .help("Disables the boot rom"))
+        .arg(Arg::with_name("DEBUG")
+            .long("debug")
+            .help("Enables the debugger"))
         .get_matches();
 
     let rom = matches.value_of("rom").unwrap();
@@ -63,14 +57,14 @@ fn main() {
 
     let cart = Cartridge::with_rom(load_rom(rom).unwrap());
     let mut gameboy = gameboy::GameBoy::new(false, cart, !disable_boot_rom);
+    let game_title = gameboy.cart_details().game_title.clone();
 
-    let mut window = create_window(gameboy.cart_details().game_title, enable_debugger);
-    let mut ui = Ui::new(
-        window.size().width as f64,
-        window.size().height as f64,
-        window.factory.clone(),
-    );
+    let mut window = create_window(game_title, enable_debugger);
+    let mut ui = Ui::new(window.size().width as f64,
+                         window.size().height as f64,
+                         window.factory.clone());
     let debugger = Rc::new(RefCell::new(gameboy::debugger::Debugger::new()));
+    let mut factory = window.factory.clone();
 
     'start: while let Some(e) = window.next() {
         if let Some(button) = e.press_args() {
@@ -104,7 +98,7 @@ fn main() {
                 }
             }
         }
-        ui.handle_event(e);
+        ui.handle_event(&e);
         window.draw_2d(&e, |c, g| {
             // clear([1.0; 4], g);
             ui.draw(c, g);
@@ -113,11 +107,7 @@ fn main() {
                 build_frame(frame)
             };
             let texture = Texture::from_image(&mut factory, &img, &TextureSettings::new()).unwrap();
-            image(
-                &texture,
-                c.transform.scale(screen_size.get(), screen_size.get()),
-                g,
-            );
+            image(&texture, c.transform, g);
             if let Err(msg) = gameboy.run() {
                 // Dump the last texture we had
                 img.save("/Users/Simon/last_frame.png").unwrap();
@@ -137,19 +127,21 @@ fn load_rom(fname: &str) -> std::io::Result<Vec<u8>> {
     Ok(contents)
 }
 
-fn create_window<S>(title: S, debugger_enabled: bool) -> PistonWindow {
+fn create_window<S>(title: S, debugger_enabled: bool) -> PistonWindow
+    where S: Into<String>
+{
     let (width, height) = if debugger_enabled {
         (1280, 720)
     } else {
         (160, 144)
     };
 
-    let mut window: PistonWindow =
-        WindowSettings::new(format!("chemboy: {}", title.into()), [width, height])
-            .exit_on_esc(true)
-            .opengl(OpenGL::V3_2)
-            .build()
-            .unwrap();
+    let mut window: PistonWindow = WindowSettings::new(format!("chemboy: {}", title.into()),
+                                                       [width, height])
+        .exit_on_esc(true)
+        .opengl(OpenGL::V3_2)
+        .build()
+        .unwrap();
 
     window.set_max_fps(60);
 

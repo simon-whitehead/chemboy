@@ -1,4 +1,5 @@
 use std;
+use std::marker::PhantomData;
 
 use conrod;
 use conrod::{Colorable, Labelable, Positionable, Sizeable, UiCell, Widget};
@@ -18,7 +19,7 @@ widget_ids! {
     }
 }
 
-pub struct Ui<Img> {
+pub struct Ui {
     conrod_ui: conrod::Ui,
     width: f64,
     height: f64,
@@ -26,14 +27,12 @@ pub struct Ui<Img> {
     text_vertex_data: Vec<u8>,
     glyph_cache: conrod::text::GlyphCache,
     text_texture: Texture<gfx_device_gl::Resources>,
-    image_map: conrod::image::Map<Img>,
+    image_map: conrod::image::Map<Texture<gfx_device_gl::Resources>>,
 }
 
-impl<Img> Ui<Img> {
-    pub fn new<F, R>(width: f64, height: f64, factory: F) -> Ui<Img>
-    where
-        F: gfx_core::Factory<gfx_device_gl::Resources>,
-        R: gfx_core::Resources,
+impl Ui {
+    pub fn new<F>(width: f64, height: f64, mut factory: F) -> Ui
+        where F: gfx_core::Factory<gfx_device_gl::Resources>
     {
         let mut ui = conrod::UiBuilder::new([width, height])
             .theme(Self::base_theme())
@@ -42,14 +41,20 @@ impl<Img> Ui<Img> {
         let (mut glyph_cache, mut text_texture_cache) = {
             const SCALE_TOLERANCE: f32 = 0.1;
             const POSITION_TOLERANCE: f32 = 0.1;
-            let cache =
-                conrod::text::GlyphCache::new(1280, 720, SCALE_TOLERANCE, POSITION_TOLERANCE);
-            let buffer_len = 1280 as usize * 720 as usize;
+            let cache = conrod::text::GlyphCache::new(width as u32,
+                                                      height as u32,
+                                                      SCALE_TOLERANCE,
+                                                      POSITION_TOLERANCE);
+            let buffer_len = width as usize * height as usize;
             let init = vec![128; buffer_len];
             let settings = TextureSettings::new();
             let factory = &mut factory;
-            let texture =
-                G2dTexture::from_memory_alpha(factory, &init, 1280, 720, &settings).unwrap();
+            let texture = G2dTexture::from_memory_alpha(factory,
+                                                        &init,
+                                                        width as u32,
+                                                        height as u32,
+                                                        &settings)
+                .unwrap();
             (cache, texture)
         };
 
@@ -63,13 +68,13 @@ impl<Img> Ui<Img> {
             height: height,
             ids: ids,
             text_vertex_data: Vec::new(),
-            glyph_cache: glyph_cache,
+            glyph_cache: conrod::text::GlyphCache::new(width as u32, height as u32, 1.0, 1.0),
             text_texture: text_texture_cache,
             image_map: conrod::image::Map::new(),
         }
     }
 
-    pub fn handle_event(&self, e: Event) {
+    pub fn handle_event(&mut self, e: &Event) {
         // Convert the piston event to a conrod event.
         let (win_w, win_h) = (self.width as conrod::Scalar, self.height as conrod::Scalar);
         if let Some(evt) = conrod::backend::piston::event::convert(e.clone(), win_w, win_h) {
@@ -103,53 +108,36 @@ impl<Img> Ui<Img> {
                 .w_h(130.0, 130.0)
                 .set(self.ids.test_button, &mut ui)
                 .was_clicked() {
-                    println!("Clicked!");
+                println!("Clicked!");
             }
         });
     }
 
-    pub fn draw<G: Graphics>(&self, c: conrod::backend::piston::draw::Context, g: &mut G) {
+    pub fn draw<G>(&mut self, c: conrod::backend::piston::draw::Context, g: &mut G)
+        where G: Graphics<Texture = Texture<gfx_device_gl::Resources>>
+    {
         if let Some(primitives) = self.conrod_ui.draw_if_changed() {
             // A function used for caching glyphs to the texture cache.
-            let cache_queued_glyphs = |graphics: &mut G2d,
-                                       cache: &mut G2dTexture,
+            let cache_queued_glyphs = |graphics: &mut G,
+                                       cache: &mut G::Texture,
                                        rect: conrod::text::rt::Rect<u32>,
                                        data: &[u8]| {
-                let offset = [rect.min.x, rect.min.y];
-                let size = [rect.width(), rect.height()];
-                let format = Format::Rgba8;
-                let encoder = &mut graphics.encoder;
-                self.text_vertex_data.clear();
-                self.text_vertex_data
-                    .extend(data.iter().flat_map(|&b| vec![255, 255, 255, b]));
-                UpdateTexture::update(
-                    cache,
-                    encoder,
-                    format,
-                    &self.text_vertex_data[..],
-                    offset,
-                    size,
-                ).expect("failed to update texture")
             };
             // Specify how to get the drawable texture from the image. In this case, the image
             // *is* the texture.
-            fn texture_from_image<T>(img: &T) -> &T {
+            fn texture_from_image<A>(img: &A) -> &A {
                 img
             }
 
-            let t = self.text_texture as <G as Graphics>::Texture;
-
             // Draw the conrod `render::Primitives`.
-            conrod::backend::piston::draw::primitives(
-                primitives,
-                c,
-                g,
-                &mut (self.text_texture as G::Texture),
-                &mut self.glyph_cache,
-                &self.image_map,
-                cache_queued_glyphs,
-                texture_from_image,
-            );
+            conrod::backend::piston::draw::primitives(primitives,
+                                                      c,
+                                                      g,
+                                                      &mut self.text_texture,
+                                                      &mut self.glyph_cache,
+                                                      &self.image_map,
+                                                      cache_queued_glyphs,
+                                                      texture_from_image);
         }
     }
 
