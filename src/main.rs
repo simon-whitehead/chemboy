@@ -2,8 +2,10 @@ extern crate byteorder;
 extern crate clap;
 #[macro_use]
 extern crate conrod;
+extern crate find_folder;
 extern crate gfx_core;
 extern crate gfx_device_gl;
+extern crate graphics;
 extern crate image;
 extern crate piston_window;
 extern crate rand;
@@ -12,9 +14,9 @@ use clap::{App, Arg};
 use image::{ImageBuffer, RgbaImage};
 use gfx_device_gl::Factory;
 use piston_window::*;
-
 use piston_window::OpenGL;
 
+use graphics::draw_state::Blend;
 
 use std::cell::{Cell, RefCell};
 use std::fs::File;
@@ -99,8 +101,10 @@ fn main() {
             }
         }
         ui.handle_event(&e);
-        window.draw_2d(&e, |c, g| {
+        window.draw_2d(&e, |mut c, g| {
             // clear([1.0; 4], g);
+            let draw_state = c.draw_state.blend(Blend::Alpha);
+            c.draw_state = draw_state;
             ui.draw(c, g);
             let img = {
                 let frame = gameboy.request_frame();

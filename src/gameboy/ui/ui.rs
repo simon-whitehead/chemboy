@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 
 use conrod;
 use conrod::{Colorable, Labelable, Positionable, Sizeable, UiCell, Widget};
+use find_folder;
 use gfx_device_gl;
 use gfx_core;
 use gfx_core::factory::Factory;
@@ -38,6 +39,10 @@ impl Ui {
             .theme(Self::base_theme())
             .build();
 
+        let assets = find_folder::Search::KidsThenParents(3, 5).for_folder("assets").unwrap();
+        let font_path = assets.join("fonts/NotoSans/NotoSans-Regular.ttf");
+        ui.fonts.insert_from_file(font_path).unwrap();
+
         let (mut glyph_cache, mut text_texture_cache) = {
             const SCALE_TOLERANCE: f32 = 0.1;
             const POSITION_TOLERANCE: f32 = 0.1;
@@ -60,7 +65,6 @@ impl Ui {
 
         let ids = Ids::new(ui.widget_id_generator());
         let mut bg_color = conrod::color::LIGHT_BLUE;
-        let ids = Ids::new(ui.widget_id_generator());
 
         Ui {
             conrod_ui: ui,
@@ -68,7 +72,7 @@ impl Ui {
             height: height,
             ids: ids,
             text_vertex_data: Vec::new(),
-            glyph_cache: conrod::text::GlyphCache::new(width as u32, height as u32, 1.0, 1.0),
+            glyph_cache: glyph_cache,
             text_texture: text_texture_cache,
             image_map: conrod::image::Map::new(),
         }
@@ -128,6 +132,9 @@ impl Ui {
             fn texture_from_image<A>(img: &A) -> &A {
                 img
             }
+
+            let draw_state = c.draw_state;
+            println!("Draw state: {:?}", draw_state);
 
             // Draw the conrod `render::Primitives`.
             conrod::backend::piston::draw::primitives(primitives,

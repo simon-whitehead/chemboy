@@ -3,6 +3,7 @@ extern crate byteorder;
 extern crate clap;
 #[macro_use]
 extern crate conrod;
+extern crate find_folder;
 extern crate gfx_core;
 extern crate gfx_device_gl;
 extern crate image;
