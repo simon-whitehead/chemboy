@@ -15,7 +15,7 @@ mod memory_map;
 mod opcode;
 mod registers;
 mod timer;
-mod ui;
+pub mod ui;
 
 pub use self::cartridge::{Cartridge, CartridgeDetails};
 pub use self::cpu::{Cpu, CpuSpeed};

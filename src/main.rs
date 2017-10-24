@@ -23,6 +23,8 @@ use std::rc::Rc;
 pub mod gameboy;
 
 use gameboy::{Cartridge, CpuSpeed, Frame, JoypadButton, Ui};
+use gameboy::ui::ui_event::UIEvent;
+use gameboy::ui::theme::Theme;
 
 const WINDOW_WIDTH: u32 = 1280;
 const WINDOW_HEIGHT: u32 = 720;
@@ -98,7 +100,11 @@ fn main() {
                 }
             }
         }
-        ui.handle_event(&e);
+        let ui_event = ui.handle_event(&e);
+        match ui_event {
+            UIEvent::ThemeSwitched(theme) => gameboy.switch_theme(theme),
+            _ => (),
+        }
         window.draw_2d(&e, |c, g| {
             ui.draw(c, g);
             let frame = build_frame(gameboy.request_frame());

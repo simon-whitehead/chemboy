@@ -12,6 +12,9 @@ use piston_window::{PistonWindow, UpdateEvent, Window, WindowSettings};
 use piston_window::{Flip, G2d, G2dTexture, Texture, TextureSettings};
 use piston_window::texture::{Format, UpdateTexture};
 
+use gameboy::ui::theme::Theme;
+use gameboy::ui::ui_event::UIEvent;
+
 widget_ids! {
     pub struct Ids {
         master_canvas,
@@ -86,7 +89,8 @@ impl Ui {
         }
     }
 
-    pub fn handle_event(&mut self, e: &Event) {
+    pub fn handle_event(&mut self, e: &Event) -> UIEvent {
+        let mut result = UIEvent::None;
         // Convert the piston event to a conrod event.
         let (win_w, win_h) = (self.width as conrod::Scalar, self.height as conrod::Scalar);
         if let Some(evt) = conrod::backend::piston::event::convert(e.clone(), win_w, win_h) {
@@ -118,11 +122,13 @@ impl Ui {
                 .set(self.ids.theme_switcher, &mut ui) {
                 self.selected_theme = Some(selected_theme);
                 match self.selected_theme.unwrap() {
-                    0 => println!("Default"),
-                    _ => println!("Classic"),
+                    0 => result = UIEvent::ThemeSwitched(Theme::Default),
+                    _ => result = UIEvent::ThemeSwitched(Theme::ClassicDMG),
                 }
             }
         });
+
+        result
     }
 
     pub fn draw(&mut self, c: conrod::backend::piston::draw::Context, g: &mut G2d) {
