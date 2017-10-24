@@ -44,8 +44,8 @@ impl Ui {
         ui.fonts.insert_from_file(font_path).unwrap();
 
         let (mut glyph_cache, mut text_texture_cache) = {
-            const SCALE_TOLERANCE: f32 = 0.1;
-            const POSITION_TOLERANCE: f32 = 0.1;
+            const SCALE_TOLERANCE: f32 = 1.0;
+            const POSITION_TOLERANCE: f32 = 1.0;
             let cache = conrod::text::GlyphCache::new(width as u32,
                                                       height as u32,
                                                       SCALE_TOLERANCE,
@@ -117,26 +117,23 @@ impl Ui {
         });
     }
 
-    pub fn draw<G>(&mut self, c: conrod::backend::piston::draw::Context, g: &mut G)
-        where G: Graphics<Texture = Texture<gfx_device_gl::Resources>>
-    {
+    pub fn draw(&mut self, c: conrod::backend::piston::draw::Context, g: &mut G2d) {
         if let Some(primitives) = self.conrod_ui.draw_if_changed() {
             // A function used for caching glyphs to the texture cache.
-            let cache_queued_glyphs = |graphics: &mut G,
-                                       cache: &mut G::Texture,
+            let cache_queued_glyphs = |graphics: &mut G2d,
+                                       cache: &mut G2dTexture,
                                        rect: conrod::text::rt::Rect<u32>,
                                        data: &[u8]| {
+                let offset = [rect.min.x, rect.min.y];
+                let size = [rect.width(), rect.height()];
+                let format = Format::Rgba8;
+                let encoder = &mut graphics.encoder;
+                let text_vertex_data: Vec<_> =
+                    data.iter().flat_map(|&b| vec![255, 255, 255, b]).collect();
+                UpdateTexture::update(cache, encoder, format, &text_vertex_data[..], offset, size)
+                    .expect("failed to update texture")
             };
-            // Specify how to get the drawable texture from the image. In this case, the image
-            // *is* the texture.
-            fn texture_from_image<A>(img: &A) -> &A {
-                img
-            }
 
-            let draw_state = c.draw_state;
-            println!("Draw state: {:?}", draw_state);
-
-            // Draw the conrod `render::Primitives`.
             conrod::backend::piston::draw::primitives(primitives,
                                                       c,
                                                       g,
@@ -144,7 +141,7 @@ impl Ui {
                                                       &mut self.glyph_cache,
                                                       &self.image_map,
                                                       cache_queued_glyphs,
-                                                      texture_from_image);
+                                                      |img| img)
         }
     }
 
