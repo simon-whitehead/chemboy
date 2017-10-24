@@ -2,7 +2,7 @@ use std;
 use std::marker::PhantomData;
 
 use conrod;
-use conrod::{Colorable, Labelable, Positionable, Sizeable, UiCell, Widget};
+use conrod::{widget, Colorable, Labelable, Positionable, Sizeable, UiCell, Widget};
 use find_folder;
 use gfx_device_gl;
 use gfx_core;
@@ -14,7 +14,13 @@ use piston_window::texture::{Format, UpdateTexture};
 
 widget_ids! {
     pub struct Ids {
-        main_canvas,
+        master_canvas,
+        left_canvas,
+        center_canvas,
+        right_canvas,
+        
+        // Theme switcher
+        theme_switcher_label,
         theme_switcher
     }
 }
@@ -28,6 +34,8 @@ pub struct Ui {
     glyph_cache: conrod::text::GlyphCache,
     text_texture: Texture<gfx_device_gl::Resources>,
     image_map: conrod::image::Map<Texture<gfx_device_gl::Resources>>,
+
+    selected_theme: Option<usize>,
 }
 
 impl Ui {
@@ -74,6 +82,7 @@ impl Ui {
             glyph_cache: glyph_cache,
             text_texture: text_texture_cache,
             image_map: conrod::image::Map::new(),
+            selected_theme: Some(0),
         }
     }
 
@@ -87,10 +96,32 @@ impl Ui {
         e.update(|_| {
             let mut ui = self.conrod_ui.set_widgets();
             conrod::widget::Canvas::new()
-                .pad(30.0)
-                .color(conrod::color::BLACK)
-                .w_h(win_w, win_h)
-                .set(self.ids.main_canvas, &mut ui);
+                .flow_right(&[(self.ids.left_canvas,
+                               conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0)),
+                              (self.ids.center_canvas,
+                               conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0)),
+                              (self.ids.right_canvas,
+                               conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0))])
+                .set(self.ids.master_canvas, &mut ui);
+
+            conrod::widget::Text::new("Theme: ")
+                .top_left_of(self.ids.left_canvas)
+                .set(self.ids.theme_switcher_label, &mut ui);
+
+            let themes = vec!["Default", "Classic Gameboy"];
+            for selected_theme in conrod::widget::DropDownList::new(&themes, self.selected_theme)
+                .right_from(self.ids.theme_switcher_label, 10.0)
+                .w_h(250.0, 25.0)
+                .color(conrod::color::DARK_BLUE)
+                .label_color(conrod::color::WHITE)
+                .label("Theme")
+                .set(self.ids.theme_switcher, &mut ui) {
+                self.selected_theme = Some(selected_theme);
+                match self.selected_theme.unwrap() {
+                    0 => println!("Default"),
+                    _ => println!("Classic"),
+                }
+            }
         });
     }
 
@@ -129,7 +160,7 @@ impl Ui {
             padding: Padding::none(),
             x_position: Position::Relative(Relative::Align(Align::Start), None),
             y_position: Position::Relative(Relative::Direction(Direction::Backwards, 20.0), None),
-            background_color: conrod::color::GREEN,
+            background_color: conrod::color::BLACK,
             shape_color: conrod::color::LIGHT_CHARCOAL,
             border_color: conrod::color::BLACK,
             border_width: 0.0,

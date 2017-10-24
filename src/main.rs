@@ -106,11 +106,7 @@ fn main() {
                 .expect("err: could not build requested gameboy frame");
             let (x, y) = get_projection_coordinates();
             image(&texture, c.transform.trans(x, y), g);
-            if let Err(msg) = gameboy.run() {
-                // Dump the last texture we had
-                img.save("/Users/Simon/last_frame.png").unwrap();
-                panic!(msg);
-            }
+            gameboy.run();
             Some(())
         });
     }
