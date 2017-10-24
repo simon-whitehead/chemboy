@@ -14,9 +14,8 @@ use piston_window::texture::{Format, UpdateTexture};
 
 widget_ids! {
     pub struct Ids {
-        canvas,
-        test_button,
-        introduction
+        main_canvas,
+        theme_switcher
     }
 }
 
@@ -89,31 +88,9 @@ impl Ui {
             let mut ui = self.conrod_ui.set_widgets();
             conrod::widget::Canvas::new()
                 .pad(30.0)
-                .color(conrod::color::LIGHT_BLUE)
-                .w_h(500.0, 500.0)
-                .set(self.ids.canvas, &mut ui);
-            const INTRODUCTION: &'static str =
-                "This example aims to demonstrate all widgets that are provided by conrod.\n\nThe \
-                 widget that you are currently looking at is the Text widget. The Text widget is \
-                 one of several special \"primitive\" widget types which are used to construct \
-                 all other widget types. These types are \"special\" in the sense that conrod \
-                 knows how to render them via `conrod::render::Primitive`s.\n\nScroll down to see \
-                 more widgets!";
-            conrod::widget::Text::new(INTRODUCTION)
-                .padded_w_of(self.ids.canvas, 20.0)
-                .down(60.0)
-                .align_middle_x_of(self.ids.canvas)
-                .center_justify()
-                .line_spacing(5.0)
-                .set(self.ids.introduction, &mut ui);
-            if conrod::widget::Button::new()
-                .label("Click me")
-                .middle_of(self.ids.canvas)
-                .w_h(130.0, 130.0)
-                .set(self.ids.test_button, &mut ui)
-                .was_clicked() {
-                println!("Clicked!");
-            }
+                .color(conrod::color::BLACK)
+                .w_h(win_w, win_h)
+                .set(self.ids.main_canvas, &mut ui);
         });
     }
 

@@ -24,6 +24,9 @@ pub mod gameboy;
 
 use gameboy::{Cartridge, CpuSpeed, Frame, JoypadButton, Ui};
 
+const WINDOW_WIDTH: u32 = 1280;
+const WINDOW_HEIGHT: u32 = 720;
+
 fn main() {
     let matches = App::new("gameboy-rs")
         .version("0.0.0.1")
@@ -97,14 +100,14 @@ fn main() {
         }
         ui.handle_event(&e);
         window.draw_2d(&e, |mut c, g| {
-            // clear([1.0; 4], g);
             ui.draw(c, g);
             let img = {
                 let frame = gameboy.request_frame();
                 build_frame(frame)
             };
             let texture = Texture::from_image(&mut factory, &img, &TextureSettings::new()).unwrap();
-            image(&texture, c.transform, g);
+            let (x, y) = get_projection_coordinates();
+            image(&texture, c.transform.trans(x, y), g);
             if let Err(msg) = gameboy.run() {
                 // Dump the last texture we had
                 img.save("/Users/Simon/last_frame.png").unwrap();
@@ -113,6 +116,13 @@ fn main() {
             Some(())
         });
     }
+}
+
+fn get_projection_coordinates() -> (f64, f64) {
+    let x = (WINDOW_WIDTH as f64 / 2.0) - (gameboy::SCREEN_WIDTH as f64 / 2.0);
+    let y = 25.0;
+
+    (x, y)
 }
 
 fn load_rom(fname: &str) -> std::io::Result<Vec<u8>> {
@@ -127,14 +137,8 @@ fn load_rom(fname: &str) -> std::io::Result<Vec<u8>> {
 fn create_window<S>(title: S, debugger_enabled: bool) -> PistonWindow
     where S: Into<String>
 {
-    let (width, height) = if debugger_enabled {
-        (1280, 720)
-    } else {
-        (160, 144)
-    };
-
     let mut window: PistonWindow = WindowSettings::new(format!("chemboy: {}", title.into()),
-                                                       [width, height])
+                                                       [WINDOW_WIDTH, WINDOW_HEIGHT])
         .exit_on_esc(true)
         .opengl(OpenGL::V3_2)
         .build()
@@ -147,9 +151,9 @@ fn create_window<S>(title: S, debugger_enabled: bool) -> PistonWindow
 
 fn build_frame(frame: &Frame) -> RgbaImage {
     let mut img = ImageBuffer::new(gameboy::SCREEN_WIDTH as u32, gameboy::SCREEN_HEIGHT as u32);
-    for x in 0..160 {
-        for y in 0..144 {
-            let frame_pixel = frame.pixels[160 * y + x];
+    for x in 0..gameboy::SCREEN_WIDTH {
+        for y in 0..gameboy::SCREEN_HEIGHT {
+            let frame_pixel = frame.pixels[gameboy::SCREEN_WIDTH * y + x];
             let p = image::Rgba([frame_pixel.r, frame_pixel.g, frame_pixel.b, 0xFF]);
             img.put_pixel(x as u32, y as u32, p);
         }
