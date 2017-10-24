@@ -28,7 +28,7 @@ const WINDOW_WIDTH: u32 = 1280;
 const WINDOW_HEIGHT: u32 = 720;
 
 fn main() {
-    let matches = App::new("gameboy-rs")
+    let matches = App::new("chemboy")
         .version("0.0.0.1")
         .author("Simon Whitehead")
         .about("A GameBoy and GameBoy Colour emulator written in Rust")
@@ -99,13 +99,11 @@ fn main() {
             }
         }
         ui.handle_event(&e);
-        window.draw_2d(&e, |mut c, g| {
+        window.draw_2d(&e, |c, g| {
             ui.draw(c, g);
-            let img = {
-                let frame = gameboy.request_frame();
-                build_frame(frame)
-            };
-            let texture = Texture::from_image(&mut factory, &img, &TextureSettings::new()).unwrap();
+            let frame = build_frame(gameboy.request_frame());
+            let texture = Texture::from_image(&mut factory, &frame, &TextureSettings::new())
+                .expect("err: could not build requested gameboy frame");
             let (x, y) = get_projection_coordinates();
             image(&texture, c.transform.trans(x, y), g);
             if let Err(msg) = gameboy.run() {
