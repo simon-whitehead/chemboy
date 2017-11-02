@@ -57,14 +57,16 @@ fn main() {
     let enable_debugger = matches.is_present("DEBUG");
     let disable_boot_rom = matches.is_present("DISABLE_BOOT_ROM");
 
-    let cart = Cartridge::with_rom(load_rom(rom).unwrap());
+    let rom = load_rom(rom).unwrap();
+    let cart = Cartridge::with_rom(&rom);
     let mut gameboy = gameboy::GameBoy::new(false, cart, !disable_boot_rom);
     let game_title = gameboy.cart_details().game_title.clone();
 
     let mut window = create_window(game_title, enable_debugger);
     let mut ui = Ui::new(window.size().width as f64,
                          window.size().height as f64,
-                         window.factory.clone());
+                         window.factory.clone(),
+                         &rom);
     let debugger = Rc::new(RefCell::new(gameboy::debugger::Debugger::new()));
     let mut factory = window.factory.clone();
 

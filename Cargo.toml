@@ -4,6 +4,7 @@ version = "0.0.1"
 authors = ["simonwhitehead"]
 
 [dependencies]
+byteorder = "*"
 rand = "*"
 image = "*"
 gfx_core = "*"
@@ -18,6 +19,3 @@ find_folder = "*"
 
 [dependencies.clap]
 version = "2"
-
-[dependencies.byteorder]
-version = "0.5"

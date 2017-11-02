@@ -3,6 +3,7 @@ mod macros;
 
 mod cartridge;
 mod cpu;
+mod disassembler;
 pub mod debugger;
 mod gameboy;
 pub mod gfx;
@@ -12,16 +13,16 @@ mod joypad;
 mod mbc;
 mod memory;
 mod memory_map;
-mod opcode;
+pub mod opcodes;
 mod registers;
 mod timer;
 pub mod ui;
 
 pub use self::cartridge::{Cartridge, CartridgeDetails};
 pub use self::cpu::{Cpu, CpuSpeed};
-pub use gameboy::gfx::Frame;
+pub use self::disassembler::disassemble;
+pub use self::gfx::Frame;
 pub use self::gameboy::GameBoy;
-// pub use ::gameboy::gfx::Gpu;
 pub use self::joypad::{Joypad, JoypadButton};
 pub use self::memory::Memory;
 pub use self::interconnect::Interconnect;

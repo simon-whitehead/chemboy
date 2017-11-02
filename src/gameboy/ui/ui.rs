@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 
 use conrod;
 use conrod::{widget, Colorable, Labelable, Positionable, Sizeable, UiCell, Widget};
+use conrod::position::{Align, Relative};
 use find_folder;
 use gfx_device_gl;
 use gfx_core;
@@ -24,7 +25,10 @@ widget_ids! {
         
         // Theme switcher
         theme_switcher_label,
-        theme_switcher
+        theme_switcher,
+
+        // Disassembly 
+        disassembly_list
     }
 }
 
@@ -39,10 +43,11 @@ pub struct Ui {
     image_map: conrod::image::Map<Texture<gfx_device_gl::Resources>>,
 
     selected_theme: Option<usize>,
+    dasm: Vec<String>,
 }
 
 impl Ui {
-    pub fn new<F>(width: f64, height: f64, mut factory: F) -> Ui
+    pub fn new<F>(width: f64, height: f64, mut factory: F, rom: &[u8]) -> Ui
         where F: gfx_core::Factory<gfx_device_gl::Resources>
     {
         let mut ui = conrod::UiBuilder::new([width, height])
@@ -75,6 +80,7 @@ impl Ui {
 
         let ids = Ids::new(ui.widget_id_generator());
         let mut bg_color = conrod::color::LIGHT_BLUE;
+        let dasm = ::gameboy::disassembler::disassemble(rom);
 
         Ui {
             conrod_ui: ui,
@@ -86,6 +92,7 @@ impl Ui {
             text_texture: text_texture_cache,
             image_map: conrod::image::Map::new(),
             selected_theme: Some(0),
+            dasm: dasm,
         }
     }
 
@@ -125,6 +132,30 @@ impl Ui {
                     0 => result = UIEvent::ThemeSwitched(Theme::Default),
                     _ => result = UIEvent::ThemeSwitched(Theme::ClassicDMG),
                 }
+            }
+
+            let (mut items, scrollbar) = widget::List::flow_down(self.dasm.len())
+                .item_size(20.0)
+                .scrollbar_on_top()
+                .bottom_left_of(self.ids.center_canvas)
+                .w_h(500.0, 500.0)
+                .set(self.ids.disassembly_list, &mut ui);
+
+            while let Some(item) = items.next(&mut ui) {
+                let i = item.i;
+                let label = format!("{}", self.dasm[i]);
+                let toggle = widget::Toggle::new(true)
+                    .label(&label)
+                    .label_x(Relative::Align(Align::Start))
+                    .label_color(conrod::color::WHITE)
+                    .color(conrod::color::LIGHT_BLUE);
+                for v in item.set(toggle, &mut ui) {
+                    // self.dasm[i] = v;
+                }
+            }
+
+            if let Some(s) = scrollbar {
+                s.set(&mut ui)
             }
         });
 
@@ -172,8 +203,8 @@ impl Ui {
             border_width: 0.0,
             label_color: conrod::color::WHITE,
             font_id: None,
-            font_size_large: 26,
-            font_size_medium: 18,
+            font_size_large: 18,
+            font_size_medium: 16,
             font_size_small: 12,
             widget_styling: conrod::theme::StyleMap::default(),
             mouse_drag_threshold: 0.0,
