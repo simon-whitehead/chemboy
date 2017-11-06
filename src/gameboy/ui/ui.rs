@@ -55,7 +55,7 @@ impl Ui {
             .build();
 
         let assets = find_folder::Search::KidsThenParents(3, 5).for_folder("assets").unwrap();
-        let font_path = assets.join("fonts/NotoSans/NotoSans-Regular.ttf");
+        let font_path = assets.join("fonts/DejaVuSansMono.ttf");
         ui.fonts.insert_from_file(font_path).unwrap();
 
         let (mut glyph_cache, mut text_texture_cache) = {
@@ -115,30 +115,33 @@ impl Ui {
                                conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0))])
                 .set(self.ids.master_canvas, &mut ui);
 
-            conrod::widget::Text::new("Theme: ")
-                .top_left_of(self.ids.left_canvas)
-                .set(self.ids.theme_switcher_label, &mut ui);
-
-            let themes = vec!["Default", "Classic Gameboy"];
-            for selected_theme in conrod::widget::DropDownList::new(&themes, self.selected_theme)
-                .right_from(self.ids.theme_switcher_label, 10.0)
-                .w_h(250.0, 25.0)
-                .color(conrod::color::DARK_BLUE)
-                .label_color(conrod::color::WHITE)
-                .label("Theme")
-                .set(self.ids.theme_switcher, &mut ui) {
-                self.selected_theme = Some(selected_theme);
-                match self.selected_theme.unwrap() {
-                    0 => result = UIEvent::ThemeSwitched(Theme::Default),
-                    _ => result = UIEvent::ThemeSwitched(Theme::ClassicDMG),
-                }
-            }
+            // conrod::widget::Text::new("Theme: ")
+            // .top_left_of(self.ids.left_canvas)
+            // .set(self.ids.theme_switcher_label, &mut ui);
+            //
+            // let themes = vec!["Default", "Classic Gameboy"];
+            // for selected_theme in conrod::widget::DropDownList::new(&themes, self.selected_theme)
+            // .right_from(self.ids.theme_switcher_label, 10.0)
+            // .w_h(250.0, 25.0)
+            // .color(conrod::color::DARK_BLUE)
+            // .label_color(conrod::color::WHITE)
+            // .label("Theme")
+            // .set(self.ids.theme_switcher, &mut ui) {
+            // self.selected_theme = Some(selected_theme);
+            // match self.selected_theme.unwrap() {
+            // 0 => result = UIEvent::ThemeSwitched(Theme::Default),
+            // _ => result = UIEvent::ThemeSwitched(Theme::ClassicDMG),
+            // }
+            // }
 
             let (mut items, scrollbar) = widget::List::flow_down(self.dasm.len())
+                .top_left_of(self.ids.left_canvas)
                 .item_size(20.0)
                 .scrollbar_on_top()
-                .bottom_left_of(self.ids.center_canvas)
-                .w_h(500.0, 500.0)
+                .scrollbar_thickness(15.0)
+                .scrollbar_color(conrod::color::GREEN)
+                .w_h(200.0, 250.0)
+                //.wh_of(self.ids.left_canvas)
                 .set(self.ids.disassembly_list, &mut ui);
 
             while let Some(item) = items.next(&mut ui) {
@@ -147,8 +150,9 @@ impl Ui {
                 let toggle = widget::Toggle::new(true)
                     .label(&label)
                     .label_x(Relative::Align(Align::Start))
-                    .label_color(conrod::color::WHITE)
-                    .color(conrod::color::LIGHT_BLUE);
+                    .label_color(conrod::color::GREEN)
+                    .label_font_size(10)
+                    .color(conrod::color::BLACK);
                 for v in item.set(toggle, &mut ui) {
                     // self.dasm[i] = v;
                 }
