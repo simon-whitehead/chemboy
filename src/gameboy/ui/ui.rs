@@ -135,20 +135,19 @@ impl Ui {
             // }
 
             let (mut items, scrollbar) = widget::List::flow_down(self.dasm.len())
-                .top_left_of(self.ids.left_canvas)
+                .mid_top_of(self.ids.left_canvas)
                 .item_size(20.0)
+                .scroll_kids_vertically()
                 .scrollbar_on_top()
-                .scrollbar_thickness(15.0)
                 .scrollbar_color(conrod::color::GREEN)
-                .w_h(200.0, 250.0)
+                .wh_of(self.ids.left_canvas)
                 //.wh_of(self.ids.left_canvas)
                 .set(self.ids.disassembly_list, &mut ui);
 
             while let Some(item) = items.next(&mut ui) {
                 let i = item.i;
-                let label = format!("{}", self.dasm[i]);
                 let toggle = widget::Toggle::new(true)
-                    .label(&label)
+                    .label(&self.dasm[i])
                     .label_x(Relative::Align(Align::Start))
                     .label_color(conrod::color::GREEN)
                     .label_font_size(10)
