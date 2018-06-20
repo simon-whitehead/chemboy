@@ -22,23 +22,23 @@ widget_ids! {
         left_canvas,
         center_canvas,
         right_canvas,
-        
+
         // Theme switcher
         theme_switcher_label,
         theme_switcher,
 
-        // Disassembly 
+        // Disassembly
         disassembly_list
     }
 }
 
-pub struct Ui {
+pub struct Ui<'a> {
     conrod_ui: conrod::Ui,
     width: f64,
     height: f64,
     ids: Ids,
     text_vertex_data: Vec<u8>,
-    glyph_cache: conrod::text::GlyphCache,
+    glyph_cache: conrod::text::GlyphCache<'a>,
     text_texture: Texture<gfx_device_gl::Resources>,
     image_map: conrod::image::Map<Texture<gfx_device_gl::Resources>>,
 
@@ -46,35 +46,41 @@ pub struct Ui {
     dasm: Vec<String>,
 }
 
-impl Ui {
+impl<'a> Ui<'a> {
     pub fn new<F>(width: f64, height: f64, mut factory: F, rom: &[u8]) -> Ui
-        where F: gfx_core::Factory<gfx_device_gl::Resources>
+    where
+        F: gfx_core::Factory<gfx_device_gl::Resources>,
     {
         let mut ui = conrod::UiBuilder::new([width, height])
             .theme(Self::base_theme())
             .build();
 
-        let assets = find_folder::Search::KidsThenParents(3, 5).for_folder("assets").unwrap();
+        let assets = find_folder::Search::KidsThenParents(3, 5)
+            .for_folder("assets")
+            .unwrap();
         let font_path = assets.join("fonts/DejaVuSansMono.ttf");
         ui.fonts.insert_from_file(font_path).unwrap();
 
         let (mut glyph_cache, mut text_texture_cache) = {
             const SCALE_TOLERANCE: f32 = 1.0;
             const POSITION_TOLERANCE: f32 = 1.0;
-            let cache = conrod::text::GlyphCache::new(width as u32,
-                                                      height as u32,
-                                                      SCALE_TOLERANCE,
-                                                      POSITION_TOLERANCE);
+            let cache = conrod::text::GlyphCache::new(
+                width as u32,
+                height as u32,
+                SCALE_TOLERANCE,
+                POSITION_TOLERANCE,
+            );
             let buffer_len = width as usize * height as usize;
             let init = vec![128; buffer_len];
             let settings = TextureSettings::new();
             let factory = &mut factory;
-            let texture = G2dTexture::from_memory_alpha(factory,
-                                                        &init,
-                                                        width as u32,
-                                                        height as u32,
-                                                        &settings)
-                .unwrap();
+            let texture = G2dTexture::from_memory_alpha(
+                factory,
+                &init,
+                width as u32,
+                height as u32,
+                &settings,
+            ).unwrap();
             (cache, texture)
         };
 
@@ -107,12 +113,20 @@ impl Ui {
         e.update(|_| {
             let mut ui = self.conrod_ui.set_widgets();
             conrod::widget::Canvas::new()
-                .flow_right(&[(self.ids.left_canvas,
-                               conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0)),
-                              (self.ids.center_canvas,
-                               conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0)),
-                              (self.ids.right_canvas,
-                               conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0))])
+                .flow_right(&[
+                    (
+                        self.ids.left_canvas,
+                        conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0),
+                    ),
+                    (
+                        self.ids.center_canvas,
+                        conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0),
+                    ),
+                    (
+                        self.ids.right_canvas,
+                        conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0),
+                    ),
+                ])
                 .set(self.ids.master_canvas, &mut ui);
 
             // conrod::widget::Text::new("Theme: ")
@@ -182,14 +196,16 @@ impl Ui {
                     .expect("failed to update texture")
             };
 
-            conrod::backend::piston::draw::primitives(primitives,
-                                                      c,
-                                                      g,
-                                                      &mut self.text_texture,
-                                                      &mut self.glyph_cache,
-                                                      &self.image_map,
-                                                      cache_queued_glyphs,
-                                                      |img| img)
+            conrod::backend::piston::draw::primitives(
+                primitives,
+                c,
+                g,
+                &mut self.text_texture,
+                &mut self.glyph_cache,
+                &self.image_map,
+                cache_queued_glyphs,
+                |img| img,
+            )
         }
     }
 
