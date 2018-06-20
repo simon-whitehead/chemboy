@@ -6,6 +6,7 @@ use std;
 use gameboy;
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
 use gameboy::gfx::{Color, Frame, GpuMode, GpuStat, SpriteShape, TileRenderOptions, TileRenderType};
+use gameboy::ui::theme::Theme;
 
 pub struct Gpu {
     pub enabled: bool,
@@ -39,6 +40,8 @@ pub struct Gpu {
     sprites_enabled: bool,
     background_enabled: bool,
     window_enabled: bool,
+
+    pub theme: Theme,
 }
 
 impl Gpu {
@@ -70,6 +73,8 @@ impl Gpu {
             sprites_enabled: true,
             background_enabled: true,
             window_enabled: true,
+
+            theme: Theme::Default,
         }
     }
 
@@ -272,7 +277,7 @@ impl Gpu {
             _ => panic!("err: invalid pixel color value found"),
         };
 
-        Color::from(palette_index as u8)
+        Color::from(palette_index as u8, &self.theme)
     }
 
     fn get_sprite_color_for_byte(&self, b: u8, palette_entry: u8) -> Color {
@@ -290,7 +295,7 @@ impl Gpu {
             _ => panic!("err: invalid pixel color value found"),
         };
 
-        Color::from(palette_index as u8)
+        Color::from(palette_index as u8, &self.theme)
     }
 
     pub fn read_u8(&self, addr: u16) -> u8 {

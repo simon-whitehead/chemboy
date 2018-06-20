@@ -2,7 +2,7 @@
 
 use gameboy::registers;
 use gameboy::{MAX_CPU_CYCLES, Interconnect, Interrupt};
-use gameboy::opcode::{OpCode, Operand, ArgumentType};
+use gameboy::opcodes::{OpCode, Operand, ArgumentType};
 
 pub enum CpuSpeed {
     Normal,

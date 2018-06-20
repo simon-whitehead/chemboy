@@ -19,7 +19,7 @@ pub struct Cartridge {
 }
 
 impl Cartridge {
-    pub fn with_rom(rom: Vec<u8>) -> Cartridge {
+    pub fn with_rom(rom: &[u8]) -> Cartridge {
         let details = Self::get_details(&rom);
         let cartridge_type = rom[0x147];
         let mbc = Self::get_controller(cartridge_type, &rom);
