@@ -1,8 +1,8 @@
 // Simon Whitehead, 2017
 
 use gameboy::registers;
-use gameboy::{MAX_CPU_CYCLES, Interconnect, Interrupt};
-use gameboy::opcodes::{OpCode, Operand, ArgumentType};
+use gameboy::{Interconnect, Interrupt, MAX_CPU_CYCLES};
+use gameboy::opcodes::{ArgumentType, OpCode, Operand};
 
 pub enum CpuSpeed {
     Normal,
@@ -417,23 +417,26 @@ impl Cpu {
                 0xFE => self.cp_imm8(&operand),
                 0xFF => self.call(0x38, interconnect),
                 _ => {
-                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
-                                       opcode.code,
-                                       self.registers.pc))
+                    return Err(format!(
+                        "Could not match opcode: {:02X} at offset: {:04X}",
+                        opcode.code, self.registers.pc
+                    ))
                 }
             }
 
             return Ok(cycles);
         }
 
-        Err(format!("Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
-                    byte,
-                    self.registers.pc))
+        Err(format!(
+            "Unknown opcode: 0x{:02X} at offset: 0x{:04X}",
+            byte, self.registers.pc
+        ))
     }
 
-    pub fn handle_extended_opcode(&mut self,
-                                  interconnect: &mut Interconnect)
-                                  -> Result<u8, String> {
+    pub fn handle_extended_opcode(
+        &mut self,
+        interconnect: &mut Interconnect,
+    ) -> Result<u8, String> {
         let byte = interconnect.read_u8(self.registers.pc);
 
         if let Some(opcode) = OpCode::from_byte(byte, true) {
@@ -702,18 +705,20 @@ impl Cpu {
                 0xFE => self.set_7_hl_ptr(interconnect),
                 0xFF => self.set_7_a(),
                 _ => {
-                    return Err(format!("Could not match opcode: {:02X} at offset: {:04X}",
-                                       opcode.code,
-                                       self.registers.pc))
+                    return Err(format!(
+                        "Could not match opcode: {:02X} at offset: {:04X}",
+                        opcode.code, self.registers.pc
+                    ))
                 }
             }
 
             return Ok(opcode.cycles + 0x01);
         }
 
-        Err(format!("Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
-                    byte,
-                    self.registers.pc))
+        Err(format!(
+            "Unknown extended opcode: 0x{:02X} at offset: 0x{:04X}",
+            byte, self.registers.pc
+        ))
     }
 
     fn adc(&mut self, a: u8, b: u8) {
@@ -723,8 +728,7 @@ impl Cpu {
             0x00
         };
 
-        let result = a.wrapping_add(b)
-            .wrapping_add(carry);
+        let result = a.wrapping_add(b).wrapping_add(carry);
 
         self.registers.flags.half_carry = (a & 0x0F) + (b & 0x0F) + carry > 0x0F;
         self.registers.flags.negative = false;
@@ -2101,7 +2105,6 @@ impl Cpu {
         self.registers.l = self.registers.a;
     }
 
-
     fn ld_l_b(&mut self) {
         self.registers.l = self.registers.b;
     }
@@ -2902,8 +2905,7 @@ impl Cpu {
             0x00
         };
 
-        let result = a.wrapping_sub(b)
-            .wrapping_sub(carry);
+        let result = a.wrapping_sub(b).wrapping_sub(carry);
 
         self.registers.flags.half_carry = (a & 0x0F) < (b & 0x0F) + carry;
         self.registers.flags.negative = true;
