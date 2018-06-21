@@ -10,20 +10,19 @@ extern crate image;
 extern crate piston_window;
 extern crate rand;
 
+use image::Pixel;
 use clap::{App, Arg};
-use image::{ImageBuffer, RgbaImage};
+use image::ImageBuffer;
 use piston_window::*;
 use piston_window::OpenGL;
 
-use std::cell::{Cell, RefCell};
 use std::fs::File;
 use std::io::Read;
-use std::rc::Rc;
+use std::ops::{Deref, DerefMut};
 
 pub mod gameboy;
 
 use gameboy::{Cartridge, CpuSpeed, Frame, JoypadButton, Ui};
-use gameboy::ui::ui_event::UIEvent;
 
 const WINDOW_WIDTH: u32 = 180;
 const WINDOW_HEIGHT: u32 = 180;
@@ -78,6 +77,11 @@ fn main() {
     );
     let debugger = Rc::new(RefCell::new(gameboy::debugger::Debugger::new()));*/
 
+    let mut imgbuf = ImageBuffer::new(gameboy::SCREEN_WIDTH as u32, gameboy::SCREEN_HEIGHT as u32);
+    build_frame(&mut imgbuf, gameboy.request_frame());
+    let mut texture = Texture::from_image(&mut factory, &imgbuf, &TextureSettings::new())
+        .expect("err: could not build requested gameboy frame");
+
     'start: while let Some(e) = window.next() {
         if let Some(button) = e.press_args() {
             if let Button::Keyboard(key) = button {
@@ -115,11 +119,10 @@ fn main() {
             UIEvent::ThemeSwitched(theme) => gameboy.switch_theme(theme),
             _ => (),
         }*/
+        texture.update(&mut window.encoder, &imgbuf);
         window.draw_2d(&e, |c, g| {
             //ui.draw(c, g);
-            let frame = build_frame(gameboy.request_frame());
-            let texture = Texture::from_image(&mut factory, &frame, &TextureSettings::new())
-                .expect("err: could not build requested gameboy frame");
+            build_frame(&mut imgbuf, gameboy.request_frame());
             let (x, y) = get_projection_coordinates();
             image(&texture, c.transform.trans(x, y), g);
             gameboy.run();
@@ -161,15 +164,17 @@ where
     window
 }
 
-fn build_frame(frame: &Frame) -> RgbaImage {
-    let mut img = ImageBuffer::new(gameboy::SCREEN_WIDTH as u32, gameboy::SCREEN_HEIGHT as u32);
+fn build_frame<P, C>(imgbuf: &mut ImageBuffer<P, C>, frame: &Frame)
+where
+    P: Pixel + From<image::Rgba<u8>> + 'static,
+    P::Subpixel: 'static,
+    C: Deref<Target = [P::Subpixel]> + DerefMut,
+{
     for x in 0..gameboy::SCREEN_WIDTH {
         for y in 0..gameboy::SCREEN_HEIGHT {
             let frame_pixel = frame.pixels[gameboy::SCREEN_WIDTH * y + x];
-            let p = image::Rgba([frame_pixel.r, frame_pixel.g, frame_pixel.b, 0xFF]);
-            img.put_pixel(x as u32, y as u32, p);
+            let p: P = image::Rgba([frame_pixel.r, frame_pixel.g, frame_pixel.b, 0xFF]).into();
+            imgbuf.put_pixel(x as u32, y as u32, p);
         }
     }
-
-    img
 }
