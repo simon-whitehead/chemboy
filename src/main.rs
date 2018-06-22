@@ -119,10 +119,10 @@ fn main() {
             UIEvent::ThemeSwitched(theme) => gameboy.switch_theme(theme),
             _ => (),
         }*/
-        gameboy.run();
         texture.update(&mut window.encoder, &imgbuf);
         window.draw_2d(&e, |c, g| {
             //ui.draw(c, g);
+            gameboy.run();
             let (x, y) = get_projection_coordinates();
             image(&texture, c.transform.trans(x, y), g);
             build_frame(&mut imgbuf, gameboy.request_frame());

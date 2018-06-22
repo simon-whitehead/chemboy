@@ -1,4 +1,3 @@
-
 use byteorder::{ByteOrder, LittleEndian};
 
 use std;
@@ -30,7 +29,7 @@ pub struct Gpu {
     palette0: u8,
     palette1: u8,
 
-    cycles: isize,
+    cycles: usize,
 
     counter: u8,
     tile_data_addr: usize,
@@ -82,7 +81,7 @@ impl Gpu {
         *self = Gpu::new();
     }
 
-    fn set_status(&mut self, irq: &mut Irq) {
+    /*fn set_status(&mut self, irq: &mut Irq) {
         if !self.enabled {
             self.cycles = 0x1C8;
             self.ly = 0x00;
@@ -108,10 +107,10 @@ impl Gpu {
         }
 
         self.check_coincidence(irq);
-    }
+    }*/
 
     pub fn step(&mut self, irq: &mut Irq, cycles: usize) -> Result<(), String> {
-        self.set_status(irq);
+        /*self.set_status(irq);
 
         let cycles = cycles as isize;
         if self.enabled {
@@ -132,7 +131,56 @@ impl Gpu {
             } else if self.ly < 0x90 {
                 self.render_scanline();
             }
+        }*/
+
+        let current_mode = self.mode.clone();
+
+        self.cycles += cycles;
+
+        match self.mode {
+            GpuMode::OAM => {
+                    if self.cycles >= 0x50 {
+                        self.cycles = 0x00;
+                        self.mode = GpuMode::VRAM;
+                    }
+            },
+            GpuMode::VRAM => {
+                if self.cycles >= 0xAC {
+                    self.cycles = 0x00;
+                    self.mode = GpuMode::HBlank;
+                    if self.enabled {
+                        self.render_scanline();
+                    }
+                }
+            },
+            GpuMode::HBlank => {
+                if self.cycles >= 0xCC {
+                    self.cycles = 0x00;
+                    self.ly += 0x01;
+
+                    if self.ly == 0x8F {
+                        self.mode = GpuMode::VBlank;
+                        self.frame = self.backbuffer.clone();
+                        irq.request(Interrupt::Vblank);
+                    } else {
+                        self.mode = GpuMode::OAM;
+                    }
+                }
+            },
+            GpuMode::VBlank => {
+                if self.cycles >= 0x1C8 {
+                    self.cycles = 0x00;
+                    self.ly += 0x01;
+
+                    if self.ly > 0x99 {
+                        self.mode = GpuMode::OAM;
+                        self.ly = 0x00;
+                    }
+                }
+            }
         }
+
+        self.check_coincidence(irq);
 
         Ok(())
     }
@@ -141,16 +189,17 @@ impl Gpu {
         self.render_background();
         self.render_window();
         self.render_sprites();
-        self.frame = self.backbuffer.clone();
     }
 
     fn render_background(&mut self) {
         requires!(self.background_enabled);
 
-        let options = TileRenderOptions::new(TileRenderType::Background,
-                                             self.ly,
-                                             self.background_tilemap_addr,
-                                             self.tile_data_addr);
+        let options = TileRenderOptions::new(
+            TileRenderType::Background,
+            self.ly,
+            self.background_tilemap_addr,
+            self.tile_data_addr,
+        );
         self.render_tile(&options);
     }
 
@@ -158,10 +207,12 @@ impl Gpu {
         requires!(self.window_enabled);
         requires!(self.ly as usize >= self.window_y as usize);
 
-        let options = TileRenderOptions::new(TileRenderType::Window,
-                                             self.ly,
-                                             self.window_tilemap_addr,
-                                             self.tile_data_addr);
+        let options = TileRenderOptions::new(
+            TileRenderType::Window,
+            self.ly,
+            self.window_tilemap_addr,
+            self.tile_data_addr,
+        );
         self.render_tile(&options);
     }
 
@@ -185,7 +236,6 @@ impl Gpu {
         };
 
         for i in start..gameboy::SCREEN_WIDTH {
-
             // If we're at the window, lets negate the window X position from where we
             // need to be in the tile map
             let x = if window {
@@ -199,8 +249,7 @@ impl Gpu {
 
             let line_offset = (y % 0x08) << 0x01;
 
-            let tile_data_start = options.tile_base_addr +
-                                  (if options.tile_base_addr == 0x00 {
+            let tile_data_start = options.tile_base_addr + (if options.tile_base_addr == 0x00 {
                 raw_tile_number
             } else {
                 (raw_tile_number as i8 as i16 + 0x80) as usize
@@ -240,26 +289,31 @@ impl Gpu {
                         continue;
                     }
                     let shift = if flip_x { x } else { 0x07 - x };
-                    let color_value =
-                        Self::build_palette_index(&self.ram[tile_data_start as usize..],
-                                                  shift as u8);
+                    let color_value = Self::build_palette_index(
+                        &self.ram[tile_data_start as usize..],
+                        shift as u8,
+                    );
                     if color_value == 0x00 {
                         continue;
                     }
-                    let c = self.get_sprite_color_for_byte(color_value as u8,
-                                                           ((attributes & 0x10) >> 0x04) as u8);
-                    let idx = self.ly as usize * gameboy::SCREEN_WIDTH +
-                              (s_x as usize + x as usize);
+                    let c = self.get_sprite_color_for_byte(
+                        color_value as u8,
+                        ((attributes & 0x10) >> 0x04) as u8,
+                    );
+                    let idx =
+                        self.ly as usize * gameboy::SCREEN_WIDTH + (s_x as usize + x as usize);
                     if idx > self.backbuffer.pixels.len() - 1 {
-                        panic!(format!("Just tried to place a pixel outside framebuffer size. \
-                                        Index was {} and backbuffer length is {}. line: {:b}, \
-                                        gameboy::SCREEN_WIDTH: {:b}, s_x: {:b}, x: {:b}",
-                                       idx,
-                                       self.backbuffer.pixels.len(),
-                                       self.ly,
-                                       gameboy::SCREEN_WIDTH,
-                                       s_x,
-                                       x));
+                        panic!(format!(
+                            "Just tried to place a pixel outside framebuffer size. \
+                             Index was {} and backbuffer length is {}. line: {:b}, \
+                             gameboy::SCREEN_WIDTH: {:b}, s_x: {:b}, x: {:b}",
+                            idx,
+                            self.backbuffer.pixels.len(),
+                            self.ly,
+                            gameboy::SCREEN_WIDTH,
+                            s_x,
+                            x
+                        ));
                     } else {
                         self.backbuffer.pixels[idx] = c;
                     }

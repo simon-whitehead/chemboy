@@ -2,8 +2,8 @@
 pub enum GpuMode {
     HBlank,
     VBlank,
-    SearchingRam,
-    TransferringData,
+    VRAM,
+    OAM,
 }
 
 impl GpuMode {
@@ -11,8 +11,8 @@ impl GpuMode {
         match *self {
             GpuMode::HBlank => 0x00,
             GpuMode::VBlank => 0x01,
-            GpuMode::SearchingRam => 0x02,
-            GpuMode::TransferringData => 0x03,
+            GpuMode::VRAM => 0x02,
+            GpuMode::OAM => 0x03,
         }
     }
 }
