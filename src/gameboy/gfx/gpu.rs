@@ -81,59 +81,10 @@ impl Gpu {
         *self = Gpu::new();
     }
 
-    /*fn set_status(&mut self, irq: &mut Irq) {
-        if !self.enabled {
-            self.cycles = 0x1C8;
-            self.ly = 0x00;
-            self.stat = GpuStat::from(0xFD);
-        }
-
-        let current_mode = self.mode.clone();
-
-        if self.ly >= 0x90 {
-            self.mode = GpuMode::VBlank;
-        } else {
-            if self.cycles >= 0x178 {
-                self.mode = GpuMode::SearchingRam;
-            } else if self.cycles >= 0xCC {
-                self.mode = GpuMode::TransferringData;
-            } else {
-                self.mode = GpuMode::HBlank;
-            }
-        }
-
-        if self.mode != current_mode {
-            irq.request(Interrupt::Lcd);
-        }
-
-        self.check_coincidence(irq);
-    }*/
-
     pub fn step(&mut self, irq: &mut Irq, cycles: usize) -> Result<(), String> {
-        /*self.set_status(irq);
-
-        let cycles = cycles as isize;
-        if self.enabled {
-            self.cycles -= cycles;
-        } else {
+        if !self.enabled {
             return Ok(());
         }
-
-        if self.cycles <= 0 {
-            self.ly += 0x01;
-
-            self.cycles = 0x1C8;
-
-            if self.ly == 0x90 {
-                irq.request(Interrupt::Vblank);
-            } else if self.ly > 0x99 {
-                self.ly = 0x00;
-            } else if self.ly < 0x90 {
-                self.render_scanline();
-            }
-        }*/
-
-        let current_mode = self.mode.clone();
 
         self.cycles += cycles;
 
@@ -372,6 +323,7 @@ impl Gpu {
     pub fn write_u8(&mut self, addr: u16, val: u8) {
         match addr {
             0x40 => {
+                let was_enabled = self.enabled;
                 self.control_register = val;
                 self.enabled = self.control_register & 0x80 == 0x80;
                 self.tile_data_addr = if self.control_register & 0x10 == 0x10 {
@@ -397,6 +349,13 @@ impl Gpu {
                 self.window_enabled = self.control_register & 0x20 == 0x20;
                 self.sprites_enabled = self.control_register & 0x02 == 0x02;
                 self.background_enabled = self.control_register & 0x01 == 0x01;
+
+                if was_enabled && !self.enabled {
+                    self.cycles = 0x00;
+                    self.ly = 0x00;
+                    self.mode = GpuMode::HBlank;
+                    self.frame = Frame::new();
+                }
             }
             0x41 => self.stat = GpuStat::from(val),
             0x42 => self.scroll_y = val,
