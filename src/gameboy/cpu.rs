@@ -13,6 +13,7 @@ pub struct Cpu {
     pub registers: registers::Registers,
     pub speed: CpuSpeed,
     pub halted: bool,
+    pub trace_points: [bool; 15],
 }
 
 impl Cpu {
@@ -21,6 +22,7 @@ impl Cpu {
             registers: registers::Registers::new(gameboy_color),
             speed: CpuSpeed::Normal,
             halted: false,
+            trace_points: [false; 15],
         }
     }
 
@@ -141,6 +143,14 @@ impl Cpu {
             return 0x0C;
         }
 
+        if interconnect.irq.should_handle(Interrupt::Serial) {
+            interconnect.irq.enabled = false;
+            interconnect.irq.unrequest(Interrupt::Serial);
+            self.call(0x58, interconnect);
+
+            return 0x0C;
+        }
+
         if interconnect.irq.should_handle(Interrupt::Joypad) {
             interconnect.irq.enabled = false;
             interconnect.irq.unrequest(Interrupt::Joypad);
@@ -164,8 +174,6 @@ impl Cpu {
             let mut cycles = opcode.cycles;
             let operand = self.get_operand_from_opcode(interconnect, &opcode);
 
-            // println!("Read 0x{:02X} from 0x{:04X}", byte, self.registers.pc);
-            let pc = self.registers.pc;
             self.registers.pc += opcode.length;
 
             match opcode.code {

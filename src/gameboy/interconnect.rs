@@ -2,10 +2,11 @@ use std::ops::Range;
 
 use gameboy::{Irq, Memory, Timer};
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
-use super::gfx::{Frame, Gpu};
+use gameboy::gfx::{Frame, Gpu};
 use gameboy::irq::Interrupt;
 use gameboy::joypad::{Joypad, JoypadButton};
-use super::memory_map::{self, Address};
+use gameboy::memory_map::{self, Address};
+use gameboy::serial::Serial;
 
 const MAIN_MEM_SIZE: usize = 0x2000;
 const ZRAM_SIZE: usize = 0x80;
@@ -26,6 +27,7 @@ pub struct Interconnect {
     pub cart: Option<Cartridge>,
     pub interrupt: u8,
     pub joypad: Joypad,
+    pub serial: Serial,
 }
 
 impl Interconnect {
@@ -43,6 +45,7 @@ impl Interconnect {
             cart: None,
             interrupt: 0x00,
             joypad: Joypad::new(),
+            serial: Serial::new(),
         }
     }
 
@@ -60,6 +63,7 @@ impl Interconnect {
             cart: Some(cart),
             interrupt: 0x00,
             joypad: Joypad::new(),
+            serial: Serial::new(),
         }
     }
 
@@ -138,7 +142,11 @@ impl Interconnect {
             Address::Io(a) => {
                 match a {
                     0x00 => self.joypad.from_u8(byte, &mut self.irq),
-                    0x01...0x02 => (), // println!("err: write to serial driver not supported"),
+                    0x01 => self.serial.data = byte,
+                    0x02 => {
+                        self.serial.transfer_control = byte;
+                        self.irq.request(Interrupt::Serial);
+                    }
                     0x04...0x07 => self.timer.write_u8(a, byte),
                     0x0F => self.irq.request_flag = byte,
                     0x10...0x26 => (), // println!("err: write to sound driver not supported"),
@@ -159,10 +167,10 @@ impl Interconnect {
                 }
             }
             Address::InterruptEnableRegister(a) => self.irq.enable_flag = byte,
-            _ => {
-                panic!("Unable to write byte to: {:#X}, invalid memory region.",
-                       addr)
-            }
+            _ => panic!(
+                "Unable to write byte to: {:#X}, invalid memory region.",
+                addr
+            ),
         }
     }
 
@@ -188,11 +196,9 @@ impl Interconnect {
             Address::Io(a) => {
                 match a {
                     0x00 => self.joypad.data,
-                    0x01...0x02 => {
-                        // println!("err: read from serial driver not supported");
-                        0
-                    }
-                    0x04...0x07 => self.timer.read_u8(a), 
+                    0x01 => self.serial.data,
+                    0x02 => self.serial.transfer_control,
+                    0x04...0x07 => self.timer.read_u8(a),
                     0x0F => self.irq.request_flag,
                     0x10...0x26 => {
                         // println!("err: read from sound driver not supported");
@@ -202,7 +208,7 @@ impl Interconnect {
                         // println!("err: write to wave pattern RAM not supported");
                         0
                     }
-                    0x40...0x45 => self.gpu.read_u8(a), 
+                    0x40...0x45 => self.gpu.read_u8(a),
                     0x47...0x49 => self.gpu.read_u8(a),
                     0x4A...0x4B => self.gpu.read_u8(a),
                     0x7F => self.mmap_io.read_u8(a),

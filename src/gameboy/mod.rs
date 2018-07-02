@@ -15,6 +15,7 @@ mod memory;
 mod memory_map;
 pub mod opcodes;
 mod registers;
+mod serial;
 mod timer;
 pub mod ui;
 
@@ -26,7 +27,7 @@ pub use self::gameboy::GameBoy;
 pub use self::joypad::{Joypad, JoypadButton};
 pub use self::memory::Memory;
 pub use self::interconnect::Interconnect;
-pub use self::irq::{Irq, Interrupt};
+pub use self::irq::{Interrupt, Irq};
 pub use self::timer::Timer;
 pub use self::ui::ui::Ui;
 
