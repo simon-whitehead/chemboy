@@ -19,6 +19,7 @@ use std::cell::{Cell, RefCell};
 use std::fs::File;
 use std::io::Read;
 use std::rc::Rc;
+use std::thread;
 
 pub mod gameboy;
 
@@ -62,15 +63,26 @@ fn main() {
     let mut gameboy = gameboy::GameBoy::new(false, cart, !disable_boot_rom);
     let game_title = gameboy.cart_details().game_title.clone();
 
-    let mut window = create_window(game_title, enable_debugger);
-    let mut ui = Ui::new(window.size().width as f64,
-                         window.size().height as f64,
-                         window.factory.clone(),
-                         &rom);
-    let debugger = Rc::new(RefCell::new(gameboy::debugger::Debugger::new()));
-    let mut factory = window.factory.clone();
+    let mut game_window = create_window(game_title, (WINDOW_WIDTH, WINDOW_HEIGHT));
 
-    'start: while let Some(e) = window.next() {
+    let debugger = Rc::new(RefCell::new(gameboy::debugger::Debugger::new()));
+    let mut factory = game_window.factory.clone();
+
+    let mut ui = Ui::new(600.0, 400.0, game_window.factory.clone(), &rom);
+    let mut debugger_closed = false;
+
+    let mut debugger_window = create_window("debugger", (600, 400));
+    debugger_window.events = game_window.events.clone();
+
+    'start: while let Some(e) = game_window.next() {
+        for evt in debugger_window.next() {
+            debugger_window.draw_2d(&evt, |c, g| {
+                clear([1.0, 1.0, 0.0, 1.0], g);
+                // ui.draw(c, g);
+                Some(())
+            });
+
+        }
         if let Some(button) = e.press_args() {
             if let Button::Keyboard(key) = button {
                 match key {
@@ -88,6 +100,7 @@ fn main() {
             }
         }
         if let Some(button) = e.release_args() {
+            println!("keypress");
             if let Button::Keyboard(key) = button {
                 match key {
                     Key::Space => gameboy.set_speed(CpuSpeed::Normal),
@@ -102,13 +115,7 @@ fn main() {
                 }
             }
         }
-        let ui_event = ui.handle_event(&e);
-        match ui_event {
-            UIEvent::ThemeSwitched(theme) => gameboy.switch_theme(theme),
-            _ => (),
-        }
-        window.draw_2d(&e, |c, g| {
-            ui.draw(c, g);
+        game_window.draw_2d(&e, |c, g| {
             let frame = build_frame(gameboy.request_frame());
             let texture = Texture::from_image(&mut factory, &frame, &TextureSettings::new())
                 .expect("err: could not build requested gameboy frame");
@@ -136,11 +143,11 @@ fn load_rom(fname: &str) -> std::io::Result<Vec<u8>> {
     Ok(contents)
 }
 
-fn create_window<S>(title: S, debugger_enabled: bool) -> PistonWindow
+fn create_window<S>(title: S, dimensions: (u32, u32)) -> PistonWindow
     where S: Into<String>
 {
     let mut window: PistonWindow = WindowSettings::new(format!("chemboy: {}", title.into()),
-                                                       [WINDOW_WIDTH, WINDOW_HEIGHT])
+                                                       [dimensions.0, dimensions.1])
         .exit_on_esc(true)
         .opengl(OpenGL::V3_2)
         .build()
