@@ -237,41 +237,17 @@ impl Interconnect {
     }
 
     pub fn write_u16(&mut self, addr: u16, val: u16) {
-        let cart = self.cart.as_mut().expect("Cartridge is empty");
+        let lo = (val & 0x00FF) as u8;
+        let hi = (val >> 8) as u8;
 
-        match memory_map::map_address(addr) {
-            Address::CartRam(a) => cart.write_ram_u16(a, val),
-            Address::Gfx(a) => self.gpu.write_u16(a, val),
-            Address::Io(a) => self.mmap_io.write_u16(a, val),
-            Address::Oam(a) => self.gpu.sprite_data.write_u16(a, val),
-            Address::Ram(a) => self.ram.write_u16(a, val),
-            Address::RamShadow(a) => self.ram.write_u16(a, val),
-            Address::Unused(a) => self.unused_memory.write_u16(a, val),
-            Address::ZRam(a) => self.zram.write_u16(a, val),
-            _ => panic!("Unable to write address: {:#X}", addr),
-        }
+        self.write_u8(addr, lo);
+        self.write_u8(addr.wrapping_add(1), hi);
     }
 
     pub fn read_u16(&self, addr: u16) -> u16 {
-        let cart = self.cart.as_ref().expect("Cartridge is empty");
-
-        match memory_map::map_address(addr) {
-            Address::Ram(addr) => self.ram.read_u16(addr),
-            Address::RamShadow(addr) => self.ram.read_u16(addr),
-            Address::CartRom(addr) => {
-                if self.booting && addr <= 0xFF {
-                    self.boot_rom.read_u16(addr)
-                } else {
-                    cart.read_rom_u16(addr)
-                }
-            }
-            Address::CartRomOtherBank(addr) => cart.read_rom_u16(addr),
-            Address::Gfx(value) => self.gpu.ram.read_u16(value),
-            Address::CartRam(a) => cart.read_ram_u16(a),
-            Address::ZRam(a) => self.zram.read_u16(a),
-            Address::Io(a) => self.mmap_io.read_u16(a),
-            _ => panic!("Unable to read address: {:#X}", addr),
-        }
+        let lo = self.read_u8(addr) as u16;
+        let hi = self.read_u8(addr.wrapping_add(1)) as u16;
+        (hi << 8) | lo
     }
 
     pub fn write_bytes(&mut self, addr: u16, bytes: &[u8]) {

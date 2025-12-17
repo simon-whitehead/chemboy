@@ -34,6 +34,7 @@ impl Memory {
     }
 
     pub fn write_u16(&mut self, addr: u16, value: u16) {
+        println!("Writing u16 value {:#06X} to address {:#06X}", value, addr);
         let addr = addr as usize;
         LittleEndian::write_u16(&mut self.ram[addr..], value);
     }

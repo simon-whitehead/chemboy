@@ -976,15 +976,16 @@ impl Cpu {
     }
 
     fn add_sp_imm8(&mut self, operand: &Operand) {
-        let val = operand.unwrap_imm8() as i8 as i16 as u16;
+        let e = operand.unwrap_imm8() as i8;
         let sp = self.registers.sp as u16;
+        let val = e as i16 as u16;
 
         self.registers.flags.zero = false;
         self.registers.flags.negative = false;
         self.registers.flags.half_carry = (sp & 0x000F) + (val & 0x000F) > 0x000F;
         self.registers.flags.carry = (sp & 0x00FF) + (val & 0x00FF) > 0x00FF;
 
-        self.registers.sp += val as usize;
+        self.registers.sp = sp.wrapping_add(val) as usize;
     }
 
     fn and(&mut self, b: u8) {
@@ -3632,12 +3633,7 @@ impl Cpu {
     }
 
     fn relative_jump(&mut self, offset: u8) {
-        // If the sign bit is there, negate the PC by the difference
-        // between 256 and the offset
-        if offset & 0x80 == 0x80 {
-            self.registers.pc -= 0x100 - offset as u16;
-        } else {
-            self.registers.pc += offset as u16;
-        }
+        let off = offset as i8 as i16 as u16;
+        self.registers.pc = self.registers.pc.wrapping_add(off);
     }
 }
