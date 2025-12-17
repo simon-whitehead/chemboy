@@ -190,7 +190,7 @@ impl Gpu {
             // If we're at the window, lets negate the window X position from where we
             // need to be in the tile map
             let x = if window {
-                i as u8 - self.window_x
+                (i as u8).wrapping_sub(self.window_x)
             } else {
                 // Otherwise, scroll the background
                 (i as u8).wrapping_add(self.scroll_x)
@@ -251,8 +251,20 @@ impl Gpu {
                         color_value as u8,
                         ((attributes & 0x10) >> 0x04) as u8,
                     );
+                    let px = s_x + x as i16;
+
+                    // horizontal clipping
+                    if px < 0 || px >= gameboy::SCREEN_WIDTH as i16 {
+                        continue;
+                    }
+                    let py = self.ly as i16;
+                    // vertical clip clipping
+                    if py < 0 || py >= gameboy::SCREEN_HEIGHT as i16 {
+                        continue;
+                    }
                     let idx =
-                        self.ly as usize * gameboy::SCREEN_WIDTH + (s_x as usize + x as usize);
+                        py as usize * gameboy::SCREEN_WIDTH +
+                            px as usize;
                     if idx > self.backbuffer.pixels.len() - 1 {
                         panic!(format!(
                             "Just tried to place a pixel outside framebuffer size. \

@@ -1,3 +1,4 @@
+use std::fmt::{Debug, Formatter};
 
 const CART_ROM_START: u16 = 0x0000;
 const CART_ROM_END: u16 = 0x7FFF;
@@ -49,6 +50,29 @@ pub enum Address {
     Io(u16),
     ZRam(u16),
     InterruptEnableRegister(u16),
+}
+
+impl Debug for Address {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", match self {
+            Address::Bios(addr) => format!("Bios({:#X})", addr),
+            Address::CartRom(addr) => format!("CartRom({:#X})", addr),
+            Address::CartHeader(addr) => format!("CartHeader({:#X})", addr),
+            Address::CartRam(addr) => format!("CartRam({:#X})", addr),
+            Address::CartRomOtherBank(addr) => format!("CartRomOtherBank({:#X})", addr),
+            Address::Gfx(addr) => format!("Gfx({:#X})", addr),
+            Address::ExternalRam(addr) => format!("ExternalRam({:#X})", addr),
+            Address::Ram(addr) => format!("Ram({:#X})", addr),
+            Address::RamShadow(addr) => format!("RamShadow({:#X})", addr),
+            Address::Oam(addr) => format!("Oam({:#X})", addr),
+            Address::Unused(addr) => format!("Unused({:#X})", addr),
+            Address::Io(addr) => format!("Io({:#X})", addr),
+            Address::ZRam(addr) => format!("ZRam({:#X})", addr),
+            Address::InterruptEnableRegister(addr) => {
+                format!("InterruptEnableRegister({:#X})", addr)
+            }
+        })
+    }
 }
 
 pub fn map_address(virtual_address: u16) -> Address {

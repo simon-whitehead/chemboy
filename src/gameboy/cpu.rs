@@ -162,9 +162,17 @@ impl Cpu {
         0x00
     }
 
+    fn any_interrupt_pending(interconnect: &Interconnect) -> bool {
+        (interconnect.irq.request_flag & interconnect.irq.enable_flag) != 0
+    }
+
     pub fn step(&mut self, interconnect: &mut Interconnect) -> Result<u8, String> {
         // Do nothing if we're halted
         if self.halted {
+            // Wake if any enabled interrupt is pending, even if IME is off.
+            if (interconnect.irq.request_flag & interconnect.irq.enable_flag) != 0 {
+                self.halted = false;
+            }
             return Ok(0x01);
         }
 
@@ -718,6 +726,11 @@ impl Cpu {
                         opcode.code, self.registers.pc
                     ))
                 }
+            }
+
+            if interconnect.irq.enable_pending {
+                interconnect.irq.enable_pending = false;
+                interconnect.irq.enabled = true;
             }
 
             return Ok(opcode.cycles + 0x01);
@@ -1575,10 +1588,11 @@ impl Cpu {
 
     fn di(&mut self, interconnect: &mut Interconnect) {
         interconnect.irq.enabled = false;
+        interconnect.irq.enable_pending = false;
     }
 
     fn ei(&mut self, interconnect: &mut Interconnect) {
-        interconnect.irq.enabled = true;
+        interconnect.irq.enable_pending = true;
     }
 
     fn halt(&mut self) {

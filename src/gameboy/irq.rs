@@ -4,14 +4,16 @@ pub struct Irq {
     pub enable_flag: u8,
 
     pub enabled: bool,
+    pub enable_pending: bool, // for delayed enabling after EI instruction
 }
 
 impl Irq {
     pub fn new() -> Irq {
         Irq {
             request_flag: 0x00,
-            enable_flag: 0x20,
-            enabled: true,
+            enable_flag: 0x00,
+            enabled: false,
+            enable_pending: false,
         }
     }
 
@@ -83,12 +85,12 @@ impl Irq {
         use self::Interrupt::*;
 
         match int {
-            Vblank => self.enable_flag -= 0x01,
-            Lcd => self.enable_flag -= 0x02,
-            Timer => self.enable_flag -= 0x04,
-            Serial => self.enable_flag -= 0x08,
-            Joypad => self.enable_flag -= 0x10,
-            LoadGame => self.enable_flag -= 0x20,
+            Vblank => self.enable_flag &= !0x01,
+            Lcd => self.enable_flag &= !0x02,
+            Timer => self.enable_flag &= !0x04,
+            Serial => self.enable_flag &= !0x08,
+            Joypad => self.enable_flag &= !0x10,
+            LoadGame => self.enable_flag &= !0x20,
             _ => panic!("err: unsupported interrupt"),
         }
     }

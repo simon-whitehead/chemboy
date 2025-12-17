@@ -111,11 +111,11 @@ impl Interconnect {
     }
 
     pub fn press(&mut self, button: JoypadButton) {
-        self.joypad.press(button);
+        self.joypad.press(button, &mut self.irq);
     }
 
     pub fn unpress(&mut self, button: JoypadButton) {
-        self.joypad.unpress(button);
+        self.joypad.unpress(button, &mut self.irq);
     }
 
     pub fn write_u8(&mut self, addr: u16, byte: u8) {
@@ -124,6 +124,7 @@ impl Interconnect {
             self.dma_transfer(byte);
             return;
         }
+
         let cart = self.cart.as_mut().expect("Cartridge is empty");
 
         match memory_map::map_address(addr) {
@@ -181,7 +182,7 @@ impl Interconnect {
             Address::Ram(addr) => self.ram.read_u8(addr),
             Address::RamShadow(addr) => self.ram.read_u8(addr),
             Address::CartRom(addr) => {
-                if self.booting {
+                if self.booting && addr <= 0xFF {
                     self.boot_rom.read_u8(addr)
                 } else {
                     cart.read_rom_u8(addr)
@@ -195,7 +196,10 @@ impl Interconnect {
             Address::Unused(_) => 0xFF, // Always return high
             Address::Io(a) => {
                 match a {
-                    0x00 => self.joypad.data,
+                    0x00 => {
+                        println!("FF00 read: {:08b}", self.joypad.data);
+                        self.joypad.data
+                    }
                     0x01 => self.serial.data,
                     0x02 => self.serial.transfer_control,
                     0x04...0x07 => self.timer.read_u8(a),
@@ -255,7 +259,7 @@ impl Interconnect {
             Address::Ram(addr) => self.ram.read_u16(addr),
             Address::RamShadow(addr) => self.ram.read_u16(addr),
             Address::CartRom(addr) => {
-                if self.booting {
+                if self.booting && addr <= 0xFF {
                     self.boot_rom.read_u16(addr)
                 } else {
                     cart.read_rom_u16(addr)
