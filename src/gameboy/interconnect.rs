@@ -198,7 +198,6 @@ impl Interconnect {
             Address::Io(a) => {
                 match a {
                     0x00 => {
-                        println!("FF00 read: {:08b}", self.joypad.data);
                         self.joypad.data
                     }
                     0x01 => self.serial.data,
