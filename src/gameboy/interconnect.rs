@@ -145,11 +145,8 @@ impl Interconnect {
                 match a {
                     0x00 => self.joypad.from_u8(byte, &mut self.irq),
                     0x01 => self.serial.data = byte,
-                    0x02 => {
-                        self.serial.transfer_control = byte;
-                        self.irq.request(Interrupt::Serial);
-                    }
-                    0x04..0x08 => self.timer.write_u8(a, byte),
+                    0x02 => self.serial.transfer_control = byte,
+                    0x04..=0x07 => self.timer.write_u8(a, byte),
                     0x0F => self.irq.request_flag = byte,
                     0x10..0x27 => (), // println!("err: write to sound driver not supported"),
                     0x30..0x40 => (), // println!("err: write to wave pattern RAM not supported"),
@@ -197,9 +194,7 @@ impl Interconnect {
             Address::Unused(_) => 0xFF, // Always return high
             Address::Io(a) => {
                 match a {
-                    0x00 => {
-                        self.joypad.data
-                    }
+                    0x00 => self.joypad.data,
                     0x01 => self.serial.data,
                     0x02 => self.serial.transfer_control,
                     0x04..0x08 => self.timer.read_u8(a),
