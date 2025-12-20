@@ -985,7 +985,7 @@ impl Cpu {
         self.registers.flags.half_carry = (sp & 0x000F) + (val & 0x000F) > 0x000F;
         self.registers.flags.carry = (sp & 0x00FF) + (val & 0x00FF) > 0x00FF;
 
-        self.registers.sp = sp.wrapping_add(val) as usize;
+        self.registers.sp = sp.wrapping_add(val) as u16;
     }
 
     fn and(&mut self, b: u8) {
@@ -2160,12 +2160,12 @@ impl Cpu {
     }
 
     fn ld_sp_hl(&mut self) {
-        self.registers.sp = self.registers.get_hl() as usize;
+        self.registers.sp = self.registers.get_hl() as u16;
     }
 
     fn ld_sp_imm16(&mut self, operand: &Operand) {
         let addr = operand.unwrap_imm16();
-        self.registers.sp = addr as usize;
+        self.registers.sp = addr as u16;
     }
 
     fn or_a(&mut self) {

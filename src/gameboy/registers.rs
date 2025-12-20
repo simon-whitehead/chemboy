@@ -9,7 +9,7 @@ pub struct Registers {
     pub l: u8,
 
     pub pc: u16,
-    pub sp: usize,
+    pub sp: u16,
 
     pub div: u8,
 
