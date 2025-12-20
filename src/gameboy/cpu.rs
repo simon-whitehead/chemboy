@@ -928,64 +928,43 @@ impl Cpu {
         self.registers.flags.carry = (a1 as u16) + (a2 as u16) > 0xFF;
     }
 
-    fn add_hl_bc(&mut self) {
+    fn add_hl_u16(&mut self, value: u16) {
         let hl = self.registers.get_hl();
-        let bc = self.registers.get_bc();
-
-        let r = hl.wrapping_add(bc);
-
-        self.registers.set_hl(r);
-        self.registers.flags.half_carry = ((hl & 0x07FF) + (bc & 0x07FF)) > 0x07FF;
+        let result = hl.wrapping_add(value);
         self.registers.flags.negative = false;
-        self.registers.flags.carry = hl > 0xFFFF - bc;
+        self.registers.flags.half_carry = (hl & 0x0FFF) + (value & 0x0FFF) > 0x0FFF;
+        self.registers.flags.carry = hl > 0xFFFF - value;
+        self.registers.set_hl(result);
+    }
+
+    fn add_hl_bc(&mut self) {
+        self.add_hl_u16(self.registers.get_bc());
     }
 
     fn add_hl_de(&mut self) {
-        let hl = self.registers.get_hl();
-        let de = self.registers.get_de();
-
-        let r = hl.wrapping_add(de);
-
-        self.registers.set_hl(r);
-        self.registers.flags.half_carry = ((hl & 0x07FF) + (de & 0x07FF)) > 0x07FF;
-        self.registers.flags.negative = false;
-        self.registers.flags.carry = hl > 0xFFFF - de;
+        self.add_hl_u16(self.registers.get_de());
     }
 
     fn add_hl_hl(&mut self) {
-        let hl = self.registers.get_hl();
-
-        let r = hl.wrapping_add(hl);
-
-        self.registers.set_hl(r);
-        self.registers.flags.half_carry = ((hl & 0x07FF) + (hl & 0x07FF)) > 0x07FF;
-        self.registers.flags.negative = false;
-        self.registers.flags.carry = hl > 0xFFFF - hl;
+        self.add_hl_u16(self.registers.get_hl());
     }
 
     fn add_hl_sp(&mut self) {
-        let hl = self.registers.get_hl();
-        let sp = self.registers.sp as u16;
-
-        let r = hl.wrapping_add(sp);
-
-        self.registers.set_hl(r);
-        self.registers.flags.half_carry = ((hl & 0x07FF) + (sp & 0x07FF)) > 0x07FF;
-        self.registers.flags.negative = false;
-        self.registers.flags.carry = hl > 0xFFFF - sp;
+        self.add_hl_u16(self.registers.sp);
     }
 
     fn add_sp_imm8(&mut self, operand: &Operand) {
-        let e = operand.unwrap_imm8() as i8;
-        let sp = self.registers.sp as u16;
-        let val = e as i16 as u16;
+        let offset = operand.unwrap_imm8() as i8;
+        let sp = self.registers.sp;
 
         self.registers.flags.zero = false;
         self.registers.flags.negative = false;
-        self.registers.flags.half_carry = (sp & 0x000F) + (val & 0x000F) > 0x000F;
-        self.registers.flags.carry = (sp & 0x00FF) + (val & 0x00FF) > 0x00FF;
+        // Flags are calculated as if adding an unsigned 8-bit value.
+        let unsigned_offset = operand.unwrap_imm8() as u16;
+        self.registers.flags.half_carry = (sp & 0x0F) + (unsigned_offset & 0x0F) > 0x0F;
+        self.registers.flags.carry = (sp & 0xFF) + unsigned_offset > 0xFF;
 
-        self.registers.sp = sp.wrapping_add(val) as u16;
+        self.registers.sp = sp.wrapping_add_signed(offset as i16);
     }
 
     fn and(&mut self, b: u8) {
@@ -1373,7 +1352,7 @@ impl Cpu {
     }
 
     fn call(&mut self, addr: u16, interconnect: &mut Interconnect) {
-        self.registers.sp -= 0x02;
+        self.registers.sp = self.registers.sp.wrapping_sub(0x02);
         interconnect.write_u16(self.registers.sp as u16, self.registers.pc);
         self.registers.pc = addr;
     }
@@ -1486,101 +1465,71 @@ impl Cpu {
         }
 
         if subtraction {
-            self.registers.a -= correction_factor;
+            self.registers.a = self.registers.a.wrapping_sub(correction_factor);
         } else {
-            self.registers.a += correction_factor;
+            self.registers.a = self.registers.a.wrapping_add(correction_factor);
         }
 
         self.registers.flags.zero = self.registers.a == 0x00;
         self.registers.flags.half_carry = false;
     }
 
-    fn dec_a(&mut self) {
-        let r = self.registers.a;
-        self.registers.a = r.wrapping_sub(0x01);
-
-        self.registers.flags.zero = self.registers.a == 0x00;
+    fn dec_u8(&mut self, value: u8) -> u8 {
+        let result = value.wrapping_sub(1);
+        self.registers.flags.zero = result == 0;
         self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
+        self.registers.flags.half_carry = (value & 0x0F) == 0;
+        result
+    }
+
+    fn dec_a(&mut self) {
+        self.registers.a = self.dec_u8(self.registers.a);
     }
 
     fn dec_b(&mut self) {
-        let r = self.registers.b;
-        self.registers.b = r.wrapping_sub(0x01);
-
-        self.registers.flags.zero = self.registers.b == 0x00;
-        self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
+        self.registers.b = self.dec_u8(self.registers.b);
     }
 
     fn dec_bc(&mut self) {
-        let val = self.registers.get_bc().wrapping_sub(0x01);
+        let val = self.registers.get_bc().wrapping_sub(1);
         self.registers.set_bc(val);
     }
 
     fn dec_de(&mut self) {
-        let val = self.registers.get_de().wrapping_sub(0x01);
+        let val = self.registers.get_de().wrapping_sub(1);
         self.registers.set_de(val);
     }
 
     fn dec_c(&mut self) {
-        let r = self.registers.c;
-        self.registers.c = r.wrapping_sub(0x01);
-
-        self.registers.flags.zero = self.registers.c == 0x00;
-        self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
+        self.registers.c = self.dec_u8(self.registers.c);
     }
 
     fn dec_d(&mut self) {
-        let r = self.registers.d;
-        self.registers.d = r.wrapping_sub(0x01);
-
-        self.registers.flags.zero = self.registers.d == 0x00;
-        self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
+        self.registers.d = self.dec_u8(self.registers.d);
     }
 
     fn dec_e(&mut self) {
-        let r = self.registers.e;
-        self.registers.e = r.wrapping_sub(0x01);
-
-        self.registers.flags.zero = self.registers.e == 0x00;
-        self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
+        self.registers.e = self.dec_u8(self.registers.e);
     }
 
     fn dec_h(&mut self) {
-        let r = self.registers.h;
-        self.registers.h = r.wrapping_sub(0x01);
-
-        self.registers.flags.zero = self.registers.h == 0x00;
-        self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
+        self.registers.h = self.dec_u8(self.registers.h);
     }
 
     fn dec_hl(&mut self) {
-        let val = self.registers.get_hl().wrapping_sub(0x01);
+        let val = self.registers.get_hl().wrapping_sub(1);
         self.registers.set_hl(val);
     }
 
     fn dec_hl_ptr(&mut self, interconnect: &mut Interconnect) {
-        let val = interconnect.read_u8(self.registers.get_hl());
-        let result = val.wrapping_sub(0x01);
-        interconnect.write_u8(self.registers.get_hl(), result);
-
-        self.registers.flags.zero = result == 0x00;
-        self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (val & 0x0F) == 0x00;
+        let addr = self.registers.get_hl();
+        let value = interconnect.read_u8(addr);
+        let result = self.dec_u8(value);
+        interconnect.write_u8(addr, result);
     }
 
     fn dec_l(&mut self) {
-        let r = self.registers.l;
-        self.registers.l = r.wrapping_sub(0x01);
-
-        self.registers.flags.zero = self.registers.l == 0x00;
-        self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (r & 0x0F) == 0x00;
+        self.registers.l = self.dec_u8(self.registers.l);
     }
 
     fn dec_sp(&mut self) {
@@ -1600,96 +1549,66 @@ impl Cpu {
         self.halted = true;
     }
 
-    fn inc_a(&mut self) {
-        let r = self.registers.a;
-        self.registers.a = r.wrapping_add(0x01);
-
-        self.registers.flags.zero = self.registers.a == 0x00;
+    fn inc_u8(&mut self, value: u8) -> u8 {
+        let result = value.wrapping_add(1);
+        self.registers.flags.zero = result == 0;
         self.registers.flags.negative = false;
-        self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+        self.registers.flags.half_carry = (value & 0x0F) + 1 > 0x0F;
+        result
+    }
+
+    fn inc_a(&mut self) {
+        self.registers.a = self.inc_u8(self.registers.a);
     }
 
     fn inc_b(&mut self) {
-        let r = self.registers.b;
-        self.registers.b = r.wrapping_add(0x01);
-
-        self.registers.flags.zero = self.registers.b == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+        self.registers.b = self.inc_u8(self.registers.b);
     }
 
     fn inc_bc(&mut self) {
         let val = self.registers.get_bc();
-        self.registers.set_bc(val + 0x01);
+        self.registers.set_bc(val.wrapping_add(0x01));
     }
 
     fn inc_c(&mut self) {
-        let r = self.registers.c;
-        self.registers.c = r.wrapping_add(0x01);
-
-        self.registers.flags.zero = self.registers.c == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+        self.registers.c = self.inc_u8(self.registers.c);
     }
 
     fn inc_d(&mut self) {
-        let r = self.registers.d;
-        self.registers.d = r.wrapping_add(0x01);
-
-        self.registers.flags.zero = self.registers.d == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+        self.registers.d = self.inc_u8(self.registers.d);
     }
 
     fn inc_de(&mut self) {
         let val = self.registers.get_de();
-        self.registers.set_de(val + 0x01);
+        self.registers.set_de(val.wrapping_add(0x01));
     }
 
     fn inc_e(&mut self) {
-        let r = self.registers.e;
-        self.registers.e = r.wrapping_add(0x01);
-
-        self.registers.flags.zero = self.registers.e == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+        self.registers.e = self.inc_u8(self.registers.e);
     }
 
     fn inc_h(&mut self) {
-        let r = self.registers.h;
-        self.registers.h = r.wrapping_add(0x01);
-
-        self.registers.flags.zero = self.registers.h == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+        self.registers.h = self.inc_u8(self.registers.h);
     }
 
     fn inc_hl(&mut self) {
         let val = self.registers.get_hl();
-        self.registers.set_hl(val + 0x01);
+        self.registers.set_hl(val.wrapping_add(0x01));
     }
 
     fn inc_hl_ptr(&mut self, interconnect: &mut Interconnect) {
-        let val = interconnect.read_u8(self.registers.get_hl());
-        let result = val.wrapping_add(0x01);
-        interconnect.write_u8(self.registers.get_hl(), result);
-
-        self.registers.flags.zero = result == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = (val & 0x0F) + 0x01 > 0x0F;
+        let addr = self.registers.get_hl();
+        let value = interconnect.read_u8(addr);
+        let result = self.inc_u8(value);
+        interconnect.write_u8(addr, result);
     }
 
     fn inc_l(&mut self) {
-        let r = self.registers.l;
-        self.registers.l = r.wrapping_add(0x01);
-
-        self.registers.flags.zero = self.registers.l == 0x00;
-        self.registers.flags.negative = false;
-        self.registers.flags.half_carry = (r & 0x0F) + 0x01 > 0x0F;
+        self.registers.l = self.inc_u8(self.registers.l);
     }
 
     fn inc_sp(&mut self) {
-        self.registers.sp += 0x01;
+        self.registers.sp = self.registers.sp.wrapping_add(0x01);
     }
 
     fn jp_c_imm16(&mut self, operand: &Operand) {
@@ -1814,14 +1733,14 @@ impl Cpu {
     fn ld_a_hld(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         self.registers.a = interconnect.read_u8(addr);
-        self.registers.set_hl(addr - 0x01);
+        self.registers.set_hl(addr.wrapping_sub(0x01));
     }
 
     fn ld_a_hli(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         let val = interconnect.read_u8(addr);
         self.registers.a = val;
-        self.registers.set_hl(addr + 0x01);
+        self.registers.set_hl(addr.wrapping_add(0x01));
     }
 
     fn ld_a_imm8(&mut self, operand: &Operand) {
@@ -2105,13 +2024,13 @@ impl Cpu {
     fn ld_hld_a(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         interconnect.write_u8(addr, self.registers.a);
-        self.registers.set_hl(addr - 0x01);
+        self.registers.set_hl(addr.wrapping_sub(0x01));
     }
 
     fn ld_hli_a(&mut self, interconnect: &mut Interconnect) {
         let addr = self.registers.get_hl();
         interconnect.write_u8(addr, self.registers.a);
-        self.registers.set_hl(addr + 0x01);
+        self.registers.set_hl(addr.wrapping_add(0x01));
     }
 
     fn ld_imm16_a(&mut self, operand: &Operand, interconnect: &mut Interconnect) {
@@ -2253,49 +2172,49 @@ impl Cpu {
 
     fn pop_af(&mut self, interconnect: &mut Interconnect) {
         let addr = interconnect.read_u16(self.registers.sp as u16);
-        self.registers.sp += 0x02;
+        self.registers.sp = self.registers.sp.wrapping_add(0x02);
         self.registers.set_af(addr);
     }
 
     fn pop_bc(&mut self, interconnect: &mut Interconnect) {
         let addr = interconnect.read_u16(self.registers.sp as u16);
-        self.registers.sp += 0x02;
+        self.registers.sp = self.registers.sp.wrapping_add(0x02);
         self.registers.set_bc(addr);
     }
 
     fn pop_de(&mut self, interconnect: &mut Interconnect) {
         let addr = interconnect.read_u16(self.registers.sp as u16);
-        self.registers.sp += 0x02;
+        self.registers.sp = self.registers.sp.wrapping_add(0x02);
         self.registers.set_de(addr);
     }
 
     fn pop_hl(&mut self, interconnect: &mut Interconnect) {
         let addr = interconnect.read_u16(self.registers.sp as u16);
-        self.registers.sp += 0x02;
+        self.registers.sp = self.registers.sp.wrapping_add(0x02);
         self.registers.set_hl(addr);
     }
 
     fn push_af(&mut self, interconnect: &mut Interconnect) {
         let val = self.registers.get_af();
-        self.registers.sp -= 0x02;
+        self.registers.sp = self.registers.sp.wrapping_sub(0x02);
         interconnect.write_u16(self.registers.sp as u16, val);
     }
 
     fn push_bc(&mut self, interconnect: &mut Interconnect) {
         let val = self.registers.get_bc();
-        self.registers.sp -= 0x02;
+        self.registers.sp = self.registers.sp.wrapping_sub(0x02);
         interconnect.write_u16(self.registers.sp as u16, val);
     }
 
     fn push_de(&mut self, interconnect: &mut Interconnect) {
         let val = self.registers.get_de();
-        self.registers.sp -= 0x02;
+        self.registers.sp = self.registers.sp.wrapping_sub(0x02);
         interconnect.write_u16(self.registers.sp as u16, val);
     }
 
     fn push_hl(&mut self, interconnect: &mut Interconnect) {
         let val = self.registers.get_hl();
-        self.registers.sp -= 0x02;
+        self.registers.sp = self.registers.sp.wrapping_sub(0x02);
         interconnect.write_u16(self.registers.sp as u16, val);
     }
 
@@ -2628,13 +2547,13 @@ impl Cpu {
 
     fn ret(&mut self, interconnect: &mut Interconnect) {
         let addr = interconnect.read_u16(self.registers.sp as u16);
-        self.registers.sp += 0x02;
+        self.registers.sp = self.registers.sp.wrapping_add(0x02);
         self.registers.pc = addr;
     }
 
     fn reti(&mut self, interconnect: &mut Interconnect) {
         let addr = interconnect.read_u16(self.registers.sp as u16);
-        self.registers.sp += 0x02;
+        self.registers.sp = self.registers.sp.wrapping_add(0x02);
         self.registers.pc = addr;
 
         interconnect.irq.enabled = true;
@@ -2643,7 +2562,7 @@ impl Cpu {
     fn ret_c(&mut self, interconnect: &mut Interconnect) {
         if self.registers.flags.carry {
             let addr = interconnect.read_u16(self.registers.sp as u16);
-            self.registers.sp += 0x02;
+            self.registers.sp = self.registers.sp.wrapping_add(0x02);
             self.registers.pc = addr;
         }
     }
@@ -2651,7 +2570,7 @@ impl Cpu {
     fn ret_nc(&mut self, interconnect: &mut Interconnect) {
         if self.registers.flags.carry == false {
             let addr = interconnect.read_u16(self.registers.sp as u16);
-            self.registers.sp += 0x02;
+            self.registers.sp = self.registers.sp.wrapping_add(0x02);
             self.registers.pc = addr;
         }
     }
@@ -2659,7 +2578,7 @@ impl Cpu {
     fn ret_nz(&mut self, interconnect: &mut Interconnect) {
         if self.registers.flags.zero == false {
             let addr = interconnect.read_u16(self.registers.sp as u16);
-            self.registers.sp += 0x02;
+            self.registers.sp = self.registers.sp.wrapping_add(0x02);
             self.registers.pc = addr;
         }
     }
@@ -2667,7 +2586,7 @@ impl Cpu {
     fn ret_z(&mut self, interconnect: &mut Interconnect) {
         if self.registers.flags.zero {
             let addr = interconnect.read_u16(self.registers.sp as u16);
-            self.registers.sp += 0x02;
+            self.registers.sp = self.registers.sp.wrapping_add(0x02);
             self.registers.pc = addr;
         }
     }
@@ -2920,67 +2839,55 @@ impl Cpu {
         self.registers.flags.zero = false;
     }
 
-    fn sbc(&mut self, b: u8) {
+    fn sbc_u8(&mut self, value: u8) {
         let a = self.registers.a;
-        let carry = if self.registers.flags.carry {
-            0x01
-        } else {
-            0x00
-        };
+        let carry = if self.registers.flags.carry { 1 } else { 0 };
+        let result = a.wrapping_sub(value).wrapping_sub(carry);
 
-        let result = a.wrapping_sub(b).wrapping_sub(carry);
-
-        self.registers.flags.half_carry = (a & 0x0F) < (b & 0x0F) + carry;
+        self.registers.flags.zero = result == 0;
         self.registers.flags.negative = true;
-        self.registers.flags.zero = result & 0xFF == 0x00;
-        self.registers.flags.carry = (a as u16) < b as u16 + carry as u16;
+        self.registers.flags.half_carry = (a & 0x0F) < (value & 0x0F) + carry;
+        self.registers.flags.carry = (a as u16) < (value as u16) + (carry as u16);
 
-        self.registers.a = result as u8;
+        self.registers.a = result;
     }
 
     fn sbc_a_a(&mut self) {
-        let a = self.registers.a;
-        self.sbc(a);
+        self.sbc_u8(self.registers.a);
     }
 
     fn sbc_a_b(&mut self) {
-        let b = self.registers.b;
-        self.sbc(b);
+        self.sbc_u8(self.registers.b);
     }
 
     fn sbc_a_c(&mut self) {
-        let c = self.registers.c;
-        self.sbc(c);
+        self.sbc_u8(self.registers.c);
     }
 
     fn sbc_a_d(&mut self) {
-        let d = self.registers.d;
-        self.sbc(d);
+        self.sbc_u8(self.registers.d);
     }
 
     fn sbc_a_e(&mut self) {
-        let e = self.registers.e;
-        self.sbc(e);
+        self.sbc_u8(self.registers.e);
     }
 
     fn sbc_a_h(&mut self) {
-        let h = self.registers.h;
-        self.sbc(h);
+        self.sbc_u8(self.registers.h);
     }
 
     fn sbc_a_l(&mut self) {
-        let l = self.registers.l;
-        self.sbc(l);
+        self.sbc_u8(self.registers.l);
     }
 
     fn sbc_a_hl_ptr(&mut self, interconnect: &mut Interconnect) {
-        let val = interconnect.read_u8(self.registers.get_hl());
-        self.sbc(val);
+        let value = interconnect.read_u8(self.registers.get_hl());
+        self.sbc_u8(value);
     }
 
     fn sbc_a_imm8(&mut self, operand: &Operand) {
-        let val = operand.unwrap_imm8();
-        self.sbc(val);
+        let value = operand.unwrap_imm8();
+        self.sbc_u8(value);
     }
 
     fn scf(&mut self) {
@@ -3472,60 +3379,54 @@ impl Cpu {
         self.registers.l = self.srl(l);
     }
 
-    fn sub(&mut self, b: u8) {
-        let r = self.registers.a.wrapping_sub(b);
+    fn sub_u8(&mut self, value: u8) {
+        let a = self.registers.a;
+        let result = a.wrapping_sub(value);
 
-        self.registers.flags.zero = r == 0x00;
+        self.registers.flags.zero = result == 0;
         self.registers.flags.negative = true;
-        self.registers.flags.half_carry = (self.registers.a & 0x0F) < (b & 0x0F);
-        self.registers.flags.carry = self.registers.a < b;
+        self.registers.flags.half_carry = (a & 0x0F) < (value & 0x0F);
+        self.registers.flags.carry = a < value;
 
-        self.registers.a = r;
+        self.registers.a = result;
     }
 
     fn sub_a(&mut self) {
-        let a = self.registers.a;
-        self.sub(a);
+        self.sub_u8(self.registers.a);
     }
 
     fn sub_b(&mut self) {
-        let b = self.registers.b;
-        self.sub(b);
+        self.sub_u8(self.registers.b);
     }
 
     fn sub_c(&mut self) {
-        let c = self.registers.c;
-        self.sub(c);
+        self.sub_u8(self.registers.c);
     }
 
     fn sub_d(&mut self) {
-        let d = self.registers.d;
-        self.sub(d);
+        self.sub_u8(self.registers.d);
     }
 
     fn sub_e(&mut self) {
-        let e = self.registers.e;
-        self.sub(e);
+        self.sub_u8(self.registers.e);
     }
 
     fn sub_h(&mut self) {
-        let h = self.registers.h;
-        self.sub(h);
+        self.sub_u8(self.registers.h);
     }
 
     fn sub_l(&mut self) {
-        let l = self.registers.l;
-        self.sub(l);
+        self.sub_u8(self.registers.l);
     }
 
     fn sub_hl(&mut self, interconnect: &mut Interconnect) {
-        let val = interconnect.read_u8(self.registers.get_hl());
-        self.sub(val);
+        let value = interconnect.read_u8(self.registers.get_hl());
+        self.sub_u8(value);
     }
 
     fn sub_imm8(&mut self, operand: &Operand) {
-        let val = operand.unwrap_imm8();
-        self.sub(val);
+        let value = operand.unwrap_imm8();
+        self.sub_u8(value);
     }
 
     fn swap(&mut self, b: u8) -> u8 {
