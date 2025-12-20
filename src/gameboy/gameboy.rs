@@ -1,9 +1,10 @@
+use crate::gameboy;
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
 use gameboy::cpu;
-use ::gameboy::gfx::Frame;
+use gameboy::gfx::Frame;
 use gameboy::joypad::JoypadButton;
 use gameboy::interconnect::Interconnect;
-use gameboy::ui::theme::Theme;
+//use gameboy::ui::theme::Theme;
 
 pub struct GameBoy {
     pub cpu: cpu::Cpu,
@@ -49,7 +50,7 @@ impl GameBoy {
         self.cpu.speed = speed;
     }
 
-    pub fn switch_theme(&mut self, theme: Theme) {
+    /*pub fn switch_theme(&mut self, theme: Theme) {
         self.interconnect.gpu.theme = theme;
-    }
+    }*/
 }

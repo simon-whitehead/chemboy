@@ -2,7 +2,8 @@
 extern crate byteorder;
 extern crate clap;
 #[macro_use]
-extern crate conrod;
+extern crate conrod_core;
+extern crate conrod_piston;
 extern crate find_folder;
 extern crate gfx_core;
 extern crate gfx_device_gl;

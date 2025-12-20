@@ -5,6 +5,7 @@ pub use self::disassembled_line::DisassembledLine;
 
 use byteorder::{ByteOrder, LittleEndian};
 
+use crate::gameboy;
 use gameboy::opcodes::{ArgumentType, OpCode};
 
 pub fn disassemble(bytecode: &[u8]) -> Vec<String> {

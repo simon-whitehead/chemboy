@@ -1,3 +1,4 @@
+use crate::gameboy;
 use gameboy::{MAX_CPU_CYCLES, Interconnect, Irq, Interrupt};
 
 pub struct Timer {

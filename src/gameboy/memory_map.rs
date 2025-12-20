@@ -77,17 +77,17 @@ impl Debug for Address {
 
 pub fn map_address(virtual_address: u16) -> Address {
     match virtual_address {
-        CART_ROM_START...CART_ROM_END => Address::CartRom(virtual_address - CART_ROM_START),
-        CART_RAM_START...CART_RAM_END => Address::CartRam(virtual_address - CART_RAM_START),
-        GFX_RAM_START...GFX_RAM_END => Address::Gfx(virtual_address - GFX_RAM_START),
-        RAM_START...RAM_END => Address::Ram(virtual_address - RAM_START),
-        RAM_SHADOW_START...RAM_SHADOW_END => Address::RamShadow(virtual_address - RAM_SHADOW_START),
-        IO_START...IO_END => Address::Io(virtual_address - IO_START),
-        ZRAM_START...ZRAM_END => Address::ZRam(virtual_address - ZRAM_START),
-        GFX_SPRITE_INFO_START...GFX_SPRITE_INFO_END => {
+        CART_ROM_START..=CART_ROM_END => Address::CartRom(virtual_address - CART_ROM_START),
+        CART_RAM_START..=CART_RAM_END => Address::CartRam(virtual_address - CART_RAM_START),
+        GFX_RAM_START..=GFX_RAM_END => Address::Gfx(virtual_address - GFX_RAM_START),
+        RAM_START..=RAM_END => Address::Ram(virtual_address - RAM_START),
+        RAM_SHADOW_START..=RAM_SHADOW_END => Address::RamShadow(virtual_address - RAM_SHADOW_START),
+        IO_START..=IO_END => Address::Io(virtual_address - IO_START),
+        ZRAM_START..=ZRAM_END => Address::ZRam(virtual_address - ZRAM_START),
+        GFX_SPRITE_INFO_START..=GFX_SPRITE_INFO_END => {
             Address::Oam(virtual_address - GFX_SPRITE_INFO_START)
         }
-        UNUSED_MEMORY_START...UNUSED_MEMORY_END => {
+        UNUSED_MEMORY_START..=UNUSED_MEMORY_END => {
             Address::Unused(virtual_address - UNUSED_MEMORY_START)
         }
         INTERRUPT_ENABLE_REGISTER => {
@@ -99,15 +99,15 @@ pub fn map_address(virtual_address: u16) -> Address {
 
 pub fn map_address_unwrap(virtual_address: u16) -> u16 {
     match virtual_address {
-        CART_RAM_START...CART_RAM_END => virtual_address - CART_RAM_START,
-        CART_ROM_START...CART_ROM_END => virtual_address - CART_ROM_START,
-        GFX_RAM_START...GFX_RAM_END => virtual_address - GFX_RAM_START,
-        RAM_START...RAM_END => virtual_address - RAM_START,
-        RAM_SHADOW_START...RAM_SHADOW_END => virtual_address - RAM_SHADOW_START,
-        IO_START...IO_END => (virtual_address - IO_START),
-        ZRAM_START...ZRAM_END => (virtual_address - ZRAM_START),
-        GFX_SPRITE_INFO_START...GFX_SPRITE_INFO_END => virtual_address - GFX_SPRITE_INFO_START,
-        UNUSED_MEMORY_START...UNUSED_MEMORY_END => virtual_address - UNUSED_MEMORY_START,
+        CART_RAM_START..=CART_RAM_END => virtual_address - CART_RAM_START,
+        CART_ROM_START..=CART_ROM_END => virtual_address - CART_ROM_START,
+        GFX_RAM_START..=GFX_RAM_END => virtual_address - GFX_RAM_START,
+        RAM_START..=RAM_END => virtual_address - RAM_START,
+        RAM_SHADOW_START..=RAM_SHADOW_END => virtual_address - RAM_SHADOW_START,
+        IO_START..=IO_END => (virtual_address - IO_START),
+        ZRAM_START..=ZRAM_END => (virtual_address - ZRAM_START),
+        GFX_SPRITE_INFO_START..=GFX_SPRITE_INFO_END => virtual_address - GFX_SPRITE_INFO_START,
+        UNUSED_MEMORY_START..=UNUSED_MEMORY_END => virtual_address - UNUSED_MEMORY_START,
         INTERRUPT_ENABLE_REGISTER => virtual_address - INTERRUPT_ENABLE_REGISTER,
         _ => panic!("Address {:#X} outside valid memory.", virtual_address),
     }

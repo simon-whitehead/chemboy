@@ -1,3 +1,4 @@
+use crate::gameboy;
 use gameboy::registers;
 
 #[derive(Debug, Eq, PartialEq)]

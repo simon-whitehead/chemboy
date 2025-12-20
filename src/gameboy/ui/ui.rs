@@ -1,19 +1,16 @@
 use std;
-use std::marker::PhantomData;
+use crate::gameboy;
 
-use conrod;
-use conrod::{widget, Colorable, Labelable, Positionable, Sizeable, UiCell, Widget};
-use conrod::position::{Align, Relative};
+use conrod_core;
+use conrod_core::{widget, Colorable, Labelable, Positionable, Sizeable, Widget};
+use conrod_core::position::{Align, Relative};
 use find_folder;
 use gfx_device_gl;
 use gfx_core;
-use gfx_core::factory::Factory;
 use piston_window::*;
-use piston_window::{PistonWindow, UpdateEvent, Window, WindowSettings};
-use piston_window::{Flip, G2d, G2dTexture, Texture, TextureSettings};
+use piston_window::{G2d, G2dTexture, Texture, TextureSettings};
 use piston_window::texture::{Format, UpdateTexture};
 
-use gameboy::ui::theme::Theme;
 use gameboy::ui::ui_event::UIEvent;
 
 widget_ids! {
@@ -33,14 +30,14 @@ widget_ids! {
 }
 
 pub struct Ui<'a> {
-    conrod_ui: conrod::Ui,
+    conrod_ui: conrod_core::Ui,
     width: f64,
     height: f64,
     ids: Ids,
     text_vertex_data: Vec<u8>,
-    glyph_cache: conrod::text::GlyphCache<'a>,
+    glyph_cache: conrod_core::text::GlyphCache<'a>,
     text_texture: Texture<gfx_device_gl::Resources>,
-    image_map: conrod::image::Map<Texture<gfx_device_gl::Resources>>,
+    image_map: conrod_core::image::Map<Texture<gfx_device_gl::Resources>>,
 
     selected_theme: Option<usize>,
     dasm: Vec<String>,
@@ -51,7 +48,7 @@ impl<'a> Ui<'a> {
     where
         F: gfx_core::Factory<gfx_device_gl::Resources>,
     {
-        let mut ui = conrod::UiBuilder::new([width, height])
+        let mut ui = conrod_core::UiBuilder::new([width, height])
             .theme(Self::base_theme())
             .build();
 
@@ -64,19 +61,18 @@ impl<'a> Ui<'a> {
         let (mut glyph_cache, mut text_texture_cache) = {
             const SCALE_TOLERANCE: f32 = 1.0;
             const POSITION_TOLERANCE: f32 = 1.0;
-            let cache = conrod::text::GlyphCache::new(
-                width as u32,
-                height as u32,
-                SCALE_TOLERANCE,
-                POSITION_TOLERANCE,
-            );
+            let cache = conrod_core::text::GlyphCache::builder()
+                .dimensions(width as u32, height as u32)
+                .scale_tolerance(SCALE_TOLERANCE)
+                .position_tolerance(POSITION_TOLERANCE)
+                .build();
             let buffer_len = width as usize * height as usize;
-            let init = vec![128; buffer_len];
+            let init = vec![128u8; buffer_len];
             let settings = TextureSettings::new();
             let factory = &mut factory;
             let texture = G2dTexture::from_memory_alpha(
                 factory,
-                &init,
+                init.as_slice(),
                 width as u32,
                 height as u32,
                 &settings,
@@ -85,8 +81,7 @@ impl<'a> Ui<'a> {
         };
 
         let ids = Ids::new(ui.widget_id_generator());
-        let mut bg_color = conrod::color::LIGHT_BLUE;
-        let dasm = ::gameboy::disassembler::disassemble(rom);
+        let dasm = gameboy::disassembler::disassemble(rom);
 
         Ui {
             conrod_ui: ui,
@@ -96,7 +91,7 @@ impl<'a> Ui<'a> {
             text_vertex_data: Vec::new(),
             glyph_cache: glyph_cache,
             text_texture: text_texture_cache,
-            image_map: conrod::image::Map::new(),
+            image_map: conrod_core::image::Map::new(),
             selected_theme: Some(0),
             dasm: dasm,
         }
@@ -105,26 +100,26 @@ impl<'a> Ui<'a> {
     pub fn handle_event(&mut self, e: &Event) -> UIEvent {
         let mut result = UIEvent::None;
         // Convert the piston event to a conrod event.
-        let (win_w, win_h) = (self.width as conrod::Scalar, self.height as conrod::Scalar);
-        if let Some(evt) = conrod::backend::piston::event::convert(e.clone(), win_w, win_h) {
+        let (win_w, win_h) = (self.width as conrod_core::Scalar, self.height as conrod_core::Scalar);
+        if let Some(evt) = conrod_piston::event::convert(e.clone(), win_w, win_h) {
             self.conrod_ui.handle_event(evt);
         }
 
         e.update(|_| {
             let mut ui = self.conrod_ui.set_widgets();
-            conrod::widget::Canvas::new()
+            conrod_core::widget::Canvas::new()
                 .flow_right(&[
                     (
                         self.ids.left_canvas,
-                        conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0),
+                        conrod_core::widget::Canvas::new().w_h(410.0, win_h).pad(25.0),
                     ),
                     (
                         self.ids.center_canvas,
-                        conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0),
+                        conrod_core::widget::Canvas::new().w_h(410.0, win_h).pad(25.0),
                     ),
                     (
                         self.ids.right_canvas,
-                        conrod::widget::Canvas::new().w_h(410.0, win_h).pad(25.0),
+                        conrod_core::widget::Canvas::new().w_h(410.0, win_h).pad(25.0),
                     ),
                 ])
                 .set(self.ids.master_canvas, &mut ui);
@@ -153,7 +148,7 @@ impl<'a> Ui<'a> {
                 .item_size(20.0)
                 .scroll_kids_vertically()
                 .scrollbar_on_top()
-                .scrollbar_color(conrod::color::GREEN)
+                .scrollbar_color(conrod_core::color::GREEN)
                 .wh_of(self.ids.left_canvas)
                 //.wh_of(self.ids.left_canvas)
                 .set(self.ids.disassembly_list, &mut ui);
@@ -163,10 +158,10 @@ impl<'a> Ui<'a> {
                 let toggle = widget::Toggle::new(true)
                     .label(&self.dasm[i])
                     .label_x(Relative::Align(Align::Start))
-                    .label_color(conrod::color::GREEN)
+                    .label_color(conrod_core::color::GREEN)
                     .label_font_size(10)
-                    .color(conrod::color::BLACK);
-                for v in item.set(toggle, &mut ui) {
+                    .color(conrod_core::color::BLACK);
+                for _ in item.set(toggle, &mut ui) {
                     // self.dasm[i] = v;
                 }
             }
@@ -179,12 +174,12 @@ impl<'a> Ui<'a> {
         result
     }
 
-    pub fn draw(&mut self, c: conrod::backend::piston::draw::Context, g: &mut G2d) {
+    pub fn draw(&mut self, c: conrod_piston::draw::Context, g: &mut G2d) {
         if let Some(primitives) = self.conrod_ui.draw_if_changed() {
             // A function used for caching glyphs to the texture cache.
             let cache_queued_glyphs = |graphics: &mut G2d,
                                        cache: &mut G2dTexture,
-                                       rect: conrod::text::rt::Rect<u32>,
+                                       rect: conrod_core::text::rt::Rect<u32>,
                                        data: &[u8]| {
                 let offset = [rect.min.x, rect.min.y];
                 let size = [rect.width(), rect.height()];
@@ -196,7 +191,7 @@ impl<'a> Ui<'a> {
                     .expect("failed to update texture")
             };
 
-            conrod::backend::piston::draw::primitives(
+            conrod_piston::draw::primitives(
                 primitives,
                 c,
                 g,
@@ -209,23 +204,23 @@ impl<'a> Ui<'a> {
         }
     }
 
-    pub fn base_theme() -> conrod::Theme {
-        use conrod::position::{Align, Direction, Padding, Position, Relative};
-        conrod::Theme {
+    pub fn base_theme() -> conrod_core::Theme {
+        use conrod_core::position::{Align, Direction, Padding, Position, Relative};
+        conrod_core::Theme {
             name: "chemboy theme".to_string(),
             padding: Padding::none(),
             x_position: Position::Relative(Relative::Align(Align::Start), None),
             y_position: Position::Relative(Relative::Direction(Direction::Backwards, 20.0), None),
-            background_color: conrod::color::BLACK,
-            shape_color: conrod::color::LIGHT_CHARCOAL,
-            border_color: conrod::color::BLACK,
+            background_color: conrod_core::color::BLACK,
+            shape_color: conrod_core::color::LIGHT_CHARCOAL,
+            border_color: conrod_core::color::BLACK,
             border_width: 0.0,
-            label_color: conrod::color::WHITE,
+            label_color: conrod_core::color::WHITE,
             font_id: None,
             font_size_large: 18,
             font_size_medium: 16,
             font_size_small: 12,
-            widget_styling: conrod::theme::StyleMap::default(),
+            widget_styling: conrod_core::theme::StyleMap::new(),
             mouse_drag_threshold: 0.0,
             double_click_threshold: std::time::Duration::from_millis(500),
         }

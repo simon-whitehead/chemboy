@@ -1,5 +1,6 @@
 // Simon Whitehead, 2017
 
+use crate::gameboy;
 use gameboy::registers;
 use gameboy::{Interconnect, Interrupt, MAX_CPU_CYCLES};
 use gameboy::opcodes::{ArgumentType, OpCode, Operand};

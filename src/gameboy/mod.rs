@@ -29,7 +29,7 @@ pub use self::memory::Memory;
 pub use self::interconnect::Interconnect;
 pub use self::irq::{Interrupt, Irq};
 pub use self::timer::Timer;
-pub use self::ui::ui::Ui;
+//pub use self::ui::ui::Ui;
 
 pub use self::macros::*;
 

@@ -1,3 +1,4 @@
+use crate::gameboy;
 use gameboy::gfx::Gpu;
 
 pub struct GpuStat {

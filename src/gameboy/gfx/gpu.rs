@@ -2,10 +2,11 @@ use byteorder::{ByteOrder, LittleEndian};
 
 use std;
 
-use gameboy;
+use crate::gameboy;
 use gameboy::{Interconnect, Interrupt, Irq, Memory};
-use gameboy::gfx::{Color, Frame, GpuMode, GpuStat, SpriteShape, TileRenderOptions, TileRenderType};
+use gameboy::gfx::{Color, Frame, GpuMode, GpuStat, SpriteShape};
 use gameboy::ui::theme::Theme;
+use gameboy::gfx::tile_render_options::{TileRenderOptions, TileRenderType};
 
 pub struct Gpu {
     pub enabled: bool,
@@ -266,7 +267,7 @@ impl Gpu {
                         py as usize * gameboy::SCREEN_WIDTH +
                             px as usize;
                     if idx > self.backbuffer.pixels.len() - 1 {
-                        panic!(format!(
+                        panic!(
                             "Just tried to place a pixel outside framebuffer size. \
                              Index was {} and backbuffer length is {}. line: {:b}, \
                              gameboy::SCREEN_WIDTH: {:b}, s_x: {:b}, x: {:b}",
@@ -276,7 +277,7 @@ impl Gpu {
                             gameboy::SCREEN_WIDTH,
                             s_x,
                             x
-                        ));
+                        );
                     } else {
                         self.backbuffer.pixels[idx] = c;
                     }

@@ -1,5 +1,6 @@
 use std::ops::Range;
 
+use crate::gameboy;
 use gameboy::Memory;
 use gameboy::mbc::mbc::get_ram_size;
 use gameboy::mbc::MBC;
@@ -90,12 +91,12 @@ impl MBC for MBC1 {
 
     fn write_rom_u8(&mut self, addr: u16, b: u8) {
         match addr {
-            0x0000...0x1FFF => self.ram_enabled = (b & 0x0F) == 0x0A, // lower 4 bits only
-            0x2000...0x3FFF => {
+            0x0000..0x2000 => self.ram_enabled = (b & 0x0F) == 0x0A, // lower 4 bits only
+            0x2000..0x4000 => {
                 let b = if b & 0x1F == 0x00 { 0x01 } else { b & 0x1F };
                 self.rom_bank = (self.rom_bank & 0x60) | b as usize;
             }
-            0x4000...0x5FFF => {
+            0x4000..0x6000 => {
                 if let BankMode::RomBanking = self.bank_mode {
                     // BANK2 - we combine the lower 5 bits in BANK1 with the lower 2 bits in BANK2
                     self.rom_bank = self.rom_bank & 0x1F | (((b as usize) & 0x03) << 0x05);
@@ -103,7 +104,7 @@ impl MBC for MBC1 {
                     self.ram_bank = (b as usize & 0x03);
                 }
             }
-            0x6000...0x7FFF => {
+            0x6000..0x8000 => {
                 self.bank_mode = if b & 0x01 == 0x01 {
                     BankMode::RamBanking
                 } else {

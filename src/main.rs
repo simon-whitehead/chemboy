@@ -1,7 +1,7 @@
 extern crate byteorder;
 extern crate clap;
 #[macro_use]
-extern crate conrod;
+extern crate conrod_core;
 extern crate find_folder;
 extern crate gfx_core;
 extern crate gfx_device_gl;
@@ -22,7 +22,7 @@ use std::ops::{Deref, DerefMut};
 
 pub mod gameboy;
 
-use gameboy::{Cartridge, CpuSpeed, Frame, JoypadButton, Ui};
+use gameboy::{Cartridge, CpuSpeed, Frame, JoypadButton};
 
 const WINDOW_WIDTH: u32 = 180;
 const WINDOW_HEIGHT: u32 = 180;
@@ -79,7 +79,8 @@ fn main() {
 
     let mut imgbuf = ImageBuffer::new(gameboy::SCREEN_WIDTH as u32, gameboy::SCREEN_HEIGHT as u32);
     build_frame(&mut imgbuf, gameboy.request_frame());
-    let mut texture = Texture::from_image(&mut factory, &imgbuf, &TextureSettings::new())
+    let mut texture_context = window.create_texture_context();
+    let mut texture = Texture::from_image(&mut texture_context, &imgbuf, &TextureSettings::new())
         .expect("err: could not build requested gameboy frame");
 
     'start: while let Some(e) = window.next() {
@@ -119,14 +120,15 @@ fn main() {
             UIEvent::ThemeSwitched(theme) => gameboy.switch_theme(theme),
             _ => (),
         }*/
-        texture.update(&mut window.encoder, &imgbuf);
-        window.draw_2d(&e, |c, g| {
+        window.draw_2d(&e, |c, g, d| {
             //ui.draw(c, g);
+            clear([0.0, 0.0, 0.0, 1.0], g);
             gameboy.run();
+            build_frame(&mut imgbuf, gameboy.request_frame());
+            texture.update(&mut texture_context, &imgbuf);
+            texture_context.encoder.flush(d);
             let (x, y) = get_projection_coordinates();
             image(&texture, c.transform.trans(x, y), g);
-            build_frame(&mut imgbuf, gameboy.request_frame());
-            Some(())
         });
     }
 }
@@ -155,7 +157,6 @@ where
         format!("chemboy: {}", title.into()),
         [WINDOW_WIDTH, WINDOW_HEIGHT],
     ).exit_on_esc(true)
-        .opengl(OpenGL::V3_2)
         .build()
         .unwrap();
 

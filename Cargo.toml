@@ -2,20 +2,28 @@
 name = "chemboy"
 version = "0.0.1"
 authors = ["simonwhitehead"]
+edition = "2021"
 
 [dependencies]
-byteorder = "*"
-rand = "*"
-image = "*"
-gfx_core = "*"
-gfx_device_gl = "*"
-gl = "*"
-piston = "*"
-piston2d-graphics = "0.23.0"
-piston2d-opengl_graphics = "*"
-piston_window = "*"
-conrod = { version = "*", features = ["piston"] }
-find_folder = "*"
+byteorder = "1.5"
+rand = "0.8"
+image = "0.25"
+
+# Piston + gfx stack (pin these!)
+piston = "0.55"
+piston_window = "0.132.0"                # crates.io shows 0.132.0 and it’s a known “works” baseline :contentReference[oaicite:1]{index=1}
+piston2d-graphics = "0.44"
+piston2d-opengl_graphics = "0.89"
+
+gfx_core = "0.9"
+gfx_device_gl = "0.16"
+gl = "0.14"
+find_folder = "0.3"
+
+# ✅ Modern conrod: use split crates
+conrod_core = "0.76.1"                   # docs.rs shows 0.76.1 :contentReference[oaicite:2]{index=2}
+conrod_piston = "0.76.1"
+# (Do NOT depend on `conrod` meta-crate; it’s deprecated) :contentReference[oaicite:3]{index=3}
 
 [dependencies.clap]
 version = "2"

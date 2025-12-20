@@ -1,5 +1,6 @@
 use std::ops::Range;
 
+use crate::gameboy;
 use gameboy::{Irq, Memory, Timer};
 use gameboy::cartridge::{Cartridge, CartridgeDetails};
 use gameboy::gfx::{Frame, Gpu};
@@ -148,12 +149,12 @@ impl Interconnect {
                         self.serial.transfer_control = byte;
                         self.irq.request(Interrupt::Serial);
                     }
-                    0x04...0x07 => self.timer.write_u8(a, byte),
+                    0x04..0x08 => self.timer.write_u8(a, byte),
                     0x0F => self.irq.request_flag = byte,
-                    0x10...0x26 => (), // println!("err: write to sound driver not supported"),
-                    0x30...0x3F => (), // println!("err: write to wave pattern RAM not supported"),
-                    0x40...0x45 => self.gpu.write_u8(a, byte),
-                    0x47...0x49 => self.gpu.write_u8(a, byte),
+                    0x10..0x27 => (), // println!("err: write to sound driver not supported"),
+                    0x30..0x40 => (), // println!("err: write to wave pattern RAM not supported"),
+                    0x40..0x46 => self.gpu.write_u8(a, byte),
+                    0x47..0x4A => self.gpu.write_u8(a, byte),
                     0x50 => {
                         if self.booting {
                             self.booting = false;
@@ -162,7 +163,7 @@ impl Interconnect {
                             self.mmap_io.write_u8(a, byte);
                         }
                     }
-                    0x4A...0x4B => self.gpu.write_u8(a, byte),
+                    0x4A..0x4C => self.gpu.write_u8(a, byte),
                     0x7F => self.mmap_io.write_u8(a, byte),
                     _ => panic!("write memory mapped I/O in unsupported range: {:04X}", a),
                 }
@@ -202,19 +203,19 @@ impl Interconnect {
                     }
                     0x01 => self.serial.data,
                     0x02 => self.serial.transfer_control,
-                    0x04...0x07 => self.timer.read_u8(a),
+                    0x04..0x08 => self.timer.read_u8(a),
                     0x0F => self.irq.request_flag,
-                    0x10...0x26 => {
+                    0x10..0x27 => {
                         // println!("err: read from sound driver not supported");
                         0
                     }
-                    0x30...0x3F => {
+                    0x30..0x40 => {
                         // println!("err: write to wave pattern RAM not supported");
                         0
                     }
-                    0x40...0x45 => self.gpu.read_u8(a),
-                    0x47...0x49 => self.gpu.read_u8(a),
-                    0x4A...0x4B => self.gpu.read_u8(a),
+                    0x40..0x46 => self.gpu.read_u8(a),
+                    0x47..0x4A => self.gpu.read_u8(a),
+                    0x4A..0x4C => self.gpu.read_u8(a),
                     0x7F => self.mmap_io.read_u8(a),
                     n @ _ => panic!("read memory mapped I/O in unsupported range: {:04X}", n),
                 }
