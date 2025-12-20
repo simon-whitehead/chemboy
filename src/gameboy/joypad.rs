@@ -44,28 +44,20 @@ impl Joypad {
     fn update(&mut self, irq: &mut Irq) {
         let prev = self.data;
 
-        // Bits 6-7 are always 1 on real hardware reads
-        let select = self.data & 0x30;   // bits 4-5 (written by CPU)
-        let mut d = 0xC0 | select | 0x0F; // default: nothing pressed (1s)
+        let select = self.data & 0x30;
+        let mut lower_nibble = 0x0F;
 
-        // Active-low selection:
-        // bit4 = 0 => dpad selected
-        // bit5 = 0 => buttons selected
-        let dpad_selected = (select & 0x10) == 0;
-        let btn_selected  = (select & 0x20) == 0;
-
-        if dpad_selected && btn_selected {
-            // both selected -> AND them together (hardware effectively merges)
-            let dpad = self.state & 0x0F;
-            let btns = (self.state >> 4) & 0x0F;
-            d = (d & 0xF0) | (dpad & btns);
-        } else if dpad_selected {
-            let dpad = self.state & 0x0F;
-            d = (d & 0xF0) | dpad;
-        } else if btn_selected {
-            let btns = (self.state >> 4) & 0x0F;
-            d = (d & 0xF0) | btns;
+        if (select & 0x10) == 0 {
+            // D-pad selected
+            lower_nibble &= self.state & 0x0F;
         }
+
+        if (select & 0x20) == 0 {
+            // Buttons selected
+            lower_nibble &= self.state >> 4;
+        }
+
+        let d = 0xC0 | select | lower_nibble;
 
         // Joypad interrupt: trigger on 1->0 transitions in low nibble (new press)
         if ((prev & 0x0F) & !(d & 0x0F)) != 0 {
@@ -108,5 +100,6 @@ impl Joypad {
         }
 
         self.update(irq);
+        irq.request(Interrupt::Joypad);
     }
 }

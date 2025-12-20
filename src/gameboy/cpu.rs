@@ -122,8 +122,8 @@ impl Cpu {
 
         if interconnect.irq.should_handle(Interrupt::Vblank) {
             interconnect.irq.enabled = false;
-            self.call(0x40, interconnect);
             interconnect.irq.unrequest(Interrupt::Vblank);
+            self.call(0x40, interconnect);
 
             return 0x0C;
         }
