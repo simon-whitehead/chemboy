@@ -84,6 +84,7 @@ impl Gpu {
 
     pub fn step(&mut self, irq: &mut Irq, cycles: usize) -> Result<(), String> {
         if !self.enabled {
+            println!("GPU disabled, skipping step");
             return Ok(());
         }
 
@@ -207,8 +208,8 @@ impl Gpu {
                 (raw_tile_number as i8 as i16 + 0x80) as usize
             }) * 0x10 + line_offset;
 
-            let x_shift = (x % 8).wrapping_sub(0x07).wrapping_mul(0xFF);
-            let color_value = Self::build_palette_index(&self.ram[tile_data_start..], x_shift);
+            let bit = 7 - (x as usize & 7);
+            let color_value = Self::build_palette_index(&self.ram[tile_data_start..], bit as u8);
             let c = self.get_background_color_for_byte(color_value as u8);
             self.backbuffer.pixels[self.ly as usize * gameboy::SCREEN_WIDTH + i as usize] = c;
         }
@@ -234,7 +235,11 @@ impl Gpu {
                 let flip_y = attributes & 0x40 == 0x40;
                 let flip_x = attributes & 0x20 == 0x20;
 
-                let sprite_line = (self.ly as i16 - s_y) << 0x01;
+                let mut line = (self.ly as i16 - s_y) as i16;
+                if flip_y {
+                    line = (sprite_height as i16 - 1) - line;
+                }
+                let sprite_line = line << 1;
                 let tile_data_start = (tile_number * 0x10) + sprite_line;
                 for x in 0..8 {
                     if s_x + x < 0 || s_x + x >= gameboy::SCREEN_WIDTH as i16 {
@@ -367,7 +372,7 @@ impl Gpu {
                     self.cycles = 0x00;
                     self.ly = 0x00;
                     self.mode = GpuMode::HBlank;
-                    self.frame = Frame::new();
+                    //self.frame = Frame::new();
                 }
             }
             0x41 => self.stat = GpuStat::from(val),

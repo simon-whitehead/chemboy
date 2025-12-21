@@ -93,7 +93,10 @@ impl Cpu {
             let c = self.step(interconnect)?;
             cycles += c as usize;
             interconnect.step(c as usize)?;
-            if self.handle_interrupts(interconnect) > 0x00 {
+            let ic = self.handle_interrupts(interconnect);
+            if ic > 0 {
+                cycles += ic as usize;
+                interconnect.step(ic as usize)?;
                 self.halted = false;
             }
         }
@@ -125,7 +128,7 @@ impl Cpu {
             interconnect.irq.unrequest(Interrupt::Vblank);
             self.call(0x40, interconnect);
 
-            return 0x0C;
+            return 0x14;
         }
 
         if interconnect.irq.should_handle(Interrupt::Lcd) {
@@ -133,7 +136,7 @@ impl Cpu {
             interconnect.irq.unrequest(Interrupt::Lcd);
             self.call(0x48, interconnect);
 
-            return 0x0C;
+            return 0x14;
         }
 
         if interconnect.irq.should_handle(Interrupt::Timer) {
@@ -141,7 +144,7 @@ impl Cpu {
             interconnect.irq.unrequest(Interrupt::Timer);
             self.call(0x50, interconnect);
 
-            return 0x0C;
+            return 0x14;
         }
 
         if interconnect.irq.should_handle(Interrupt::Serial) {
@@ -149,7 +152,7 @@ impl Cpu {
             interconnect.irq.unrequest(Interrupt::Serial);
             self.call(0x58, interconnect);
 
-            return 0x0C;
+            return 0x14;
         }
 
         if interconnect.irq.should_handle(Interrupt::Joypad) {
@@ -157,7 +160,7 @@ impl Cpu {
             interconnect.irq.unrequest(Interrupt::Joypad);
             self.call(0x60, interconnect);
 
-            return 0x0C;
+            return 0x14;
         }
 
         0x00
@@ -439,6 +442,11 @@ impl Cpu {
                         opcode.code, self.registers.pc
                     ))
                 }
+            }
+
+            if interconnect.irq.enable_pending {
+                interconnect.irq.enable_pending = false;
+                interconnect.irq.enabled = true;
             }
 
             return Ok(cycles);
@@ -727,11 +735,6 @@ impl Cpu {
                         opcode.code, self.registers.pc
                     ))
                 }
-            }
-
-            if interconnect.irq.enable_pending {
-                interconnect.irq.enable_pending = false;
-                interconnect.irq.enabled = true;
             }
 
             return Ok(opcode.cycles + 0x01);
@@ -2634,11 +2637,13 @@ impl Cpu {
     }
 
     fn reti(&mut self, interconnect: &mut Interconnect) {
-        let addr = interconnect.read_u16(self.registers.sp as u16);
+        /*let addr = interconnect.read_u16(self.registers.sp as u16);
         self.registers.sp += 0x02;
-        self.registers.pc = addr;
+        self.registers.pc = addr;*/
 
         interconnect.irq.enabled = true;
+        interconnect.irq.enable_pending = false;
+        self.ret(interconnect);
     }
 
     fn ret_c(&mut self, interconnect: &mut Interconnect) {

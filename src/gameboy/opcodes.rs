@@ -1797,7 +1797,7 @@ static OPCODES: [OpCode; 245] = [OpCode {
                                      code: 0xD9,
                                      mnemonic: "RETI",
                                      length: 1,
-                                     cycles: 8,
+                                     cycles: 16,
                                      argument_type: ArgumentType::Implied,
                                      extended: false,
                                  },
