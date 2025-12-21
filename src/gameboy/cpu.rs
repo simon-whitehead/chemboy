@@ -1487,9 +1487,9 @@ impl Cpu {
         }
 
         if subtraction {
-            self.registers.a -= correction_factor;
+            self.registers.a = self.registers.a.wrapping_sub(correction_factor);
         } else {
-            self.registers.a += correction_factor;
+            self.registers.a = self.registers.a.wrapping_add(correction_factor);
         }
 
         self.registers.flags.zero = self.registers.a == 0x00;
